@@ -1,7 +1,28 @@
 from addPeople import *
+import mysql.connector
 import tkinter as tk
 from tkinter import ttk
 
+# Connecting to mysql database
+db = mysql.connector.connect(
+    host="localhost",
+    user="PongoDev",
+    password="PongoDev44966874",
+    database="LMSdatabase"
+)
+
+mycursor = db.cursor()
+
+# mycursor.execute("CREATE DATABASE LMSdatabase")
+
+mycursor.execute("DROP TABLE Borrower")
+mycursor.execute("CREATE TABLE Borrower (borrowerID int PRIMARY KEY AUTO_INCREMENT, name VARCHAR(50), "
+                 "address VARCHAR(50),"
+                 "created datetime, gender VARCHAR(6), age smallint(2) UNSIGNED)")
+
+mycursor.execute("DESCRIBE Borrower")
+for x in mycursor:
+    print(x)
 
 win = tk.Tk()
 win.title("P2P Lending Management System")
