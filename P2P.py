@@ -13,13 +13,15 @@ db = mysql.connector.connect(
 
 mycursor = db.cursor()
 
-# mycursor.execute("CREATE DATABASE LMSdatabase")
+'''
+mycursor.execute("CREATE DATABASE LMSdatabase")
 
 mycursor.execute("DROP TABLE Borrower")
 mycursor.execute("CREATE TABLE Borrower (borrowerID int PRIMARY KEY AUTO_INCREMENT, name VARCHAR(50), "
                  "address VARCHAR(50),"
                  "created datetime, gender VARCHAR(6), age smallint(2) UNSIGNED)")
-
+'''
+print("xtian")
 mycursor.execute("DESCRIBE Borrower")
 for x in mycursor:
     print(x)

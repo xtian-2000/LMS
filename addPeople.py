@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, END
 import mysql.connector
 from datetime import datetime
 
@@ -39,7 +39,7 @@ def add_people():
 
     ttk.Label(add_people_top, text="Age").grid(column=0, row=3)
 
-    age_spinbox = ttk.Spinbox(add_people_top, from_=0, to=200, width=5, command=_spin)
+    age_spinbox = ttk.Spinbox(add_people_top, from_=0, to=200, width=5  )
     age_spinbox.grid(column=1, row=3)
 
     # Combobox for gender
@@ -60,13 +60,6 @@ def add_people():
     add_people_top.mainloop()
 
 
-# Spinbox callback for age
-
-
-def _spin():
-    value = age_spinbox.get()
-
-
 # Add people to database
 
 
@@ -75,4 +68,13 @@ def _finish_add_people():
                      (add_people_name_entry.get(), add_people_address_entry.get(), datetime.now(), age_spinbox.get(),
                       gender_combobox.get()))
     db.commit()
+    add_people_name_entry.delete(0, END)
+
+    # Show a messagebox for successfully adding people
+
+    success_add_people_message = tk.Toplevel()
+    success_add_people_message.geometry("200x100")
+
+    message = ttk.Label(success_add_people_message, text="Successfully added borrower's profile!").pack()
+    success_add_people_message.after(2000, success_add_people_message.destroy)
 
