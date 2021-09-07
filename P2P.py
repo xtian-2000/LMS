@@ -20,37 +20,73 @@ mycursor.execute("DROP TABLE Borrower")
 mycursor.execute("CREATE TABLE Borrower (borrowerID int PRIMARY KEY AUTO_INCREMENT, name VARCHAR(50), "
                  "address VARCHAR(50),"
                  "created datetime, gender VARCHAR(6), age smallint(2) UNSIGNED)")
-'''
-print("xtian")
+
+
+
 mycursor.execute("DESCRIBE Borrower")
 for x in mycursor:
     print(x)
+'''
+
+
+def _switch_profile():
+    # Profile Container
+
+    for child in content_LF.winfo_children():
+        child.destroy()
+
+    profile_lf = tk.LabelFrame(content_LF, bg="#FFFFFF")
+    profile_lf.grid(column=0, row=0)
+
+    ttk.Label(profile_lf, text="Profile", background="#FFFFFF").pack(side="top")
+
+    # Profile Button Container
+
+    profile_buttons_lf = tk.LabelFrame(profile_lf, bg="#FFFFFF")
+    profile_buttons_lf.pack(side="top")
+
+    add_people_b = tk.Button(profile_buttons_lf, text="add people", command=add_people)
+    add_people_b.pack(side="top")
+
+
+# Window attributes
 
 win = tk.Tk()
 win.title("P2P Lending Management System")
+# getting screen width and height of display
 
+width = win.winfo_screenwidth()
+height = win.winfo_screenheight()
+# setting tkinter window size
+win.geometry("%dx%d" % (width, height))
+win.configure(bg="#FFFFFF")
 
 # Menu Container
 
-menu_LF = ttk.Labelframe(win)
-menu_LF.grid(column=0, row=0)
+menu_LF = tk.LabelFrame(win, bg="#FFFFFF")
+menu_LF.pack(side="left", fill="both")
 
-ttk.Label(menu_LF, text="Home").grid(column=0, row=0)
-ttk.Label(menu_LF, text="Loans").grid(column=0, row=1)
-ttk.Label(menu_LF, text="Profile").grid(column=0, row=2)
+home_B = tk.Button(menu_LF, text="Home", bg="#FFFFFF", font="Arial, 20", relief="flat")
+home_B.pack(side="top", padx=5, pady=5)
+
+loan_B = tk.Button(menu_LF, text="Loans", bg="#FFFFFF", font="Arial, 20", relief="flat")
+loan_B.pack(side="top", padx=5)
+
+profile_B = tk.Button(menu_LF, text="Profile", bg="#FFFFFF", font="Arial, 20", relief="flat", command=_switch_profile)
+profile_B.pack(side="top", padx=5, pady=5)
 
 # Contents Container
-content_LF = ttk.Labelframe(win)
-content_LF.grid(column=1, row=0)
+content_LF = tk.LabelFrame(win, bg="#FFFFFF")
+content_LF.pack(side="left", fill="both", expand="true")
 
-profile_LF = ttk.Labelframe(content_LF)
-profile_LF.grid(column=0, row=0)
+# Home Container
+home_LF = tk.LabelFrame(content_LF, bg="#FFFFFF")
+home_LF.grid(column=0, row=0)
 
-ttk.Label(profile_LF, text="Profile").pack(side="top")
+# Home Dashboard Container
+home_dashboard_LF = tk.LabelFrame(home_LF, bg="#FFFFFF")
+home_dashboard_LF.pack(side="top")
 
-profile_buttons_LF = ttk.Labelframe(profile_LF)
-profile_buttons_LF.pack(side="top")
-
-add_people_B = ttk.Button(profile_LF, text="add people", command=add_people).pack(side="top")
+ttk.Label(home_dashboard_LF, text="Dashboard", background="#FFFFFF").pack(side="top")
 
 win.mainloop()
