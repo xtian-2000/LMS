@@ -10,7 +10,7 @@ db = mysql.connector.connect(
     password="PongoDev44966874",
     database="LMSdatabase"
 )
-
+print("xtian")
 mycursor = db.cursor()
 
 '''
@@ -54,7 +54,6 @@ def _switch_profile():
 win = tk.Tk()
 win.title("P2P Lending Management System")
 # getting screen width and height of display
-
 width = win.winfo_screenwidth()
 height = win.winfo_screenheight()
 # setting tkinter window size
