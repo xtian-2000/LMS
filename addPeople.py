@@ -35,7 +35,7 @@ class AddPeople:
 
         ttk.Label(self.add_people_top, text="Age").grid(column=0, row=3)
 
-        age_spinbox = ttk.Spinbox(self.add_people_top, from_=0, to=200, width=5  )
+        age_spinbox = ttk.Spinbox(self.add_people_top, from_=0, to=200, width=5)
         age_spinbox.grid(column=1, row=3)
 
         # Combobox for gender
