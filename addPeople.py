@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk, END
 import mysql.connector
 from datetime import datetime
-
+"""
 db = mysql.connector.connect(
     host="localhost",
     user="PongoDev",
@@ -11,11 +11,54 @@ db = mysql.connector.connect(
 )
 
 mycursor = db.cursor()
+"""
+
+
+class AddPeople:
+    def __init__(self):
+        # Create instance
+        self.add_people_top = tk.Toplevel()
+        self.add_people_top.geometry("500x500")
+        self.add_people_top.title("Add people")
+
+        # Creating widgets
+        ttk.Label(self.add_people_top, text="Borrower's Profile").grid(column=0, row=0)
+        ttk.Label(self.add_people_top, text="Name").grid(column=0, row=1)
+
+        add_people_name_entry = ttk.Entry(self.add_people_top, width=50)
+        add_people_name_entry.grid(column=1, row=1)
+
+        ttk.Label(self.add_people_top, text="Address").grid(column=0, row=2)
+
+        add_people_address_entry = ttk.Entry(self.add_people_top, width=50)
+        add_people_address_entry.grid(column=1, row=2)
+
+        ttk.Label(self.add_people_top, text="Age").grid(column=0, row=3)
+
+        age_spinbox = ttk.Spinbox(self.add_people_top, from_=0, to=200, width=5  )
+        age_spinbox.grid(column=1, row=3)
+
+        # Combobox for gender
+
+        ttk.Label(self.add_people_top, text="Gender").grid(column=0, row=4)
+        gender_combobox = ttk.Combobox(self.add_people_top, width=10)
+        gender_combobox['values'] = "Male", "Female", "Others"
+        gender_combobox.grid(column=1, row=4)
+        gender_combobox.current(0)
+
+        # Button for adding people to database
+
+        finish_add_people_b = ttk.Button(self.add_people_top, text="Add")
+        finish_add_people_b.grid(column=0, row=5)
+
+        add_people_name_entry.focus()
+
+        self.add_people_top.mainloop()
 
 
 # Window for adding people's profile
 
-
+"""
 def add_people():
     global add_people_name_entry
     global add_people_address_entry
@@ -78,3 +121,4 @@ def _finish_add_people():
     message = ttk.Label(success_add_people_message, text="Successfully added borrower's profile!").pack()
     success_add_people_message.after(2000, success_add_people_message.destroy)
 
+"""

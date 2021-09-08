@@ -3,6 +3,7 @@ import mysql.connector
 import tkinter as tk
 from tkinter import ttk
 
+"""
 # Connecting to mysql database
 db = mysql.connector.connect(
     host="localhost",
@@ -10,7 +11,6 @@ db = mysql.connector.connect(
     password="PongoDev44966874",
     database="LMSdatabase"
 )
-print("xtian")
 mycursor = db.cursor()
 
 '''
@@ -47,8 +47,59 @@ def _switch_profile():
 
     add_people_b = tk.Button(profile_buttons_lf, text="add people", command=add_people)
     add_people_b.pack(side="top")
+"""
 
 
+class Window:
+    def __init__(self):
+        # Create instance
+        self.win = tk.Tk()
+
+        # Add a title
+        self.win.title("P2P Lending Management System")
+        width = self.win.winfo_screenwidth()
+        height = self.win.winfo_screenheight()
+        self.win.geometry("%dx%d" % (width, height))
+        self.win.configure(bg="#FFFFFF")
+
+        # Add widgets
+        self.create_widgets()
+
+        # Method for creating widgets
+
+    def create_widgets(self):
+        # Menu container
+        menu_lf = tk.LabelFrame(self.win, bg="#FFFFFF")
+        menu_lf.pack(side="left", fill="both")
+
+        home_b = tk.Button(menu_lf, text="Home", bg="#FFFFFF", font="Arial, 20", relief="flat")
+        home_b.pack(side="top", padx=5, pady=5)
+
+        loan_b = tk.Button(menu_lf, text="Loans", bg="#FFFFFF", font="Arial, 20", relief="flat")
+        loan_b.pack(side="top", padx=5)
+
+        profile_b = tk.Button(menu_lf, text="Profile", bg="#FFFFFF", font="Arial, 20", relief="flat")
+        profile_b.pack(side="top", padx=5, pady=5)
+
+        # Contents container
+        content_lf = tk.LabelFrame(self.win, bg="#FFFFFF")
+        content_lf.pack(side="left", fill="both", expand="true")
+
+        # Home container
+        home_lf = tk.LabelFrame(content_lf, bg="#FFFFFF")
+        home_lf.grid(column=0, row=0)
+
+        # Home dashboard container
+        home_dashboard_lf = tk.LabelFrame(self.win, bg="#FFFFFF")
+        home_dashboard_lf.pack(side="top")
+
+        ttk.Label(home_dashboard_lf, text="Dashboard", background="#FFFFFF").pack(side="top")
+
+
+window = Window()
+window.win.mainloop()
+
+"""
 # Window attributes
 
 win = tk.Tk()
@@ -89,3 +140,4 @@ home_dashboard_LF.pack(side="top")
 ttk.Label(home_dashboard_LF, text="Dashboard", background="#FFFFFF").pack(side="top")
 
 win.mainloop()
+"""
