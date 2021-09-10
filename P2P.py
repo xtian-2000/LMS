@@ -25,6 +25,7 @@ for x in mycursor:
     print(x)
 """
 
+
 class Window:
 
     def __init__(self, master):
