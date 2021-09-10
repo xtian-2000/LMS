@@ -11,7 +11,7 @@ db = mysql.connector.connect(
     database="LMSdatabase"
 )
 mycursor = db.cursor()
-
+"""
 mycursor.execute("CREATE DATABASE LMSdatabase")
 
 mycursor.execute("DROP TABLE Borrower")
@@ -23,12 +23,21 @@ mycursor.execute("DESCRIBE Borrower")
 
 for x in mycursor:
     print(x)
+"""
 
 
 class Window:
 
     def __init__(self, master):
         # Instance attributes define within init scope conforming to PEP standards
+        self.login_win = None
+        self.menu_lf = None
+        self.home_b = None
+        self.loan_b = None
+        self.profile_b = None
+        self.content_lf = None
+        self.home_lf = None
+        self.home_dashboard_lf = None
         self.loan_lf = None
         self.profile_lf = None
         self.profile_buttons_lf = None
@@ -41,6 +50,14 @@ class Window:
         self.finish_add_people_b = None
         self.success_add_people_message = None
 
+    def login_win(self):
+        self.login_win = tk.Toplevel()
+        self.login_win.geometry("500x500")
+        self.login_win.title("Login")
+
+        self.create_widgets(win)
+
+    def create_widgets(self, master):
         # Menu container
         self.menu_lf = tk.LabelFrame(master, bg="#FFFFFF")
         self.menu_lf.pack(side="left", fill="both")
@@ -97,6 +114,7 @@ class Window:
 
     def switch_profile(self):
         initialize.destroy_content()
+
         # Profile container
         self.profile_lf = tk.LabelFrame(self.content_lf, bg="#FFFFFF")
         self.profile_lf.grid(column=0, row=0)
@@ -169,6 +187,7 @@ class Window:
 
 win = tk.Tk()
 initialize = Window(win)
+Window.login_win(win)
 
 # Add a title
 win.title("P2P Lending Management System")
