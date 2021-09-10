@@ -11,7 +11,7 @@ db = mysql.connector.connect(
     database="LMSdatabase"
 )
 mycursor = db.cursor()
-
+"""
 mycursor.execute("CREATE DATABASE LMSdatabase")
 
 mycursor.execute("DROP TABLE Borrower")
@@ -23,7 +23,7 @@ mycursor.execute("DESCRIBE Borrower")
 
 for x in mycursor:
     print(x)
-
+"""
 
 class Window:
 
