@@ -11,24 +11,12 @@ db = mysql.connector.connect(
     password="PongoDev44966874",
     database="LMSdatabase"
 )
+
 mycursor = db.cursor()
-"""
-mycursor.execute("CREATE DATABASE LMSdatabase")
-
-mycursor.execute("DROP TABLE Borrower")
-mycursor.execute("CREATE TABLE Borrower (borrowerID int PRIMARY KEY AUTO_INCREMENT, name VARCHAR(50), "
-                 "address VARCHAR(50),"
-                 "created datetime, gender VARCHAR(50), age smallint(2))")
-
 mycursor.execute("DESCRIBE Borrower")
 
 for x in mycursor:
     print(x)
-
-mycursor.execute("CREATE TABLE User (UserID int PRIMARY KEY AUTO_INCREMENT, name VARCHAR(50), "
-                 "address VARCHAR(50),"
-                 "created datetime, gender VARCHAR(50), age smallint(2))")
-"""
 
 
 class Window:
@@ -36,8 +24,10 @@ class Window:
     def __init__(self, master):
         # Instance attributes define within init scope conforming to PEP standards
         self.register_top = None
-        self.register_user_id_entry = None
+        self.register_user_name_entry = None
         self.register_password_entry = None
+        self.register_email_entry = None
+        self.register_done_b = None
         self.menu_lf = None
         self.home_b = None
         self.loan_b = None
@@ -56,7 +46,7 @@ class Window:
         self.gender_combobox = None
         self.finish_add_people_b = None
         self.success_add_people_message = None
-        """
+
         # Create window attribute
         win.title("Login")
         win.geometry("500x250")
@@ -81,44 +71,60 @@ class Window:
 
         self.login_b = tk.Button(master, text="Login", bg="#FFFFFF", font="Arial, 15", relief="flat")
         self.login_b.grid(column=1, row=3)
-        """
 
+        """
         # Instantiate method create_widgets
-        self.create_widgets(win)
+        self.create_widgets(win)"""
 
     def register_win(self):
-        # Create instance
-        self.register_top = tk.Toplevel()
-        self.register_top.geometry("500x500")
-        self.register_top.title("Register")
+        # Change window attribute
+        win.title("Register")
+        win.geometry("500x500")
+        win.resizable(False, False)
+        win.configure(bg="#FFFFFF")
+
+        # Destroy window content
+        print(type(win))
+        Content.destroy_content(win)
 
         # Creating widgets
-        ttk.Label(self.register_top, text="Register").grid(column=0, row=0)
-        ttk.Label(self.register_top, text="User ID").grid(column=0, row=1)
+        ttk.Label(win, text="Register").grid(column=0, row=0)
+        ttk.Label(win, text="User Name").grid(column=0, row=1)
 
-        self.register_user_id_entry = ttk.Entry(self.register_top, width=50)
-        self.register_user_id_entry.grid(column=1, row=1)
+        self.register_user_name_entry = ttk.Entry(win, width=50)
+        self.register_user_name_entry.grid(column=1, row=1)
 
-        ttk.Label(self.register_top, text="Password").grid(column=0, row=2)
+        ttk.Label(win, text="Password").grid(column=0, row=2)
 
-        self.register_password_entry = ttk.Entry(self.register_top, width=50)
+        self.register_password_entry = ttk.Entry(win, width=50)
         self.register_password_entry.grid(column=1, row=2)
 
+        ttk.Label(win, text="Email").grid(column=0, row=3)
+
+        self.register_email_entry = ttk.Entry(win, width=50)
+        self.register_email_entry.grid(column=1, row=3)
+
         # Button for adding people to database
-        self.finish_add_people_b = ttk.Button(self.register_top, text="Done",
-                                              command=self.finish_add_people)
-        self.finish_add_people_b.grid(column=0, row=3)
+        self.register_done_b = ttk.Button(win, text="Done", command=self.register_validation)
+        self.register_done_b.grid(column=0, row=4)
 
-        self.register_user_id_entry.focus()
+        self.register_user_name_entry.focus()
 
-        self.register_top.mainloop()
+    def register_validation(self):
+        mycursor.execute("INSERT INTO user (username, password, email) VALUES (%s,%s,%s)",
+                         (self.register_user_name_entry.get(), self.register_password_entry.get(),
+                          self.register_email_entry.get()))
+        db.commit()
+        Content.delete_entry(self.register_user_name_entry, self.register_password_entry)
 
     def create_widgets(self, master):
+        # Change window attribute
         win.title("P2P Lending Management System")
         width = win.winfo_screenwidth()
         height = win.winfo_screenheight()
         win.geometry("%dx%d" % (width, height))
         win.configure(bg="#FFFFFF")
+
         # Menu container
         self.menu_lf = tk.LabelFrame(master, bg="#FFFFFF")
         self.menu_lf.pack(side="left", fill="both")
@@ -144,13 +150,16 @@ class Window:
         self.home_lf = tk.LabelFrame(self.content_lf, bg="#FFFFFF")
         self.home_lf.grid(column=0, row=0)
 
+        # Dashboard container
         self.home_dashboard_lf = tk.LabelFrame(self.home_lf, bg="#FFFFFF")
         self.home_dashboard_lf.pack(side="top")
 
         ttk.Label(self.home_dashboard_lf, text="Dashboard", background="#FFFFFF").pack(side="top")
 
     def switch_home(self):
+        # Destroy content_lf
         Content.destroy_content(self.content_lf)
+
         # Home container
         self.home_lf = tk.LabelFrame(self.content_lf, bg="#FFFFFF")
         self.home_lf.grid(column=0, row=0)
@@ -162,7 +171,9 @@ class Window:
         ttk.Label(self.home_dashboard_lf, text="Dashboard", background="#FFFFFF").pack(side="top")
 
     def switch_loan(self):
+        # Destroy content_lf
         Content.destroy_content(self.content_lf)
+
         # Loan container
         self.loan_lf = tk.LabelFrame(self.content_lf, bg="#FFFFFF")
         self.loan_lf.grid(column=0, row=0)
@@ -170,7 +181,9 @@ class Window:
         ttk.Label(self.loan_lf, text="Loans", background="#FFFFFF").pack(side="top")
 
     def switch_profile(self):
+        # Destroy content_lf
         Content.destroy_content(self.content_lf)
+
         # Profile container
         self.profile_lf = tk.LabelFrame(self.content_lf, bg="#FFFFFF")
         self.profile_lf.grid(column=0, row=0)
@@ -243,14 +256,5 @@ class Window:
 
 win = tk.Tk()
 initialize = Window(win)
-
-"""
-# Add a title
-win.title("P2P Lending Management System")
-width = win.winfo_screenwidth()
-height = win.winfo_screenheight()
-win.geometry("%dx%d" % (width, height))
-win.configure(bg="#FFFFFF")
-"""
 
 win.mainloop()
