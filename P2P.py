@@ -1,26 +1,17 @@
 import tkinter as tk
 from datetime import datetime
 from tkinter import ttk, END
-
-import mysql.connector
-
+import mysql.connector as mysql
 from contentController import Content
 
 # Connecting to mysql database
-db = mysql.connector.connect(
-    host="localhost",
-    user="PongoDev",
-    password="PongoDev44966874",
-    database="LMSdatabase"
-)
+db = mysql.connect(host="localhost",
+                   user="PongoDev",
+                   password="PongoDev44966874",
+                   database="LMSdatabase"
+                   )
 
 mycursor = db.cursor()
-"""
-mycursor.execute("DESCRIBE Borrower")
-
-for x in mycursor:
-    print(x)
-"""
 
 
 class Window:
@@ -28,6 +19,10 @@ class Window:
     def __init__(self, master):
         # Instance attributes define within init scope conforming to PEP standards
         self.master = master
+        self.login_username_entry = None
+        self.login_password_entry = None
+        self.register_b = None
+        self.login_b = None
         self.register_top = None
         self.register_user_name_entry = None
         self.register_password_entry = None
@@ -52,29 +47,33 @@ class Window:
         self.finish_add_people_b = None
         self.success_add_people_message = None
 
+        # Instantiate login window
+        self.login_win()
+
+    def login_win(self):
         # Create window attribute
-        master.title("Login")
-        master.geometry("500x250")
-        master.resizable(False, False)
-        master.configure(bg="#FFFFFF")
+        self.master.title("Login")
+        self.master.geometry("500x250")
+        self.master.resizable(False, False)
+        self.master.configure(bg="#FFFFFF")
 
         # Login widgets
-        ttk.Label(master, text="Login", background="#FFFFFF").grid(column=0, row=0)
-        ttk.Label(master, text="User ID", background="#FFFFFF").grid(column=0, row=1)
+        ttk.Label(self.master, text="Login", background="#FFFFFF").grid(column=0, row=0)
+        ttk.Label(self.master, text="User Name", background="#FFFFFF").grid(column=0, row=1)
 
-        self.user_id_entry = ttk.Entry(master, width=50)
-        self.user_id_entry.grid(column=1, row=1)
+        self.login_username_entry = ttk.Entry(self.master, width=50)
+        self.login_username_entry.grid(column=1, row=1)
 
-        ttk.Label(master, text="Password", background="#FFFFFF").grid(column=0, row=2)
+        ttk.Label(self.master, text="Password", background="#FFFFFF").grid(column=0, row=2)
 
-        self.user_id_entry = ttk.Entry(master, width=50)
-        self.user_id_entry.grid(column=1, row=2)
+        self.login_password_entry = ttk.Entry(self.master, width=50)
+        self.login_password_entry.grid(column=1, row=2)
 
-        self.register_b = tk.Button(master, text="Register", bg="#FFFFFF", font="Arial, 15", relief="flat",
+        self.register_b = tk.Button(self.master, text="Register", bg="#FFFFFF", font="Arial, 15", relief="flat",
                                     command=self.register_win)
         self.register_b.grid(column=0, row=3)
 
-        self.login_b = tk.Button(master, text="Login", bg="#FFFFFF", font="Arial, 15", relief="flat")
+        self.login_b = tk.Button(self.master, text="Login", bg="#FFFFFF", font="Arial, 15", relief="flat")
         self.login_b.grid(column=1, row=3)
 
         """
@@ -95,30 +94,34 @@ class Window:
         ttk.Label(win, text="Register").grid(column=0, row=0)
         ttk.Label(win, text="User Name").grid(column=0, row=1)
 
-        self.register_user_name_entry = ttk.Entry(win, width=50)
+        self.register_user_name_entry = ttk.Entry(self.master, width=50)
         self.register_user_name_entry.grid(column=1, row=1)
 
         ttk.Label(win, text="Password").grid(column=0, row=2)
 
-        self.register_password_entry = ttk.Entry(win, width=50)
+        self.register_password_entry = ttk.Entry(self.master, width=50)
         self.register_password_entry.grid(column=1, row=2)
 
         ttk.Label(win, text="Email").grid(column=0, row=3)
 
-        self.register_email_entry = ttk.Entry(win, width=50)
+        self.register_email_entry = ttk.Entry(self.master, width=50)
         self.register_email_entry.grid(column=1, row=3)
 
         # Button for adding people to database
-        self.register_done_b = ttk.Button(win, text="Done", command=self.register_validation)
+        self.register_done_b = ttk.Button(self.master, text="Done", command=self.register_validation())
         self.register_done_b.grid(column=0, row=4)
 
         self.register_user_name_entry.focus()
+
+    def login_validation(self):
+        pass
 
     def register_validation(self):
         mycursor.execute("INSERT INTO user (username, password, email) VALUES (%s,%s,%s)",
                          (self.register_user_name_entry.get(), self.register_password_entry.get(),
                           self.register_email_entry.get()))
         db.commit()
+        self.login_win()
         Content.delete_entry(self.master)
 
     def create_widgets(self, master):
