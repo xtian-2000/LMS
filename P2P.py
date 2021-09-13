@@ -1,17 +1,9 @@
 import tkinter as tk
 from datetime import datetime
-from tkinter import ttk, END
+from tkinter import ttk, END, messagebox
 import mysql.connector as mysql
 from contentController import Content
-
-# Connecting to mysql database
-db = mysql.connect(host="localhost",
-                   user="PongoDev",
-                   password="PongoDev44966874",
-                   database="LMSdatabase"
-                   )
-
-mycursor = db.cursor()
+from loginRegister import Validate
 
 
 class Window:
@@ -46,10 +38,19 @@ class Window:
         self.gender_combobox = None
         self.finish_add_people_b = None
         self.success_add_people_message = None
+        # Connecting to mysql database
+        self.db = mysql.connect(host="localhost",
+                                user="PongoDev",
+                                password="PongoDev44966874",
+                                database="LMSdatabase"
+                                )
+
+        self.mycursor = self.db.cursor()
 
         # Instantiate login window
-        self.login_win()
+        Validate.login_win(master)
 
+    """
     def login_win(self):
         # Create window attribute
         self.master.title("Login")
@@ -73,10 +74,11 @@ class Window:
                                     command=self.register_win)
         self.register_b.grid(column=0, row=3)
 
-        self.login_b = tk.Button(self.master, text="Login", bg="#FFFFFF", font="Arial, 15", relief="flat")
+        self.login_b = tk.Button(self.master, text="Login", bg="#FFFFFF", font="Arial, 15", relief="flat",
+                                 command=self.login_validation)
         self.login_b.grid(column=1, row=3)
 
-        """
+        
         # Instantiate method create_widgets
         self.create_widgets(self.master)"""
 
@@ -114,17 +116,32 @@ class Window:
         self.register_user_name_entry.focus()
 
     def login_validation(self):
-        pass
+        # Select from table user
+        self.mycursor.execute(
+            "SELECT * FROM user where username = '" + self.login_username_entry.get() + "' and password = '" +
+            self.login_password_entry.get() + "';")
+        myresult = self.mycursor.fetchone()
+        if myresult is None:
+            messagebox.showerror("Error", "Invalid User Name And Password")
+
+        else:
+            self.create_widgets(self.master)
+
+        self.db.close()
+        self.mycursor.close()
 
     def register_validation(self):
-        mycursor.execute("INSERT INTO user (username, password, email) VALUES (%s,%s,%s)",
-                         (self.register_user_name_entry.get(), self.register_password_entry.get(),
-                          self.register_email_entry.get()))
-        db.commit()
+        self.mycursor.execute("INSERT INTO user (username, password, email) VALUES (%s,%s,%s)",
+                              (self.register_user_name_entry.get(), self.register_password_entry.get(),
+                               self.register_email_entry.get()))
+        self.db.commit()
         self.login_win()
         Content.delete_entry(self.master)
 
     def create_widgets(self, master):
+        # Destroy window contents
+        Content.destroy_content(master)
+
         # Change window attribute
         master.title("P2P Lending Management System")
         width = master.winfo_screenwidth()
@@ -246,10 +263,10 @@ class Window:
         self.add_people_top.mainloop()
 
     def finish_add_people(self):
-        mycursor.execute("INSERT INTO Borrower (name, address, age, created, gender) VALUES (%s,%s,%s,%s,%s)",
+        self.mycursor.execute("INSERT INTO Borrower (name, address, age, created, gender) VALUES (%s,%s,%s,%s,%s)",
                          (self.add_people_name_entry.get(), self.add_people_address_entry.get(), self.age_spinbox.get(),
                           datetime.now(), self.gender_combobox.get()))
-        db.commit()
+        self.db.commit()
         self.add_people_name_entry.delete(0, END)
 
         # Show a messagebox for successfully adding people
