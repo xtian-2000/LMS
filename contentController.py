@@ -1,5 +1,6 @@
-from tkinter import ttk, END, Entry
 import tkinter
+from tkinter import ttk
+
 
 # Create class that handles destroying, and disabling contents of main window
 
@@ -11,7 +12,8 @@ class Content(tkinter.Tk, ttk.LabelFrame, ttk.Entry):
             child.destroy()
 
     def delete_entry(self):
-        self.delete(0, END)
+        for widget in self.winfo_children():
+            if isinstance(widget, ttk.Entry):
+                widget.delete(0, "end")
 
 
-print("f")

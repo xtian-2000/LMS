@@ -1,8 +1,10 @@
-from contentController import Content
-from datetime import datetime
-import mysql.connector
 import tkinter as tk
+from datetime import datetime
 from tkinter import ttk, END
+
+import mysql.connector
+
+from contentController import Content
 
 # Connecting to mysql database
 db = mysql.connector.connect(
@@ -13,16 +15,19 @@ db = mysql.connector.connect(
 )
 
 mycursor = db.cursor()
+"""
 mycursor.execute("DESCRIBE Borrower")
 
 for x in mycursor:
     print(x)
+"""
 
 
 class Window:
 
     def __init__(self, master):
         # Instance attributes define within init scope conforming to PEP standards
+        self.master = master
         self.register_top = None
         self.register_user_name_entry = None
         self.register_password_entry = None
@@ -48,10 +53,10 @@ class Window:
         self.success_add_people_message = None
 
         # Create window attribute
-        win.title("Login")
-        win.geometry("500x250")
-        win.resizable(False, False)
-        win.configure(bg="#FFFFFF")
+        master.title("Login")
+        master.geometry("500x250")
+        master.resizable(False, False)
+        master.configure(bg="#FFFFFF")
 
         # Login widgets
         ttk.Label(master, text="Login", background="#FFFFFF").grid(column=0, row=0)
@@ -74,18 +79,17 @@ class Window:
 
         """
         # Instantiate method create_widgets
-        self.create_widgets(win)"""
+        self.create_widgets(self.master)"""
 
     def register_win(self):
         # Change window attribute
-        win.title("Register")
-        win.geometry("500x500")
-        win.resizable(False, False)
-        win.configure(bg="#FFFFFF")
+        self.master.title("Register")
+        self.master.geometry("500x500")
+        self.master.resizable(False, False)
+        self.master.configure(bg="#FFFFFF")
 
         # Destroy window content
-        print(type(win))
-        Content.destroy_content(win)
+        Content.destroy_content(self.master)
 
         # Creating widgets
         ttk.Label(win, text="Register").grid(column=0, row=0)
@@ -115,15 +119,15 @@ class Window:
                          (self.register_user_name_entry.get(), self.register_password_entry.get(),
                           self.register_email_entry.get()))
         db.commit()
-        Content.delete_entry(self.register_user_name_entry, self.register_password_entry)
+        Content.delete_entry(self.master)
 
     def create_widgets(self, master):
         # Change window attribute
-        win.title("P2P Lending Management System")
-        width = win.winfo_screenwidth()
-        height = win.winfo_screenheight()
-        win.geometry("%dx%d" % (width, height))
-        win.configure(bg="#FFFFFF")
+        master.title("P2P Lending Management System")
+        width = master.winfo_screenwidth()
+        height = master.winfo_screenheight()
+        master.geometry("%dx%d" % (width, height))
+        master.configure(bg="#FFFFFF")
 
         # Menu container
         self.menu_lf = tk.LabelFrame(master, bg="#FFFFFF")
