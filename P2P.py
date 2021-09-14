@@ -3,7 +3,6 @@ from datetime import datetime
 from tkinter import ttk, END, messagebox
 import mysql.connector as mysql
 from contentController import Content
-from loginRegister import Validate
 
 
 class Window:
@@ -48,9 +47,8 @@ class Window:
         self.mycursor = self.db.cursor()
 
         # Instantiate login window
-        Validate.login_win(master)
+        self.login_win()
 
-    """
     def login_win(self):
         # Create window attribute
         self.master.title("Login")
@@ -78,10 +76,6 @@ class Window:
                                  command=self.login_validation)
         self.login_b.grid(column=1, row=3)
 
-        
-        # Instantiate method create_widgets
-        self.create_widgets(self.master)"""
-
     def register_win(self):
         # Change window attribute
         self.master.title("Register")
@@ -93,18 +87,18 @@ class Window:
         Content.destroy_content(self.master)
 
         # Creating widgets
-        ttk.Label(win, text="Register").grid(column=0, row=0)
-        ttk.Label(win, text="User Name").grid(column=0, row=1)
+        ttk.Label(self.master, text="Register").grid(column=0, row=0)
+        ttk.Label(self.master, text="User Name").grid(column=0, row=1)
 
         self.register_user_name_entry = ttk.Entry(self.master, width=50)
         self.register_user_name_entry.grid(column=1, row=1)
 
-        ttk.Label(win, text="Password").grid(column=0, row=2)
+        ttk.Label(self.master, text="Password").grid(column=0, row=2)
 
         self.register_password_entry = ttk.Entry(self.master, width=50)
         self.register_password_entry.grid(column=1, row=2)
 
-        ttk.Label(win, text="Email").grid(column=0, row=3)
+        ttk.Label(self.master, text="Email").grid(column=0, row=3)
 
         self.register_email_entry = ttk.Entry(self.master, width=50)
         self.register_email_entry.grid(column=1, row=3)
@@ -125,7 +119,7 @@ class Window:
             messagebox.showerror("Error", "Invalid User Name And Password")
 
         else:
-            self.create_widgets(self.master)
+            self.create_widgets()
 
         self.db.close()
         self.mycursor.close()
@@ -138,19 +132,19 @@ class Window:
         self.login_win()
         Content.delete_entry(self.master)
 
-    def create_widgets(self, master):
+    def create_widgets(self):
         # Destroy window contents
-        Content.destroy_content(master)
+        Content.destroy_content(self.master)
 
         # Change window attribute
-        master.title("P2P Lending Management System")
-        width = master.winfo_screenwidth()
-        height = master.winfo_screenheight()
-        master.geometry("%dx%d" % (width, height))
-        master.configure(bg="#FFFFFF")
+        self.master.title("P2P Lending Management System")
+        width = self.master.winfo_screenwidth()
+        height = self.master.winfo_screenheight()
+        self.master.geometry("%dx%d" % (width, height))
+        self.master.configure(bg="#FFFFFF")
 
         # Menu container
-        self.menu_lf = tk.LabelFrame(master, bg="#FFFFFF")
+        self.menu_lf = tk.LabelFrame(self.master, bg="#FFFFFF")
         self.menu_lf.pack(side="left", fill="both")
 
         # Menu buttons
@@ -167,7 +161,7 @@ class Window:
         self.profile_b.pack(side="top", padx=5, pady=5)
 
         # Contents container
-        self.content_lf = tk.LabelFrame(master, bg="#FFFFFF")
+        self.content_lf = tk.LabelFrame(self.master, bg="#FFFFFF")
         self.content_lf.pack(side="left", fill="both", expand="true")
 
         # Home container
@@ -264,8 +258,9 @@ class Window:
 
     def finish_add_people(self):
         self.mycursor.execute("INSERT INTO Borrower (name, address, age, created, gender) VALUES (%s,%s,%s,%s,%s)",
-                         (self.add_people_name_entry.get(), self.add_people_address_entry.get(), self.age_spinbox.get(),
-                          datetime.now(), self.gender_combobox.get()))
+                              (self.add_people_name_entry.get(), self.add_people_address_entry.get(),
+                               self.age_spinbox.get(),
+                               datetime.now(), self.gender_combobox.get()))
         self.db.commit()
         self.add_people_name_entry.delete(0, END)
 
