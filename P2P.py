@@ -1,8 +1,14 @@
 import tkinter as tk
 from datetime import datetime
 from tkinter import ttk, END, messagebox
+from databaseController import Database
 import mysql.connector as mysql
 from contentController import Content
+
+# Global variables for database
+host = "localhost"
+user = "PongoDev"
+password = "PongoDev44966874"
 
 
 class Window:
@@ -37,14 +43,9 @@ class Window:
         self.gender_combobox = None
         self.finish_add_people_b = None
         self.success_add_people_message = None
-        # Connecting to mysql database
-        self.db = mysql.connect(host="localhost",
-                                user="PongoDev",
-                                password="PongoDev44966874",
-                                database="LMSdatabase"
-                                )
 
-        self.mycursor = self.db.cursor()
+        # Instantiate Database class
+        Database()
 
         # Instantiate login window
         self.login_win()
@@ -57,34 +58,38 @@ class Window:
         self.master.configure(bg="#FFFFFF")
 
         # Login widgets
-        ttk.Label(self.master, text="Login", background="#FFFFFF").grid(column=0, row=0)
-        ttk.Label(self.master, text="User Name", background="#FFFFFF").grid(column=0, row=1)
+        ttk.Label(self.master, text="Login").grid(column=0, row=0)
+        ttk.Label(self.master, text="User Name").grid(column=0, row=1)
 
         self.login_username_entry = ttk.Entry(self.master, width=50)
         self.login_username_entry.grid(column=1, row=1)
 
-        ttk.Label(self.master, text="Password", background="#FFFFFF").grid(column=0, row=2)
+        ttk.Label(self.master, text="Password").grid(column=0, row=2)
 
         self.login_password_entry = ttk.Entry(self.master, width=50)
         self.login_password_entry.grid(column=1, row=2)
 
-        self.register_b = tk.Button(self.master, text="Register", bg="#FFFFFF", font="Arial, 15", relief="flat",
+        self.register_b = tk.Button(self.master, text="Register", font="Arial, 15", relief="flat",
                                     command=self.register_win)
         self.register_b.grid(column=0, row=3)
 
-        self.login_b = tk.Button(self.master, text="Login", bg="#FFFFFF", font="Arial, 15", relief="flat",
+        self.login_b = tk.Button(self.master, text="Login", font="Arial, 15", relief="flat",
                                  command=self.login_validation)
         self.login_b.grid(column=1, row=3)
+        # color =
+
+        Content.background_change_label(self.master, "#FFFFFF")
+        Content.background_change_button(self.master, "#FFFFFF")
 
     def register_win(self):
+        # Destroy window content
+        Content.destroy_content(self.master)
+
         # Change window attribute
         self.master.title("Register")
         self.master.geometry("500x500")
         self.master.resizable(False, False)
         self.master.configure(bg="#FFFFFF")
-
-        # Destroy window content
-        Content.destroy_content(self.master)
 
         # Creating widgets
         ttk.Label(self.master, text="Register").grid(column=0, row=0)
@@ -104,31 +109,56 @@ class Window:
         self.register_email_entry.grid(column=1, row=3)
 
         # Button for adding people to database
-        self.register_done_b = ttk.Button(self.master, text="Done", command=self.register_validation())
+        self.register_done_b = tk.Button(self.master, text="Done", font="Arial, 15", relief="flat",
+                                         command=self.register_validation)
         self.register_done_b.grid(column=0, row=4)
 
         self.register_user_name_entry.focus()
 
+        Content.background_change_label(self.master, "#FFFFFF")
+        Content.background_change_button(self.master, "#FFFFFF")
+
     def login_validation(self):
-        # Select from table user
-        self.mycursor.execute(
-            "SELECT * FROM user where username = '" + self.login_username_entry.get() + "' and password = '" +
-            self.login_password_entry.get() + "';")
-        myresult = self.mycursor.fetchone()
-        if myresult is None:
-            messagebox.showerror("Error", "Invalid User Name And Password")
+        try:
+            db1 = mysql.connect(host=host,
+                                user=user,
+                                password=password,
+                                database="lmsdatabase")
+            print("Connected to lmsdatabase")
+            mycursor = db1.cursor()
+            mycursor.execute(
+                "SELECT * FROM user where username = '" + self.login_username_entry.get() + "' and password = '" +
+                self.login_password_entry.get() + "';")
+            myresult = mycursor.fetchone()
+            if myresult is None:
+                messagebox.showerror("Error", "Invalid User Name And Password")
+            else:
+                self.create_widgets()
 
-        else:
-            self.create_widgets()
-
-        self.db.close()
-        self.mycursor.close()
+            db1.close()
+            mycursor.close()
+        except Exception as e:
+            print("Could not connect to lmsdatabase")
+            print(e)
 
     def register_validation(self):
-        self.mycursor.execute("INSERT INTO user (username, password, email) VALUES (%s,%s,%s)",
-                              (self.register_user_name_entry.get(), self.register_password_entry.get(),
-                               self.register_email_entry.get()))
-        self.db.commit()
+        try:
+            db1 = mysql.connect(host=host,
+                                user=user,
+                                password=password,
+                                database="lmsdatabase")
+            print("Connected to lmsdatabase")
+            mycursor = db1.cursor()
+            mycursor.execute("INSERT INTO user (username, password, email) VALUES (%s,%s,%s)",
+                             (self.register_user_name_entry.get(), self.register_password_entry.get(),
+                              self.register_email_entry.get()))
+            db1.commit()
+            db1.close()
+            mycursor.close()
+        except Exception as e:
+            print("Could not connect to lmsdatabase")
+            print(e)
+
         self.login_win()
         Content.delete_entry(self.master)
 
@@ -141,6 +171,7 @@ class Window:
         width = self.master.winfo_screenwidth()
         height = self.master.winfo_screenheight()
         self.master.geometry("%dx%d" % (width, height))
+        self.master.resizable(True, True)
         self.master.configure(bg="#FFFFFF")
 
         # Menu container
@@ -257,20 +288,31 @@ class Window:
         self.add_people_top.mainloop()
 
     def finish_add_people(self):
-        self.mycursor.execute("INSERT INTO Borrower (name, address, age, created, gender) VALUES (%s,%s,%s,%s,%s)",
-                              (self.add_people_name_entry.get(), self.add_people_address_entry.get(),
-                               self.age_spinbox.get(),
-                               datetime.now(), self.gender_combobox.get()))
-        self.db.commit()
-        self.add_people_name_entry.delete(0, END)
+        try:
+            db1 = mysql.connect(host=host,
+                                user=user,
+                                password=password,
+                                database="lmsdatabase")
+            print("Connected to lmsdatabase")
+            mycursor = db1.cursor()
+            mycursor.execute("INSERT INTO borrower (name, address, age, created, gender) VALUES (%s,%s,%s,%s,%s)",
+                             (self.add_people_name_entry.get(), self.add_people_address_entry.get(),
+                              self.age_spinbox.get(),
+                              datetime.now(), self.gender_combobox.get()))
+            db1.commit()
+            self.add_people_name_entry.delete(0, END)
+            db1.close()
+            mycursor.close()
+            # Show a messagebox for successfully adding people
 
-        # Show a messagebox for successfully adding people
+            self.success_add_people_message = tk.Toplevel()
+            self.success_add_people_message.geometry("200x100")
 
-        self.success_add_people_message = tk.Toplevel()
-        self.success_add_people_message.geometry("200x100")
-
-        ttk.Label(self.success_add_people_message, text="Successfully added borrower's profile!").pack()
-        self.success_add_people_message.after(1000, self.success_add_people_message.destroy)
+            ttk.Label(self.success_add_people_message, text="Successfully added borrower's profile!").pack()
+            self.success_add_people_message.after(1000, self.success_add_people_message.destroy)
+        except Exception as e:
+            print("Could not connect to lmsdatabase")
+            print(e)
 
 
 win = tk.Tk()
