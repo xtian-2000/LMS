@@ -4,6 +4,7 @@ from tkinter import ttk, END, messagebox
 from databaseController import Database
 import mysql.connector as mysql
 from contentController import Content
+import functools
 
 # Global variables for database
 host = "localhost"
@@ -20,6 +21,7 @@ class Window:
         self.login_password_entry = None
         self.register_b = None
         self.login_b = None
+        self.key = None
         self.register_top = None
         self.register_user_name_entry = None
         self.register_password_entry = None
@@ -115,7 +117,10 @@ class Window:
 
         self.register_user_name_entry.focus()
 
+        # Configure background color for Label
         Content.background_change_label(self.master, "#FFFFFF")
+
+        # Configure background color for Button
         Content.background_change_button(self.master, "#FFFFFF")
 
     def login_validation(self):
@@ -133,6 +138,14 @@ class Window:
             if myresult is None:
                 messagebox.showerror("Error", "Invalid User Name And Password")
             else:
+                mycursor.execute(
+                    "SELECT DISTINCT userid FROM user where username = '" + self.login_username_entry.get() + "';")
+
+                # Converts the tuple into integer
+                self.key = functools.reduce(lambda sub, ele: sub * 10 + ele, mycursor.fetchone())
+                print(self.key)
+
+                # Instantiate create_widgets method
                 self.create_widgets()
 
             db1.close()
@@ -155,12 +168,18 @@ class Window:
             db1.commit()
             db1.close()
             mycursor.close()
+
+            # Destroy window contents
+            Content.destroy_content(self.master)
+
+            # Initializes login_win
+            self.login_win()
+
         except Exception as e:
             print("Could not connect to lmsdatabase")
             print(e)
-
-        self.login_win()
-        Content.delete_entry(self.master)
+            # Deletes all entries from ttk.Entry
+            Content.delete_entry(self.master)
 
     def create_widgets(self):
         # Destroy window contents
@@ -175,35 +194,47 @@ class Window:
         self.master.configure(bg="#FFFFFF")
 
         # Menu container
-        self.menu_lf = tk.LabelFrame(self.master, bg="#FFFFFF")
+        self.menu_lf = tk.LabelFrame(self.master)
         self.menu_lf.pack(side="left", fill="both")
 
         # Menu buttons
-        self.home_b = tk.Button(self.menu_lf, text="Home", bg="#FFFFFF", font="Arial, 20", relief="flat",
+        self.home_b = tk.Button(self.menu_lf, text="Home", font="Arial 20", relief="flat", bg="#FFFFFF",
                                 command=self.switch_home)
         self.home_b.pack(side="top", padx=5, pady=5)
 
-        self.loan_b = tk.Button(self.menu_lf, text="Loans", bg="#FFFFFF", font="Arial, 20", relief="flat",
+        self.loan_b = tk.Button(self.menu_lf, text="Loans", font="Arial, 20", relief="flat", bg="#FFFFFF",
                                 command=self.switch_loan)
         self.loan_b.pack(side="top", padx=5)
 
-        self.profile_b = tk.Button(self.menu_lf, text="Profile", bg="#FFFFFF", font="Arial, 20", relief="flat",
+        self.profile_b = tk.Button(self.menu_lf, text="Profile", font="Arial, 20", relief="flat", bg="#FFFFFF",
                                    command=self.switch_profile)
         self.profile_b.pack(side="top", padx=5, pady=5)
 
         # Contents container
-        self.content_lf = tk.LabelFrame(self.master, bg="#FFFFFF")
+        self.content_lf = tk.LabelFrame(self.master)
         self.content_lf.pack(side="left", fill="both", expand="true")
 
         # Home container
-        self.home_lf = tk.LabelFrame(self.content_lf, bg="#FFFFFF")
+        self.home_lf = tk.LabelFrame(self.content_lf)
         self.home_lf.grid(column=0, row=0)
 
         # Dashboard container
-        self.home_dashboard_lf = tk.LabelFrame(self.home_lf, bg="#FFFFFF")
+        self.home_dashboard_lf = tk.LabelFrame(self.home_lf)
         self.home_dashboard_lf.pack(side="top")
 
-        ttk.Label(self.home_dashboard_lf, text="Dashboard", background="#FFFFFF").pack(side="top")
+        ttk.Label(self.home_dashboard_lf, text="Dashboard").pack(side="top")
+
+        # Configure background color for Label
+        Content.background_change_label(self.master, "#FFFFFF")
+
+        # Configure background color for LabelFrame
+        Content.background_change_labelframe(self.master, "#FFFFFF")
+
+        # Configure underline to none for previous button
+        self.active_state(self.home_b)
+
+        # Configure underline for current button
+        self.inactive_state(self.profile_b, self.loan_b)
 
     def switch_home(self):
         # Destroy content_lf
@@ -219,6 +250,12 @@ class Window:
 
         ttk.Label(self.home_dashboard_lf, text="Dashboard", background="#FFFFFF").pack(side="top")
 
+        # Configure underline to none for previous button
+        self.active_state(self.home_b)
+
+        # Configure underline for current button
+        self.inactive_state(self.profile_b, self.loan_b)
+
     def switch_loan(self):
         # Destroy content_lf
         Content.destroy_content(self.content_lf)
@@ -228,6 +265,12 @@ class Window:
         self.loan_lf.grid(column=0, row=0)
 
         ttk.Label(self.loan_lf, text="Loans", background="#FFFFFF").pack(side="top")
+
+        # Configure underline to none for previous button
+        self.active_state(self.loan_b)
+
+        # Configure underline for current button
+        self.inactive_state(self.profile_b, self.home_b)
 
     def switch_profile(self):
         # Destroy content_lf
@@ -245,6 +288,12 @@ class Window:
 
         self.add_people_b = tk.Button(self.profile_buttons_lf, text="add people", command=self.add_people)
         self.add_people_b.pack(side="top")
+
+        # Configure underline to none for previous button
+        self.active_state(self.profile_b)
+
+        # Configure underline for current button
+        self.inactive_state(self.loan_b, self.home_b)
 
     def add_people(self):
         # Create instance
@@ -295,24 +344,31 @@ class Window:
                                 database="lmsdatabase")
             print("Connected to lmsdatabase")
             mycursor = db1.cursor()
-            mycursor.execute("INSERT INTO borrower (name, address, age, created, gender) VALUES (%s,%s,%s,%s,%s)",
-                             (self.add_people_name_entry.get(), self.add_people_address_entry.get(),
-                              self.age_spinbox.get(),
-                              datetime.now(), self.gender_combobox.get()))
+            mycursor.execute("INSERT INTO borrower (userid, name, address, age, created, gender) VALUES (%s, %s,%s,"
+                             "%s,%s,%s)",
+                             (self.key, self.add_people_name_entry.get(), self.add_people_address_entry.get(),
+                              self.age_spinbox.get(), datetime.now(), self.gender_combobox.get()))
             db1.commit()
-            self.add_people_name_entry.delete(0, END)
             db1.close()
             mycursor.close()
+
+            # Deletes all entries from ttk.Entry
+            Content.delete_entry(self.master)
+
             # Show a messagebox for successfully adding people
-
-            self.success_add_people_message = tk.Toplevel()
-            self.success_add_people_message.geometry("200x100")
-
-            ttk.Label(self.success_add_people_message, text="Successfully added borrower's profile!").pack()
-            self.success_add_people_message.after(1000, self.success_add_people_message.destroy)
+            messagebox.showinfo("Borrower's Profile", "Profile added successfully")
         except Exception as e:
             print("Could not connect to lmsdatabase")
             print(e)
+
+    @staticmethod
+    def active_state(widget):
+        widget.configure(font="arial 20 underline")
+
+    @staticmethod
+    def inactive_state(widget1, widget2):
+        widget1.configure(font="arial 20")
+        widget2.configure(font="arial 20")
 
 
 win = tk.Tk()
