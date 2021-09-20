@@ -37,5 +37,6 @@ class Content(tk.Tk, ttk.LabelFrame, ttk.Entry, ttk.Label, tk.Button):
                 widget.configure(font="arial 20 underline")
                 print("success")
 
-    def underline_button(self, widget=tk.Button):
+    @staticmethod
+    def underline_button(widget=tk.Button):
         widget.configure(font="arial 20 underline")

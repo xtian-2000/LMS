@@ -1,6 +1,6 @@
 import tkinter as tk
 from datetime import datetime
-from tkinter import ttk, END, messagebox
+from tkinter import ttk, messagebox
 from databaseController import Database
 import mysql.connector as mysql
 from contentController import Content
@@ -17,9 +17,12 @@ class Window:
     def __init__(self, master):
         # Instance attributes define within init scope conforming to PEP standards
         self.master = master
+        self.login_lf = ttk.LabelFrame
         self.login_username_entry = None
         self.login_password_entry = None
+        self.register_lf = ttk.LabelFrame
         self.register_b = None
+        self.register_cancel_b = None
         self.login_b = None
         self.key = None
         self.register_top = None
@@ -53,75 +56,94 @@ class Window:
         self.login_win()
 
     def login_win(self):
+        # Destroy window contents
+        Content.destroy_content(self.master)
+
         # Create window attribute
-        self.master.title("Login")
-        self.master.geometry("500x250")
-        self.master.resizable(False, False)
-        self.master.configure(bg="#FFFFFF")
+        self.master.title("P2P Lending Management System")
+        width = self.master.winfo_screenwidth()
+        height = self.master.winfo_screenheight()
+        self.master.geometry("%dx%d" % (width, height))
+        self.master.resizable(True, True)
+        self.master.configure(bg="#4C8404")
+
+        # Login container
+        self.login_lf = tk.LabelFrame(self.master, padx=20, pady=20, relief="flat")
+        self.login_lf.pack(anchor="center", expand=True)
 
         # Login widgets
-        ttk.Label(self.master, text="Login").grid(column=0, row=0)
-        ttk.Label(self.master, text="User Name").grid(column=0, row=1)
+        ttk.Label(self.login_lf, text="Log in", font="OpenSans, 24", justify="left").grid(column=0, row=0, pady=10)
 
-        self.login_username_entry = ttk.Entry(self.master, width=50)
-        self.login_username_entry.grid(column=1, row=1)
+        ttk.Label(self.login_lf, text="User Name", font="OpenSans, 10", justify="left").grid(column=0, row=1, pady=10)
 
-        ttk.Label(self.master, text="Password").grid(column=0, row=2)
+        self.login_username_entry = ttk.Entry(self.login_lf, width=40)
+        self.login_username_entry.grid(column=1, row=1, pady=10)
 
-        self.login_password_entry = ttk.Entry(self.master, width=50)
-        self.login_password_entry.grid(column=1, row=2)
+        # Focuses cursor on username entry
+        self.login_username_entry.focus()
 
-        self.register_b = tk.Button(self.master, text="Register", font="Arial, 15", relief="flat",
-                                    command=self.register_win)
-        self.register_b.grid(column=0, row=3)
+        ttk.Label(self.login_lf, text="Password", font="OpenSans, 10", justify="left").grid(column=0, row=2, pady=10)
 
-        self.login_b = tk.Button(self.master, text="Login", font="Arial, 15", relief="flat",
-                                 command=self.login_validation)
-        self.login_b.grid(column=1, row=3)
-        # color =
+        self.login_password_entry = ttk.Entry(self.login_lf, show="*", width=40)
+        self.login_password_entry.grid(column=1, row=2, pady=10)
 
-        Content.background_change_label(self.master, "#FFFFFF")
-        Content.background_change_button(self.master, "#FFFFFF")
+        self.register_b = tk.Button(self.login_lf, text="                              Register                        "
+                                                        "       ", font="OpenSans, 12", fg="#4C8404", bg="#FFFFFF",
+                                    relief="flat", command=self.register_win)
+        self.register_b.grid(column=0, row=3, columnspan=2, pady=10)
+
+        self.login_b = tk.Button(self.login_lf, text="                                Log in                           "
+                                                     "      ", font="OpenSans, 12", fg="#FFFFFF", bg="#4C8404",
+                                 relief="flat", command=self.login_validation)
+        self.login_b.grid(column=0, row=4, columnspan=2, pady=10)
+
+        Content.background_change_labelframe(self.master, "#EBEBEB")
+        Content.background_change_label(self.login_lf, "#EBEBEB")
 
     def register_win(self):
         # Destroy window content
         Content.destroy_content(self.master)
 
-        # Change window attribute
-        self.master.title("Register")
-        self.master.geometry("500x500")
-        self.master.resizable(False, False)
-        self.master.configure(bg="#FFFFFF")
+        # Register container
+        self.register_lf = tk.LabelFrame(self.master, padx=20, pady=20, relief="flat")
+        self.register_lf.pack(anchor="center", expand=True)
 
         # Creating widgets
-        ttk.Label(self.master, text="Register").grid(column=0, row=0)
-        ttk.Label(self.master, text="User Name").grid(column=0, row=1)
+        ttk.Label(self.register_lf, text="Register", font="OpenSans, 24", justify="left").grid(column=0, row=0, pady=10)
 
-        self.register_user_name_entry = ttk.Entry(self.master, width=50)
-        self.register_user_name_entry.grid(column=1, row=1)
+        ttk.Label(self.register_lf, text="User Name", justify="left").grid(column=0, row=1, pady=10)
 
-        ttk.Label(self.master, text="Password").grid(column=0, row=2)
+        self.register_user_name_entry = ttk.Entry(self.register_lf, width=40)
+        self.register_user_name_entry.grid(column=1, row=1, pady=10)
 
-        self.register_password_entry = ttk.Entry(self.master, width=50)
-        self.register_password_entry.grid(column=1, row=2)
-
-        ttk.Label(self.master, text="Email").grid(column=0, row=3)
-
-        self.register_email_entry = ttk.Entry(self.master, width=50)
-        self.register_email_entry.grid(column=1, row=3)
-
-        # Button for adding people to database
-        self.register_done_b = tk.Button(self.master, text="Done", font="Arial, 15", relief="flat",
-                                         command=self.register_validation)
-        self.register_done_b.grid(column=0, row=4)
-
+        # Focuses cursor on username entry
         self.register_user_name_entry.focus()
 
-        # Configure background color for Label
-        Content.background_change_label(self.master, "#FFFFFF")
+        ttk.Label(self.register_lf, text="Password", justify="left").grid(column=0, row=2, pady=10)
 
-        # Configure background color for Button
-        Content.background_change_button(self.master, "#FFFFFF")
+        self.register_password_entry = ttk.Entry(self.register_lf, width=40)
+        self.register_password_entry.grid(column=1, row=2, pady=10)
+
+        ttk.Label(self.register_lf, text="Email", justify="left").grid(column=0, row=3, pady=10)
+
+        self.register_email_entry = ttk.Entry(self.register_lf, width=40)
+        self.register_email_entry.grid(column=1, row=3, pady=10)
+
+        # Button for cancelling registration
+        self.register_cancel_b = tk.Button(self.register_lf, text="                                Cancel              "
+                                                                  "                   ", font="OpenSans, 12",
+                                           relief="flat", fg="#4C8404", bg="#FFFFFF", command=self.login_win)
+        self.register_cancel_b.grid(column=0, row=4, columnspan=2, pady=10)
+
+        # Button for adding people to database
+        self.register_done_b = tk.Button(self.register_lf, text="                               Register               "
+                                                                "                 ", font="OpenSans, 12", relief="flat",
+                                         fg="#FFFFFF", bg="#4C8404", command=self.register_validation)
+        self.register_done_b.grid(column=0, row=5, columnspan=2, pady=10)
+
+        Content.background_change_labelframe(self.master, "#EBEBEB")
+
+        Content.background_change_label(self.register_lf, "#EBEBEB")
 
     def login_validation(self):
         try:
@@ -185,14 +207,6 @@ class Window:
         # Destroy window contents
         Content.destroy_content(self.master)
 
-        # Change window attribute
-        self.master.title("P2P Lending Management System")
-        width = self.master.winfo_screenwidth()
-        height = self.master.winfo_screenheight()
-        self.master.geometry("%dx%d" % (width, height))
-        self.master.resizable(True, True)
-        self.master.configure(bg="#FFFFFF")
-
         # Menu container
         self.menu_lf = tk.LabelFrame(self.master)
         self.menu_lf.pack(side="left", fill="both")
@@ -214,27 +228,8 @@ class Window:
         self.content_lf = tk.LabelFrame(self.master)
         self.content_lf.pack(side="left", fill="both", expand="true")
 
-        # Home container
-        self.home_lf = tk.LabelFrame(self.content_lf)
-        self.home_lf.grid(column=0, row=0)
-
-        # Dashboard container
-        self.home_dashboard_lf = tk.LabelFrame(self.home_lf)
-        self.home_dashboard_lf.pack(side="top")
-
-        ttk.Label(self.home_dashboard_lf, text="Dashboard").pack(side="top")
-
-        # Configure background color for Label
-        Content.background_change_label(self.master, "#FFFFFF")
-
-        # Configure background color for LabelFrame
-        Content.background_change_labelframe(self.master, "#FFFFFF")
-
-        # Configure underline to none for previous button
-        self.active_state(self.home_b)
-
-        # Configure underline for current button
-        self.inactive_state(self.profile_b, self.loan_b)
+        # Initialize switch_home method for the default content
+        self.switch_home()
 
     def switch_home(self):
         # Destroy content_lf
