@@ -18,6 +18,7 @@ class Window:
         # Instance attributes define within init scope conforming to PEP standards
         self.master = master
         self.login_lf = ttk.LabelFrame
+        self.login_l = None
         self.login_username_entry = None
         self.login_password_entry = None
         self.register_lf = ttk.LabelFrame
@@ -31,9 +32,10 @@ class Window:
         self.register_email_entry = None
         self.register_done_b = None
         self.menu_lf = None
-        self.home_b = None
-        self.loan_b = None
-        self.profile_b = None
+        self.home_b = tk.Button
+        self.loan_b = tk.Button
+        self.profile_b = tk.Button
+        self.logout_b = tk.Button
         self.content_lf = None
         self.home_lf = None
         self.home_dashboard_lf = None
@@ -42,6 +44,7 @@ class Window:
         self.profile_buttons_lf = None
         self.add_people_b = None
         self.add_people_top = None
+        self.add_people_lf = None
         self.add_people_name_entry = None
         self.add_people_address_entry = None
         self.age_spinbox = None
@@ -72,9 +75,11 @@ class Window:
         self.login_lf.pack(anchor="center", expand=True)
 
         # Login widgets
-        ttk.Label(self.login_lf, text="Log in", font="OpenSans, 24", justify="left").grid(column=0, row=0, pady=10)
+        self.login_l = ttk.Label(self.login_lf, text="Log in", font="OpenSans, 20")
+        self.login_l.grid(column=0, row=0, pady=10)
 
-        ttk.Label(self.login_lf, text="User Name", font="OpenSans, 10", justify="left").grid(column=0, row=1, pady=10)
+        ttk.Label(self.login_lf, text="User Name", font="OpenSans, 10").grid(column=0, row=1, pady=10,
+                                                                             sticky="w")
 
         self.login_username_entry = ttk.Entry(self.login_lf, width=40)
         self.login_username_entry.grid(column=1, row=1, pady=10)
@@ -82,7 +87,8 @@ class Window:
         # Focuses cursor on username entry
         self.login_username_entry.focus()
 
-        ttk.Label(self.login_lf, text="Password", font="OpenSans, 10", justify="left").grid(column=0, row=2, pady=10)
+        ttk.Label(self.login_lf, text="Password", font="OpenSans, 10").grid(column=0, row=2, pady=10,
+                                                                            sticky="w")
 
         self.login_password_entry = ttk.Entry(self.login_lf, show="*", width=40)
         self.login_password_entry.grid(column=1, row=2, pady=10)
@@ -109,9 +115,9 @@ class Window:
         self.register_lf.pack(anchor="center", expand=True)
 
         # Creating widgets
-        ttk.Label(self.register_lf, text="Register", font="OpenSans, 24", justify="left").grid(column=0, row=0, pady=10)
+        ttk.Label(self.register_lf, text="Register", font="OpenSans, 24").grid(column=0, row=0, pady=10)
 
-        ttk.Label(self.register_lf, text="User Name", justify="left").grid(column=0, row=1, pady=10)
+        ttk.Label(self.register_lf, text="User Name").grid(column=0, row=1, pady=10, sticky="w")
 
         self.register_user_name_entry = ttk.Entry(self.register_lf, width=40)
         self.register_user_name_entry.grid(column=1, row=1, pady=10)
@@ -119,12 +125,12 @@ class Window:
         # Focuses cursor on username entry
         self.register_user_name_entry.focus()
 
-        ttk.Label(self.register_lf, text="Password", justify="left").grid(column=0, row=2, pady=10)
+        ttk.Label(self.register_lf, text="Password").grid(column=0, row=2, pady=10, sticky="w")
 
         self.register_password_entry = ttk.Entry(self.register_lf, width=40)
         self.register_password_entry.grid(column=1, row=2, pady=10)
 
-        ttk.Label(self.register_lf, text="Email", justify="left").grid(column=0, row=3, pady=10)
+        ttk.Label(self.register_lf, text="Email").grid(column=0, row=3, pady=10, sticky="w")
 
         self.register_email_entry = ttk.Entry(self.register_lf, width=40)
         self.register_email_entry.grid(column=1, row=3, pady=10)
@@ -208,24 +214,28 @@ class Window:
         Content.destroy_content(self.master)
 
         # Menu container
-        self.menu_lf = tk.LabelFrame(self.master)
+        self.menu_lf = tk.LabelFrame(self.master, bg="#2C441D", relief="flat")
         self.menu_lf.pack(side="left", fill="both")
 
         # Menu buttons
-        self.home_b = tk.Button(self.menu_lf, text="Home", font="Arial 20", relief="flat", bg="#FFFFFF",
-                                command=self.switch_home)
-        self.home_b.pack(side="top", padx=5, pady=5)
+        self.home_b = tk.Button(self.menu_lf, text="Home", font="OpenSans 20", relief="flat", bg="#2C441D",
+                                fg="#FFFFFF", command=self.switch_home)
+        self.home_b.pack(side="top", fill="both")
 
-        self.loan_b = tk.Button(self.menu_lf, text="Loans", font="Arial, 20", relief="flat", bg="#FFFFFF",
-                                command=self.switch_loan)
-        self.loan_b.pack(side="top", padx=5)
+        self.loan_b = tk.Button(self.menu_lf, text="Loans", font="OpenSans, 20", relief="flat", bg="#2C441D",
+                                fg="#FFFFFF", command=self.switch_loan)
+        self.loan_b.pack(side="top", fill="both")
 
-        self.profile_b = tk.Button(self.menu_lf, text="Profile", font="Arial, 20", relief="flat", bg="#FFFFFF",
-                                   command=self.switch_profile)
-        self.profile_b.pack(side="top", padx=5, pady=5)
+        self.profile_b = tk.Button(self.menu_lf, text="Profile", font="OpenSans, 20", relief="flat", bg="#2C441D",
+                                   fg="#FFFFFF", command=self.switch_profile)
+        self.profile_b.pack(side="top", fill="both")
+
+        self.logout_b = tk.Button(self.menu_lf, text="Logout", font="OpenSans, 10", relief="flat", bg="#2C441D",
+                                  fg="#FFFFFF", highlightcolor="#2C441D", command=self.login_win)
+        self.logout_b.pack(side="bottom", fill="both", pady=20)
 
         # Contents container
-        self.content_lf = tk.LabelFrame(self.master)
+        self.content_lf = tk.LabelFrame(self.master, relief="flat")
         self.content_lf.pack(side="left", fill="both", expand="true")
 
         # Initialize switch_home method for the default content
@@ -236,11 +246,11 @@ class Window:
         Content.destroy_content(self.content_lf)
 
         # Home container
-        self.home_lf = tk.LabelFrame(self.content_lf, bg="#FFFFFF")
+        self.home_lf = tk.LabelFrame(self.content_lf, relief="flat")
         self.home_lf.grid(column=0, row=0)
 
         # Home dashboard container
-        self.home_dashboard_lf = tk.LabelFrame(self.home_lf, bg="#FFFFFF")
+        self.home_dashboard_lf = tk.LabelFrame(self.home_lf, bg="#FFFFFF", relief="flat")
         self.home_dashboard_lf.pack(side="top")
 
         ttk.Label(self.home_dashboard_lf, text="Dashboard", background="#FFFFFF").pack(side="top")
@@ -256,7 +266,7 @@ class Window:
         Content.destroy_content(self.content_lf)
 
         # Loan container
-        self.loan_lf = tk.LabelFrame(self.content_lf, bg="#FFFFFF")
+        self.loan_lf = tk.LabelFrame(self.content_lf, bg="#FFFFFF", relief="flat")
         self.loan_lf.grid(column=0, row=0)
 
         ttk.Label(self.loan_lf, text="Loans", background="#FFFFFF").pack(side="top")
@@ -272,17 +282,17 @@ class Window:
         Content.destroy_content(self.content_lf)
 
         # Profile container
-        self.profile_lf = tk.LabelFrame(self.content_lf, bg="#FFFFFF")
-        self.profile_lf.grid(column=0, row=0)
-
-        ttk.Label(self.profile_lf, text="Profile", background="#FFFFFF").pack(side="top")
+        self.profile_lf = tk.LabelFrame(self.content_lf, bg="#EBEBEB", relief="flat")
+        self.profile_lf.pack(fill="both", expand=True)
 
         # Profile Button Container
-        self.profile_buttons_lf = tk.LabelFrame(self.profile_lf, bg="#FFFFFF")
-        self.profile_buttons_lf.pack(side="top")
+        self.profile_buttons_lf = tk.LabelFrame(self.profile_lf, bg="#FFFFFF", relief="flat")
+        self.profile_buttons_lf.pack(side="top", fill="x")
 
-        self.add_people_b = tk.Button(self.profile_buttons_lf, text="add people", command=self.add_people)
-        self.add_people_b.pack(side="top")
+        # Button for opening form for adding borrower
+        self.add_people_b = tk.Button(self.profile_buttons_lf, text="Add people", font="OpenSans, 10", fg="#FFFFFF",
+                                      bg="#4C8404", relief="flat", command=self.add_people)
+        self.add_people_b.pack(side="left", padx=5, pady=5)
 
         # Configure underline to none for previous button
         self.active_state(self.profile_b)
@@ -291,43 +301,53 @@ class Window:
         self.inactive_state(self.loan_b, self.home_b)
 
     def add_people(self):
+        # Disable buttons
+        Content.disable_button(self.menu_lf)
+        Content.disable_button(self.profile_buttons_lf)
+
         # Create instance
         self.add_people_top = tk.Toplevel()
-        self.add_people_top.geometry("500x500")
-        self.add_people_top.title("Add people")
+        self.add_people_top.geometry("500x300")
+        self.add_people_top.title("Borrower's Profile")
+        self.add_people_top.configure(bg="#4C8404")
+
+        # Register container
+        self.add_people_lf = tk.LabelFrame(self.add_people_top, padx=20, pady=20, relief="flat")
+        self.add_people_lf.pack(anchor="center", expand=True)
 
         # Creating widgets
-        ttk.Label(self.add_people_top, text="Borrower's Profile").grid(column=0, row=0)
-        ttk.Label(self.add_people_top, text="Name").grid(column=0, row=1)
+        ttk.Label(self.add_people_lf, text="Name", font="OpenSans, 10").grid(column=0, row=0, padx=5, pady=5,
+                                                                             sticky="w")
 
-        self.add_people_name_entry = ttk.Entry(self.add_people_top, width=50)
-        self.add_people_name_entry.grid(column=1, row=1)
+        self.add_people_name_entry = ttk.Entry(self.add_people_lf, width=50)
+        self.add_people_name_entry.grid(column=1, row=0, padx=5, pady=5, sticky="w")
 
-        ttk.Label(self.add_people_top, text="Address").grid(column=0, row=2)
+        # Focuses cursor on add name entry
+        self.add_people_name_entry.focus()
 
-        self.add_people_address_entry = ttk.Entry(self.add_people_top, width=50)
-        self.add_people_address_entry.grid(column=1, row=2)
+        ttk.Label(self.add_people_lf, text="Address", font="OpenSans, 10").grid(column=0, row=1, padx=5, pady=5,
+                                                                                sticky="w")
 
-        ttk.Label(self.add_people_top, text="Age").grid(column=0, row=3)
+        self.add_people_address_entry = ttk.Entry(self.add_people_lf, width=50)
+        self.add_people_address_entry.grid(column=1, row=1, padx=5, pady=5, sticky="w")
 
-        self.age_spinbox = ttk.Spinbox(self.add_people_top, from_=0, to=200, width=5)
-        self.age_spinbox.grid(column=1, row=3)
+        ttk.Label(self.add_people_lf, text="Age", font="OpenSans, 10").grid(column=0, row=2, padx=5, pady=5, sticky="w")
+
+        self.age_spinbox = ttk.Spinbox(self.add_people_lf, from_=0, to=200, width=5)
+        self.age_spinbox.grid(column=1, row=2, padx=5, pady=5, sticky="w")
 
         # Combobox for gender
-
-        ttk.Label(self.add_people_top, text="Gender").grid(column=0, row=4)
-        self.gender_combobox = ttk.Combobox(self.add_people_top, width=10)
+        ttk.Label(self.add_people_lf, text="Gender", font="OpenSans, 10").grid(column=0, row=3, padx=5, pady=5,
+                                                                               sticky="w")
+        self.gender_combobox = ttk.Combobox(self.add_people_lf, width=10)
         self.gender_combobox['values'] = "Male", "Female", "Others"
-        self.gender_combobox.grid(column=1, row=4)
+        self.gender_combobox.grid(column=1, row=3, padx=5, pady=5, sticky="w")
         self.gender_combobox.current(0)
 
         # Button for adding people to database
-
-        self.finish_add_people_b = ttk.Button(self.add_people_top, text="Add",
-                                              command=self.finish_add_people)
-        self.finish_add_people_b.grid(column=0, row=5)
-
-        self.add_people_name_entry.focus()
+        self.finish_add_people_b = tk.Button(self.add_people_lf, text="Add Borrower", font="OpenSans, 10", fg="#FFFFFF",
+                                             bg="#4C8404", relief="flat", command=self.finish_add_people)
+        self.finish_add_people_b.grid(column=0, row=4, padx=5, pady=5)
 
         self.add_people_top.mainloop()
 
@@ -358,12 +378,12 @@ class Window:
 
     @staticmethod
     def active_state(widget):
-        widget.configure(font="arial 20 underline")
+        widget.configure(bg="#4C8404")
 
     @staticmethod
     def inactive_state(widget1, widget2):
-        widget1.configure(font="arial 20")
-        widget2.configure(font="arial 20")
+        widget1.configure(bg="#2C441D")
+        widget2.configure(bg="#2C441D")
 
 
 win = tk.Tk()

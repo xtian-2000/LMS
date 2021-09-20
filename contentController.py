@@ -5,7 +5,7 @@ from tkinter import ttk
 # Create class that handles destroying, and disabling contents of main window
 
 
-class Content(tk.Tk, ttk.LabelFrame, ttk.Entry, ttk.Label, tk.Button):
+class Content(tk.Tk, ttk.LabelFrame, ttk.Entry, ttk.Label, tk.Button, tk.Toplevel):
 
     def destroy_content(self):
         for child in self.winfo_children():
@@ -31,11 +31,10 @@ class Content(tk.Tk, ttk.LabelFrame, ttk.Entry, ttk.Label, tk.Button):
             if isinstance(widget, tk.Button):
                 widget.configure(bg=bg)
 
-    def underline_button_none(self):
-        for widget in self.winfo_children():
-            if isinstance(widget, tk.Button):
-                widget.configure(font="arial 20 underline")
-                print("success")
+    def disable_button(self):
+        for child in self.winfo_children():
+            if isinstance(child, tk.Button):
+                child.configure(state="disable")
 
     @staticmethod
     def underline_button(widget=tk.Button):
