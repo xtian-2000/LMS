@@ -26,6 +26,7 @@ class Window:
         self.register_cancel_b = None
         self.login_b = None
         self.key = None
+        self.key_str = str
         self.register_top = None
         self.register_user_name_entry = None
         self.register_password_entry = None
@@ -64,14 +65,8 @@ class Window:
         # Instantiate login window
         self.login_win()
 
-        # Configure styles for widgets
-        self.style = ttk.Style()
-        self.style.configure("Treeview",
-                             background="#D3D3D3",
-                             foreground="black",
-                             rowheight=20,
-                             fieldbackground="#FFFFFF")
-        self.style.map("Treeview", background=[("selected", "green")])
+        # Initialize class for default styles
+        Content.widget_styles(self.master)
 
     def login_win(self):
         # Destroy window contents
@@ -90,11 +85,9 @@ class Window:
         self.login_lf.pack(anchor="center", expand=True)
 
         # Login widgets
-        self.login_l = ttk.Label(self.login_lf, text="Log in", font="OpenSans, 20")
-        self.login_l.grid(column=0, row=0, pady=10)
+        ttk.Label(self.login_lf, text="Log in", style="h1.TLabel").grid(column=0, row=0, pady=10)
 
-        ttk.Label(self.login_lf, text="User Name", font="OpenSans, 10").grid(column=0, row=1, pady=10,
-                                                                             sticky="w")
+        ttk.Label(self.login_lf, text="User Name", style="h3.TLabel").grid(column=0, row=1, pady=10, sticky="w")
 
         self.login_username_entry = ttk.Entry(self.login_lf, width=40)
         self.login_username_entry.grid(column=1, row=1, pady=10)
@@ -102,8 +95,7 @@ class Window:
         # Focuses cursor on username entry
         self.login_username_entry.focus()
 
-        ttk.Label(self.login_lf, text="Password", font="OpenSans, 10").grid(column=0, row=2, pady=10,
-                                                                            sticky="w")
+        ttk.Label(self.login_lf, text="Password", style="h3.TLabel").grid(column=0, row=2, pady=10, sticky="w")
 
         self.login_password_entry = ttk.Entry(self.login_lf, show="*", width=40)
         self.login_password_entry.grid(column=1, row=2, pady=10)
@@ -130,9 +122,9 @@ class Window:
         self.register_lf.pack(anchor="center", expand=True)
 
         # Creating widgets
-        ttk.Label(self.register_lf, text="Register", font="OpenSans, 24").grid(column=0, row=0, pady=10)
+        ttk.Label(self.register_lf, text="Register", style="h1.TLabel").grid(column=0, row=0, columnspan=1, pady=10)
 
-        ttk.Label(self.register_lf, text="User Name").grid(column=0, row=1, pady=10, sticky="w")
+        ttk.Label(self.register_lf, text="User Name", style="h3.TLabel").grid(column=0, row=1, pady=10, sticky="w")
 
         self.register_user_name_entry = ttk.Entry(self.register_lf, width=40)
         self.register_user_name_entry.grid(column=1, row=1, pady=10)
@@ -140,12 +132,12 @@ class Window:
         # Focuses cursor on username entry
         self.register_user_name_entry.focus()
 
-        ttk.Label(self.register_lf, text="Password").grid(column=0, row=2, pady=10, sticky="w")
+        ttk.Label(self.register_lf, text="Password", style="h3.TLabel").grid(column=0, row=2, pady=10, sticky="w")
 
         self.register_password_entry = ttk.Entry(self.register_lf, width=40)
         self.register_password_entry.grid(column=1, row=2, pady=10)
 
-        ttk.Label(self.register_lf, text="Email").grid(column=0, row=3, pady=10, sticky="w")
+        ttk.Label(self.register_lf, text="Email", style="h3.TLabel").grid(column=0, row=3, pady=10, sticky="w")
 
         self.register_email_entry = ttk.Entry(self.register_lf, width=40)
         self.register_email_entry.grid(column=1, row=3, pady=10)
@@ -181,7 +173,8 @@ class Window:
 
                 # Converts the tuple into integer
                 self.key = functools.reduce(lambda sub, ele: sub * 10 + ele, self.mycursor.fetchone())
-                print(self.key)
+                self.key_str = str(self.key)
+                print(self.key_str)
 
                 # Instantiate create_widgets method
                 self.create_widgets()
@@ -326,7 +319,8 @@ class Window:
 
         try:
             self.database_connect()
-            self.mycursor.execute("SELECT name, address, age, gender FROM borrower")
+            self.mycursor.execute("SELECT name, address, age, gender FROM borrower where userid = '" + self.key_str +
+                                  "';")
             borrowers = self.mycursor.fetchall()
             print(borrowers)
 
@@ -337,8 +331,8 @@ class Window:
             for record in borrowers:
                 if count % 2 == 0:
                     self.profile_borrower_lb.insert(parent="", index="end", iid=count, text="",
-                                                    values=(record[0], record[1], record[2], record[3])
-                                                    , tags=("oddrow",))
+                                                    values=(record[0], record[1], record[2], record[3]),
+                                                    tags=("oddrow",))
                 else:
                     self.profile_borrower_lb.insert(parent="", index="end", iid=count, text="",
                                                     values=(record[0], record[1], record[2], record[3]),
