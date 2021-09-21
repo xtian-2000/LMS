@@ -73,3 +73,5 @@ class Database:
         except Exception as e:
             print("'borrower' table could not be created")
             print(e)
+
+

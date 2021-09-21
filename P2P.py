@@ -42,6 +42,9 @@ class Window:
         self.loan_lf = None
         self.profile_lf = None
         self.profile_buttons_lf = None
+        self.profile_database_view_lf = None
+        self.column_borrower_header = None
+        self.profile_borrower_lb = ttk.Treeview
         self.add_people_b = None
         self.add_people_top = None
         self.add_people_lf = None
@@ -50,13 +53,25 @@ class Window:
         self.age_spinbox = None
         self.gender_combobox = None
         self.finish_add_people_b = None
+        self.cancel_add_people_b = None
         self.success_add_people_message = None
+        self.db1 = None
+        self.mycursor = None
 
         # Instantiate Database class
         Database()
 
         # Instantiate login window
         self.login_win()
+
+        # Configure styles for widgets
+        self.style = ttk.Style()
+        self.style.configure("Treeview",
+                             background="#D3D3D3",
+                             foreground="black",
+                             rowheight=20,
+                             fieldbackground="#FFFFFF")
+        self.style.map("Treeview", background=[("selected", "green")])
 
     def login_win(self):
         # Destroy window contents
@@ -153,49 +168,39 @@ class Window:
 
     def login_validation(self):
         try:
-            db1 = mysql.connect(host=host,
-                                user=user,
-                                password=password,
-                                database="lmsdatabase")
-            print("Connected to lmsdatabase")
-            mycursor = db1.cursor()
-            mycursor.execute(
+            self.database_connect()
+            self.mycursor.execute(
                 "SELECT * FROM user where username = '" + self.login_username_entry.get() + "' and password = '" +
                 self.login_password_entry.get() + "';")
-            myresult = mycursor.fetchone()
+            myresult = self.mycursor.fetchone()
             if myresult is None:
                 messagebox.showerror("Error", "Invalid User Name And Password")
             else:
-                mycursor.execute(
+                self.mycursor.execute(
                     "SELECT DISTINCT userid FROM user where username = '" + self.login_username_entry.get() + "';")
 
                 # Converts the tuple into integer
-                self.key = functools.reduce(lambda sub, ele: sub * 10 + ele, mycursor.fetchone())
+                self.key = functools.reduce(lambda sub, ele: sub * 10 + ele, self.mycursor.fetchone())
                 print(self.key)
 
                 # Instantiate create_widgets method
                 self.create_widgets()
 
-            db1.close()
-            mycursor.close()
+            self.db1.close()
+            self.mycursor.close()
         except Exception as e:
             print("Could not connect to lmsdatabase")
             print(e)
 
     def register_validation(self):
         try:
-            db1 = mysql.connect(host=host,
-                                user=user,
-                                password=password,
-                                database="lmsdatabase")
-            print("Connected to lmsdatabase")
-            mycursor = db1.cursor()
-            mycursor.execute("INSERT INTO user (username, password, email) VALUES (%s,%s,%s)",
-                             (self.register_user_name_entry.get(), self.register_password_entry.get(),
-                              self.register_email_entry.get()))
-            db1.commit()
-            db1.close()
-            mycursor.close()
+            self.database_connect()
+            self.mycursor.execute("INSERT INTO user (username, password, email) VALUES (%s,%s,%s)",
+                                  (self.register_user_name_entry.get(), self.register_password_entry.get(),
+                                   self.register_email_entry.get()))
+            self.db1.commit()
+            self.db1.close()
+            self.mycursor.close()
 
             # Destroy window contents
             Content.destroy_content(self.master)
@@ -294,6 +299,57 @@ class Window:
                                       bg="#4C8404", relief="flat", command=self.add_people)
         self.add_people_b.pack(side="left", padx=5, pady=5)
 
+        # Profile view database container
+        self.profile_database_view_lf = tk.LabelFrame(self.profile_lf, bg="#FFFFFF", relief="flat")
+        self.profile_database_view_lf.pack(side="top", pady=20, fill="both")
+
+        self.profile_borrower_lb = ttk.Treeview(self.profile_database_view_lf)
+
+        # Define column
+        self.profile_borrower_lb["columns"] = ("Name", "Address", "Age", "Gender")
+
+        # Format column
+        self.profile_borrower_lb.column("#0", width=0, stretch="no")
+        self.profile_borrower_lb.column("Name", anchor="w", width=120)
+        self.profile_borrower_lb.column("Address", anchor="w", width=120)
+        self.profile_borrower_lb.column("Age", anchor="center", width=80)
+        self.profile_borrower_lb.column("Gender", anchor="center", width=80)
+
+        # Create headings
+        self.profile_borrower_lb.heading("#0", text="", anchor="w")
+        self.profile_borrower_lb.heading("Name", text="Name", anchor="w")
+        self.profile_borrower_lb.heading("Address", text="Address", anchor="w")
+        self.profile_borrower_lb.heading("Age", text="Age", anchor="center")
+        self.profile_borrower_lb.heading("Gender", text="Gender", anchor="center")
+
+        self.profile_borrower_lb.pack(side="left", padx=20, pady=20, fill="both", expand=True)
+
+        try:
+            self.database_connect()
+            self.mycursor.execute("SELECT name, address, age, gender FROM borrower")
+            borrowers = self.mycursor.fetchall()
+            print(borrowers)
+
+            # Create configure for striped rows
+            self.profile_borrower_lb.tag_configure("oddrow", background="#FFFFFF")
+            self.profile_borrower_lb.tag_configure("evenrow", background="#FAFAFA")
+            count = 0
+            for record in borrowers:
+                if count % 2 == 0:
+                    self.profile_borrower_lb.insert(parent="", index="end", iid=count, text="",
+                                                    values=(record[0], record[1], record[2], record[3])
+                                                    , tags=("oddrow",))
+                else:
+                    self.profile_borrower_lb.insert(parent="", index="end", iid=count, text="",
+                                                    values=(record[0], record[1], record[2], record[3]),
+                                                    tags=("evenrow",))
+                count += 1
+
+            self.db1.close()
+        except Exception as e:
+            print("Could not connect to lmsdatabase")
+            print(e)
+
         # Configure underline to none for previous button
         self.active_state(self.profile_b)
 
@@ -301,13 +357,9 @@ class Window:
         self.inactive_state(self.loan_b, self.home_b)
 
     def add_people(self):
-        # Disable buttons
-        Content.disable_button(self.menu_lf)
-        Content.disable_button(self.profile_buttons_lf)
-
         # Create instance
-        self.add_people_top = tk.Toplevel()
-        self.add_people_top.geometry("500x300")
+        self.add_people_top = tk.Toplevel(self.master)
+        self.add_people_top.geometry("500x280")
         self.add_people_top.title("Borrower's Profile")
         self.add_people_top.configure(bg="#4C8404")
 
@@ -345,33 +397,53 @@ class Window:
         self.gender_combobox.current(0)
 
         # Button for adding people to database
-        self.finish_add_people_b = tk.Button(self.add_people_lf, text="Add Borrower", font="OpenSans, 10", fg="#FFFFFF",
+        self.cancel_add_people_b = tk.Button(self.add_people_lf, text="Add Borrower", font="OpenSans, 12", fg="#FFFFFF",
                                              bg="#4C8404", relief="flat", command=self.finish_add_people)
-        self.finish_add_people_b.grid(column=0, row=4, padx=5, pady=5)
+        self.cancel_add_people_b.grid(column=0, row=4, padx=5, pady=5)
+
+        # Button for adding people to database
+        self.finish_add_people_b = tk.Button(self.add_people_lf, text="Cancel", font="OpenSans, 12", fg="#4C8404",
+                                             bg="#FFFFFF", relief="flat", command=self.add_people_top.destroy)
+        self.finish_add_people_b.grid(column=1, row=4, padx=5, pady=5, sticky="w")
+
+        # Disables underlying window
+        self.add_people_top.grab_set()
 
         self.add_people_top.mainloop()
 
     def finish_add_people(self):
         try:
-            db1 = mysql.connect(host=host,
-                                user=user,
-                                password=password,
-                                database="lmsdatabase")
-            print("Connected to lmsdatabase")
-            mycursor = db1.cursor()
-            mycursor.execute("INSERT INTO borrower (userid, name, address, age, created, gender) VALUES (%s, %s,%s,"
-                             "%s,%s,%s)",
-                             (self.key, self.add_people_name_entry.get(), self.add_people_address_entry.get(),
-                              self.age_spinbox.get(), datetime.now(), self.gender_combobox.get()))
-            db1.commit()
-            db1.close()
-            mycursor.close()
+            self.database_connect()
+            self.mycursor.execute(
+                "INSERT INTO borrower (userid, name, address, age, created, gender) VALUES (%s, %s,%s,"
+                "%s,%s,%s)",
+                (self.key, self.add_people_name_entry.get(), self.add_people_address_entry.get(),
+                 self.age_spinbox.get(), datetime.now(), self.gender_combobox.get()))
+            self.db1.commit()
+            self.db1.close()
+            self.mycursor.close()
 
-            # Deletes all entries from ttk.Entry
-            Content.delete_entry(self.master)
+            # Destroy add_people_top form
+            self.add_people_top.destroy()
 
             # Show a messagebox for successfully adding people
             messagebox.showinfo("Borrower's Profile", "Profile added successfully")
+        except Exception as e:
+            # Deletes all entries from ttk.Entry
+            Content.delete_entry(self.master)
+            # Show a messagebox for unsuccessfully adding people
+            messagebox.showerror("Borrower's Profile", "Did not succeed in adding profile")
+            print("Could not connect to lmsdatabase")
+            print(e)
+
+    def database_connect(self):
+        try:
+            self.db1 = mysql.connect(host=host,
+                                     user=user,
+                                     password=password,
+                                     database="lmsdatabase")
+            print("Connected to lmsdatabase")
+            self.mycursor = self.db1.cursor()
         except Exception as e:
             print("Could not connect to lmsdatabase")
             print(e)
