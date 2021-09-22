@@ -41,6 +41,7 @@ class Window:
         self.home_lf = None
         self.home_dashboard_lf = None
         self.loan_lf = None
+        self.loans_menu_lf = None
         self.profile_lf = None
         self.profile_buttons_lf = None
         self.profile_database_view_lf = None
@@ -244,43 +245,43 @@ class Window:
         Content.destroy_content(self.content_lf)
 
         # Home container
-        self.home_lf = tk.LabelFrame(self.content_lf, relief="flat")
-        self.home_lf.grid(column=0, row=0)
+        self.home_lf = tk.LabelFrame(self.content_lf, relief="flat", background="#4C8404")
+        self.home_lf.pack(fill="both", expand=True)
 
         # Home dashboard container
         self.home_dashboard_lf = tk.LabelFrame(self.home_lf, bg="#FFFFFF", relief="flat")
-        self.home_dashboard_lf.pack(side="top")
+        self.home_dashboard_lf.pack(side="top", fill="x")
 
-        ttk.Label(self.home_dashboard_lf, text="Dashboard", background="#FFFFFF").pack(side="top")
+        ttk.Label(self.home_dashboard_lf, text="Overview Dashboard", style="h1.TLabel",
+                  background="#FFFFFF").pack(side="top", fill="x")
 
-        # Configure underline to none for previous button
-        self.active_state(self.home_b)
-
-        # Configure underline for current button
-        self.inactive_state(self.profile_b, self.loan_b)
+        # Configure button state
+        self.state_button(self.home_b, self.profile_b, self.loan_b)
 
     def switch_loan(self):
         # Destroy content_lf
         Content.destroy_content(self.content_lf)
 
         # Loan container
-        self.loan_lf = tk.LabelFrame(self.content_lf, bg="#FFFFFF", relief="flat")
-        self.loan_lf.grid(column=0, row=0)
+        self.loan_lf = tk.LabelFrame(self.content_lf, relief="flat", background="#4C8404")
+        self.loan_lf.pack(fill="both", expand=True)
 
-        ttk.Label(self.loan_lf, text="Loans", background="#FFFFFF").pack(side="top")
+        # Loan menu container
+        self.loans_menu_lf = tk.LabelFrame(self.loan_lf, relief="flat", bg="#FFFFFF")
+        self.loans_menu_lf.pack(side="top", fill="x")
 
-        # Configure underline to none for previous button
-        self.active_state(self.loan_b)
+        ttk.Label(self.loans_menu_lf, text="Loans", style="h1.TLabel",
+                  background="#FFFFFF").pack(side="top", fill="x")
 
-        # Configure underline for current button
-        self.inactive_state(self.profile_b, self.home_b)
+        # Configure button state
+        self.state_button(self.loan_b, self.profile_b, self.home_b)
 
     def switch_profile(self):
         # Destroy content_lf
         Content.destroy_content(self.content_lf)
 
         # Profile container
-        self.profile_lf = tk.LabelFrame(self.content_lf, bg="#EBEBEB", relief="flat")
+        self.profile_lf = tk.LabelFrame(self.content_lf, background="#4C8404", relief="flat")
         self.profile_lf.pack(fill="both", expand=True)
 
         # Profile Button Container
@@ -294,7 +295,7 @@ class Window:
 
         # Profile view database container
         self.profile_database_view_lf = tk.LabelFrame(self.profile_lf, bg="#FFFFFF", relief="flat")
-        self.profile_database_view_lf.pack(side="top", pady=20, fill="both")
+        self.profile_database_view_lf.pack(side="top", pady=10, fill="both")
 
         self.profile_borrower_lb = ttk.Treeview(self.profile_database_view_lf)
 
@@ -344,11 +345,8 @@ class Window:
             print("Could not connect to lmsdatabase")
             print(e)
 
-        # Configure underline to none for previous button
-        self.active_state(self.profile_b)
-
-        # Configure underline for current button
-        self.inactive_state(self.loan_b, self.home_b)
+        # Configure button state
+        self.state_button(self.profile_b, self.loan_b, self.home_b)
 
     def add_people(self):
         # Create instance
@@ -443,13 +441,10 @@ class Window:
             print(e)
 
     @staticmethod
-    def active_state(widget):
-        widget.configure(bg="#4C8404")
-
-    @staticmethod
-    def inactive_state(widget1, widget2):
-        widget1.configure(bg="#2C441D")
+    def state_button(widget1, widget2, widget3):
+        widget1.configure(bg="#4C8404")
         widget2.configure(bg="#2C441D")
+        widget3.configure(bg="#2C441D")
 
 
 win = tk.Tk()
