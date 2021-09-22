@@ -531,7 +531,7 @@ class Window:
         self.delete_account_b.grid(column=0, row=5, padx=5, pady=5, sticky="w")
 
         # Button for opening form for adding borrower
-        self.save_account_b = tk.Button(self.account_content_view_lf, text="Delete Account", font="OpenSans, 10",
+        self.save_account_b = tk.Button(self.account_content_view_lf, text="Save changes", font="OpenSans, 10",
                                         fg="#FFFFFF", bg="#4C8404", relief="flat", command=self.add_people)
         self.save_account_b.grid(column=1, row=5, padx=5, pady=5, sticky="w")
 
