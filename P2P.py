@@ -5,6 +5,8 @@ from databaseController import Database
 import mysql.connector as mysql
 from contentController import Content
 import functools
+# import numpy as np
+# import matplotlib.pyplot as plt
 
 # Global variables for database
 host = "localhost"
@@ -47,6 +49,11 @@ class Window:
         self.account_database_view_scr = None
         self.account_buttons_lf = None
         self.account_database_view_lf = None
+        self.account_content_view_lf = None
+        self.account_content_name = None
+        self.account_content_address = None
+        self.account_content_age = None
+        self.account_content_gender = None
         self.account_borrower_header = None
         self.account_borrower_lb = ttk.Treeview
         self.add_people_b = None
@@ -269,11 +276,8 @@ class Window:
         self.loan_lf.pack(fill="both", expand=True)
 
         # Loan menu container
-        self.loans_menu_lf = tk.LabelFrame(self.loan_lf, relief="flat", bg="#FFFFFF")
+        self.loans_menu_lf = tk.LabelFrame(self.loan_lf, bg="#FFFFFF", relief="flat")
         self.loans_menu_lf.pack(side="top", fill="x")
-
-        ttk.Label(self.loans_menu_lf, text="Loans", style="h1.TLabel",
-                  background="#FFFFFF").pack(side="top", fill="x")
 
         # Configure button state
         self.state_button(self.loan_b, self.account_b, self.home_b)
@@ -307,7 +311,7 @@ class Window:
         self.account_database_view_scr.pack(side="right", fill="y")
 
         # Create tree
-        self.account_borrower_lb = ttk.Treeview(self.account_database_view_f,
+        self.account_borrower_lb = ttk.Treeview(self.account_database_view_f, style="default.Treeview",
                                                 yscrollcommand=self.account_database_view_scr.set)
 
         self.account_database_view_scr.configure(command=self.account_borrower_lb.yview)
@@ -331,7 +335,39 @@ class Window:
 
         self.account_borrower_lb.pack(side="left", fill="both", expand=True)
 
+        # Initialize method for viewing accounts database
         self.database_view_account()
+
+        # Profile view database container
+        self.account_content_view_lf = tk.LabelFrame(self.account_lf, bg="#FFFFFF", relief="flat")
+        self.account_content_view_lf.pack(side="top", pady=10, fill="both")
+
+        ttk.Label(self.account_content_view_lf, text="Account Information",
+                  style="heading.TLabel").grid(column=0, row=0, columnspan=2, pady=5, sticky="w")
+
+        ttk.Label(self.account_content_view_lf, text="Name",
+                  style="body.TLabel").grid(column=0, row=1, padx=5, pady=5, sticky="w")
+
+        self.account_content_name = ttk.Entry(self.account_content_view_lf, width=40)
+        self.account_content_name.grid(column=1, row=1)
+
+        ttk.Label(self.account_content_view_lf, text="Address",
+                  style="body.TLabel").grid(column=0, row=2, padx=5, pady=5, sticky="w")
+
+        self.account_content_address = ttk.Entry(self.account_content_view_lf, width=40)
+        self.account_content_address.grid(column=1, row=2)
+
+        ttk.Label(self.account_content_view_lf, text="Age",
+                  style="body.TLabel").grid(column=0, row=3, padx=5, pady=5, sticky="w")
+
+        self.account_content_age = ttk.Entry(self.account_content_view_lf, width=40)
+        self.account_content_age.grid(column=1, row=3)
+
+        ttk.Label(self.account_content_view_lf, text="Gender",
+                  style="body.TLabel").grid(column=0, row=4, padx=5, pady=5, sticky="w")
+
+        self.account_content_gender = ttk.Entry(self.account_content_view_lf, width=40)
+        self.account_content_gender.grid(column=1, row=4)
 
         # Configure button state
         self.state_button(self.account_b, self.loan_b, self.home_b)
@@ -429,6 +465,7 @@ class Window:
             print(e)
 
     def database_view_account(self):
+        # Method for viewing accounts database
         try:
             self.database_connect()
             self.mycursor.execute("SELECT name, address, age, gender FROM borrower where userid = '" + self.key_str +

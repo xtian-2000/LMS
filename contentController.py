@@ -9,15 +9,15 @@ class Content(tk.Tk, ttk.LabelFrame, ttk.Entry, ttk.Label, tk.Button, tk.Topleve
     def widget_styles(self):
         # Configure styles for widgets
         style = ttk.Style(self)
-        style.configure("Treeview",
-                        background="#D3D3D3",
-                        foreground="black",
-                        rowheight=20,
-                        fieldbackground="#FFFFFF")
-        style.map("Treeview", background=[("selected", "green")])
+        style.configure("default.Treeview", background="#D3D3D3", font=("OpenSans", 12), foreground="black"
+                        , rowheight=25, bd=10, fieldbackground="#FFFFFF")
+        style.configure("default.Treeview.Heading", font=("OpenSans", 12, "bold"), foreground="green")
+        style.map("default.Treeview", background=[("selected", "green")])
 
         style.configure('h1.TLabel', font=("OpenSans", 20, "bold"), foreground='green', background="#EBEBEB")
         style.configure('h3.TLabel', font=("OpenSans", 10), foreground='#000000', background="#EBEBEB")
+        style.configure('heading.TLabel', font=("OpenSans", 12, "bold"), foreground='green', background="#FFFFFF")
+        style.configure('body.TLabel', font=("OpenSans", 10), foreground='#000000', background="#FFFFFF")
 
     def destroy_content(self):
         for child in self.winfo_children():
@@ -43,7 +43,4 @@ class Content(tk.Tk, ttk.LabelFrame, ttk.Entry, ttk.Label, tk.Button, tk.Topleve
             if isinstance(widget, tk.Button):
                 widget.configure(bg=bg)
 
-    def disable_button(self):
-        for child in self.winfo_children():
-            if isinstance(child, tk.Button):
-                child.configure(state="disable")
+
