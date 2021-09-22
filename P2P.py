@@ -35,20 +35,20 @@ class Window:
         self.menu_lf = None
         self.home_b = tk.Button
         self.loan_b = tk.Button
-        self.profile_b = tk.Button
+        self.account_b = tk.Button
         self.logout_b = tk.Button
         self.content_lf = None
         self.home_lf = None
         self.home_dashboard_lf = None
         self.loan_lf = None
         self.loans_menu_lf = None
-        self.profile_lf = None
-        self.profile_database_view_f = None
-        self.profile_database_view_scr = None
-        self.profile_buttons_lf = None
-        self.profile_database_view_lf = None
-        self.column_borrower_header = None
-        self.profile_borrower_lb = ttk.Treeview
+        self.account_lf = None
+        self.account_database_view_f = None
+        self.account_database_view_scr = None
+        self.account_buttons_lf = None
+        self.account_database_view_lf = None
+        self.account_borrower_header = None
+        self.account_borrower_lb = ttk.Treeview
         self.add_people_b = None
         self.add_people_top = None
         self.add_people_lf = None
@@ -219,17 +219,17 @@ class Window:
         self.menu_lf.pack(side="left", fill="both")
 
         # Menu buttons
-        self.home_b = tk.Button(self.menu_lf, text="Home", font="OpenSans 20", relief="flat", bg="#2C441D",
-                                fg="#FFFFFF", command=self.switch_home)
+        self.home_b = tk.Button(self.menu_lf, text="Home", font="OpenSans 18", relief="flat", bg="#2C441D",
+                                fg="#FFFFFF", anchor="w", command=self.switch_home)
         self.home_b.pack(side="top", fill="both")
 
-        self.loan_b = tk.Button(self.menu_lf, text="Loans", font="OpenSans, 20", relief="flat", bg="#2C441D",
-                                fg="#FFFFFF", command=self.switch_loan)
+        self.loan_b = tk.Button(self.menu_lf, text="Loans", font="OpenSans, 18", relief="flat", bg="#2C441D",
+                                fg="#FFFFFF", anchor="w", command=self.switch_loan)
         self.loan_b.pack(side="top", fill="both")
 
-        self.profile_b = tk.Button(self.menu_lf, text="Profile", font="OpenSans, 20", relief="flat", bg="#2C441D",
-                                   fg="#FFFFFF", command=self.switch_profile)
-        self.profile_b.pack(side="top", fill="both")
+        self.account_b = tk.Button(self.menu_lf, text="Accounts", font="OpenSans, 18", relief="flat", bg="#2C441D",
+                                   fg="#FFFFFF", anchor="w", command=self.switch_account)
+        self.account_b.pack(side="top", fill="both")
 
         self.logout_b = tk.Button(self.menu_lf, text="Logout", font="OpenSans, 10", relief="flat", bg="#2C441D",
                                   fg="#FFFFFF", highlightcolor="#2C441D", command=self.login_win)
@@ -258,7 +258,7 @@ class Window:
                   background="#FFFFFF").pack(side="top", fill="x")
 
         # Configure button state
-        self.state_button(self.home_b, self.profile_b, self.loan_b)
+        self.state_button(self.home_b, self.account_b, self.loan_b)
 
     def switch_loan(self):
         # Destroy content_lf
@@ -276,89 +276,65 @@ class Window:
                   background="#FFFFFF").pack(side="top", fill="x")
 
         # Configure button state
-        self.state_button(self.loan_b, self.profile_b, self.home_b)
+        self.state_button(self.loan_b, self.account_b, self.home_b)
 
-    def switch_profile(self):
+    def switch_account(self):
         # Destroy content_lf
         Content.destroy_content(self.content_lf)
 
         # Profile container
-        self.profile_lf = tk.LabelFrame(self.content_lf, relief="flat")
-        self.profile_lf.pack(fill="both", expand=True)
+        self.account_lf = tk.LabelFrame(self.content_lf, relief="flat")
+        self.account_lf.pack(fill="both", expand=True)
 
         # Profile Button Container
-        self.profile_buttons_lf = tk.LabelFrame(self.profile_lf, bg="#FFFFFF", relief="flat")
-        self.profile_buttons_lf.pack(side="top", fill="x")
+        self.account_buttons_lf = tk.LabelFrame(self.account_lf, bg="#FFFFFF", relief="flat")
+        self.account_buttons_lf.pack(side="top", fill="x")
 
         # Button for opening form for adding borrower
-        self.add_people_b = tk.Button(self.profile_buttons_lf, text="Add people", font="OpenSans, 10", fg="#FFFFFF",
+        self.add_people_b = tk.Button(self.account_buttons_lf, text="Add people", font="OpenSans, 10", fg="#FFFFFF",
                                       bg="#4C8404", relief="flat", command=self.add_people)
         self.add_people_b.pack(side="left", padx=5, pady=5)
 
         # Profile view database container
-        self.profile_database_view_lf = tk.LabelFrame(self.profile_lf, bg="#FFFFFF", relief="flat")
-        self.profile_database_view_lf.pack(side="top", pady=10, fill="both")
+        self.account_database_view_lf = tk.LabelFrame(self.account_lf, bg="#FFFFFF", relief="flat")
+        self.account_database_view_lf.pack(side="top", pady=10, fill="both")
 
         # Profile view database frame
-        self.profile_database_view_f = tk.Frame(self.profile_database_view_lf, relief="flat")
-        self.profile_database_view_f.pack(side="top", fill="both")
+        self.account_database_view_f = tk.Frame(self.account_database_view_lf, relief="flat")
+        self.account_database_view_f.pack(side="top", fill="both")
 
-        self.profile_database_view_scr = tk.Scrollbar(self.profile_database_view_f)
-        self.profile_database_view_scr.pack(side="right", fill="y")
+        self.account_database_view_scr = tk.Scrollbar(self.account_database_view_f)
+        self.account_database_view_scr.pack(side="right", fill="y")
 
         # Create tree
-        self.profile_borrower_lb = ttk.Treeview(self.profile_database_view_f,
-                                                yscrollcommand=self.profile_database_view_scr.set)
+        self.account_borrower_lb = ttk.Treeview(self.account_database_view_f,
+                                                yscrollcommand=self.account_database_view_scr.set)
 
-        self.profile_database_view_scr.configure(command=self.profile_borrower_lb.yview)
+        self.account_database_view_scr.configure(command=self.account_borrower_lb.yview)
+
         # Define column
-        self.profile_borrower_lb["columns"] = ("Name", "Address", "Age", "Gender")
+        self.account_borrower_lb["columns"] = ("Name", "Address", "Age", "Gender")
 
         # Format column
-        self.profile_borrower_lb.column("#0", width=0, stretch="no")
-        self.profile_borrower_lb.column("Name", anchor="w", width=120)
-        self.profile_borrower_lb.column("Address", anchor="w", width=120)
-        self.profile_borrower_lb.column("Age", anchor="center", width=80)
-        self.profile_borrower_lb.column("Gender", anchor="center", width=80)
+        self.account_borrower_lb.column("#0", width=0, stretch="no")
+        self.account_borrower_lb.column("Name", anchor="w", width=120)
+        self.account_borrower_lb.column("Address", anchor="w", width=120)
+        self.account_borrower_lb.column("Age", anchor="center", width=80)
+        self.account_borrower_lb.column("Gender", anchor="center", width=80)
 
         # Create headings
-        self.profile_borrower_lb.heading("#0", text="", anchor="w")
-        self.profile_borrower_lb.heading("Name", text="Name", anchor="w")
-        self.profile_borrower_lb.heading("Address", text="Address", anchor="w")
-        self.profile_borrower_lb.heading("Age", text="Age", anchor="center")
-        self.profile_borrower_lb.heading("Gender", text="Gender", anchor="center")
+        self.account_borrower_lb.heading("#0", text="", anchor="w")
+        self.account_borrower_lb.heading("Name", text="Name", anchor="w")
+        self.account_borrower_lb.heading("Address", text="Address", anchor="w")
+        self.account_borrower_lb.heading("Age", text="Age", anchor="center")
+        self.account_borrower_lb.heading("Gender", text="Gender", anchor="center")
 
-        self.profile_borrower_lb.pack(side="left", fill="both", expand=True)
+        self.account_borrower_lb.pack(side="left", fill="both", expand=True)
 
-        try:
-            self.database_connect()
-            self.mycursor.execute("SELECT name, address, age, gender FROM borrower where userid = '" + self.key_str +
-                                  "';")
-            borrowers = self.mycursor.fetchall()
-            print(borrowers)
-
-            # Create configure for striped rows
-            self.profile_borrower_lb.tag_configure("oddrow", background="#FFFFFF")
-            self.profile_borrower_lb.tag_configure("evenrow", background="#FAFAFA")
-            count = 0
-            for record in borrowers:
-                if count % 2 == 0:
-                    self.profile_borrower_lb.insert(parent="", index="end", iid=count, text="",
-                                                    values=(record[0], record[1], record[2], record[3]),
-                                                    tags=("oddrow",))
-                else:
-                    self.profile_borrower_lb.insert(parent="", index="end", iid=count, text="",
-                                                    values=(record[0], record[1], record[2], record[3]),
-                                                    tags=("evenrow",))
-                count += 1
-
-            self.db1.close()
-        except Exception as e:
-            print("Could not connect to lmsdatabase")
-            print(e)
+        self.database_view_account()
 
         # Configure button state
-        self.state_button(self.profile_b, self.loan_b, self.home_b)
+        self.state_button(self.account_b, self.loan_b, self.home_b)
 
     def add_people(self):
         # Create instance
@@ -431,12 +407,12 @@ class Window:
             self.add_people_top.destroy()
 
             # Show a messagebox for successfully adding people
-            messagebox.showinfo("Borrower's Profile", "Profile added successfully")
+            messagebox.showinfo("Borrower's Account", "Account added successfully")
         except Exception as e:
             # Deletes all entries from ttk.Entry
             Content.delete_entry(self.master)
             # Show a messagebox for unsuccessfully adding people
-            messagebox.showerror("Borrower's Profile", "Did not succeed in adding profile")
+            messagebox.showerror("Borrower's Account", "Did not succeed in adding account")
             print("Could not connect to lmsdatabase")
             print(e)
 
@@ -448,6 +424,34 @@ class Window:
                                      database="lmsdatabase")
             print("Connected to lmsdatabase")
             self.mycursor = self.db1.cursor()
+        except Exception as e:
+            print("Could not connect to lmsdatabase")
+            print(e)
+
+    def database_view_account(self):
+        try:
+            self.database_connect()
+            self.mycursor.execute("SELECT name, address, age, gender FROM borrower where userid = '" + self.key_str +
+                                  "';")
+            borrowers = self.mycursor.fetchall()
+            print(borrowers)
+
+            # Create configure for striped rows
+            self.account_borrower_lb.tag_configure("oddrow", background="#FFFFFF")
+            self.account_borrower_lb.tag_configure("evenrow", background="#FAFAFA")
+            count = 0
+            for record in borrowers:
+                if count % 2 == 0:
+                    self.account_borrower_lb.insert(parent="", index="end", iid=count, text="",
+                                                    values=(record[0], record[1], record[2], record[3]),
+                                                    tags=("oddrow",))
+                else:
+                    self.account_borrower_lb.insert(parent="", index="end", iid=count, text="",
+                                                    values=(record[0], record[1], record[2], record[3]),
+                                                    tags=("evenrow",))
+                count += 1
+
+            self.db1.close()
         except Exception as e:
             print("Could not connect to lmsdatabase")
             print(e)
