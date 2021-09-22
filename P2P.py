@@ -43,6 +43,8 @@ class Window:
         self.loan_lf = None
         self.loans_menu_lf = None
         self.profile_lf = None
+        self.profile_database_view_f = None
+        self.profile_database_view_scr = None
         self.profile_buttons_lf = None
         self.profile_database_view_lf = None
         self.column_borrower_header = None
@@ -245,7 +247,7 @@ class Window:
         Content.destroy_content(self.content_lf)
 
         # Home container
-        self.home_lf = tk.LabelFrame(self.content_lf, relief="flat", background="#4C8404")
+        self.home_lf = tk.LabelFrame(self.content_lf, relief="flat")
         self.home_lf.pack(fill="both", expand=True)
 
         # Home dashboard container
@@ -263,7 +265,7 @@ class Window:
         Content.destroy_content(self.content_lf)
 
         # Loan container
-        self.loan_lf = tk.LabelFrame(self.content_lf, relief="flat", background="#4C8404")
+        self.loan_lf = tk.LabelFrame(self.content_lf, relief="flat")
         self.loan_lf.pack(fill="both", expand=True)
 
         # Loan menu container
@@ -281,7 +283,7 @@ class Window:
         Content.destroy_content(self.content_lf)
 
         # Profile container
-        self.profile_lf = tk.LabelFrame(self.content_lf, background="#4C8404", relief="flat")
+        self.profile_lf = tk.LabelFrame(self.content_lf, relief="flat")
         self.profile_lf.pack(fill="both", expand=True)
 
         # Profile Button Container
@@ -297,8 +299,18 @@ class Window:
         self.profile_database_view_lf = tk.LabelFrame(self.profile_lf, bg="#FFFFFF", relief="flat")
         self.profile_database_view_lf.pack(side="top", pady=10, fill="both")
 
-        self.profile_borrower_lb = ttk.Treeview(self.profile_database_view_lf)
+        # Profile view database frame
+        self.profile_database_view_f = tk.Frame(self.profile_database_view_lf, relief="flat")
+        self.profile_database_view_f.pack(side="top", fill="both")
 
+        self.profile_database_view_scr = tk.Scrollbar(self.profile_database_view_f)
+        self.profile_database_view_scr.pack(side="right", fill="y")
+
+        # Create tree
+        self.profile_borrower_lb = ttk.Treeview(self.profile_database_view_f,
+                                                yscrollcommand=self.profile_database_view_scr.set)
+
+        self.profile_database_view_scr.configure(command=self.profile_borrower_lb.yview)
         # Define column
         self.profile_borrower_lb["columns"] = ("Name", "Address", "Age", "Gender")
 
@@ -316,7 +328,7 @@ class Window:
         self.profile_borrower_lb.heading("Age", text="Age", anchor="center")
         self.profile_borrower_lb.heading("Gender", text="Gender", anchor="center")
 
-        self.profile_borrower_lb.pack(side="left", padx=20, pady=20, fill="both", expand=True)
+        self.profile_borrower_lb.pack(side="left", fill="both", expand=True)
 
         try:
             self.database_connect()
