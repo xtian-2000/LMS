@@ -50,10 +50,10 @@ class Window:
         self.account_buttons_lf = None
         self.account_database_view_lf = None
         self.account_content_view_lf = None
-        self.account_content_name = None
-        self.account_content_address = None
-        self.account_content_age = None
-        self.account_content_gender = None
+        self.account_content_name_e = None
+        self.account_content_address_e = None
+        self.account_content_age_e = None
+        self.account_content_gender_e = None
         self.account_borrower_header = None
         self.account_borrower_lb = ttk.Treeview
         self.add_people_b = None
@@ -167,55 +167,6 @@ class Window:
         Content.background_change_labelframe(self.master, "#EBEBEB")
 
         Content.background_change_label(self.register_lf, "#EBEBEB")
-
-    def login_validation(self):
-        try:
-            self.database_connect()
-            self.mycursor.execute(
-                "SELECT * FROM user where username = '" + self.login_username_entry.get() + "' and password = '" +
-                self.login_password_entry.get() + "';")
-            myresult = self.mycursor.fetchone()
-            if myresult is None:
-                messagebox.showerror("Error", "Invalid User Name And Password")
-            else:
-                self.mycursor.execute(
-                    "SELECT DISTINCT userid FROM user where username = '" + self.login_username_entry.get() + "';")
-
-                # Converts the tuple into integer
-                self.key = functools.reduce(lambda sub, ele: sub * 10 + ele, self.mycursor.fetchone())
-                self.key_str = str(self.key)
-                print(self.key_str)
-
-                # Instantiate create_widgets method
-                self.create_widgets()
-
-            self.db1.close()
-            self.mycursor.close()
-        except Exception as e:
-            print("Could not connect to lmsdatabase")
-            print(e)
-
-    def register_validation(self):
-        try:
-            self.database_connect()
-            self.mycursor.execute("INSERT INTO user (username, password, email) VALUES (%s,%s,%s)",
-                                  (self.register_user_name_entry.get(), self.register_password_entry.get(),
-                                   self.register_email_entry.get()))
-            self.db1.commit()
-            self.db1.close()
-            self.mycursor.close()
-
-            # Destroy window contents
-            Content.destroy_content(self.master)
-
-            # Initializes login_win
-            self.login_win()
-
-        except Exception as e:
-            print("Could not connect to lmsdatabase")
-            print(e)
-            # Deletes all entries from ttk.Entry
-            Content.delete_entry(self.master)
 
     def create_widgets(self):
         # Destroy window contents
@@ -335,6 +286,9 @@ class Window:
 
         self.account_borrower_lb.pack(side="left", fill="both", expand=True)
 
+        # Bind the treeview to database_view_info method
+        self.account_borrower_lb.bind("<ButtonRelease-1>", self.database_view_account_info)
+
         # Initialize method for viewing accounts database
         self.database_view_account()
 
@@ -348,29 +302,78 @@ class Window:
         ttk.Label(self.account_content_view_lf, text="Name",
                   style="body.TLabel").grid(column=0, row=1, padx=5, pady=5, sticky="w")
 
-        self.account_content_name = ttk.Entry(self.account_content_view_lf, width=40)
-        self.account_content_name.grid(column=1, row=1)
+        self.account_content_name_e = ttk.Entry(self.account_content_view_lf, width=40)
+        self.account_content_name_e.grid(column=1, row=1)
 
         ttk.Label(self.account_content_view_lf, text="Address",
                   style="body.TLabel").grid(column=0, row=2, padx=5, pady=5, sticky="w")
 
-        self.account_content_address = ttk.Entry(self.account_content_view_lf, width=40)
-        self.account_content_address.grid(column=1, row=2)
+        self.account_content_address_e = ttk.Entry(self.account_content_view_lf, width=40)
+        self.account_content_address_e.grid(column=1, row=2)
 
         ttk.Label(self.account_content_view_lf, text="Age",
                   style="body.TLabel").grid(column=0, row=3, padx=5, pady=5, sticky="w")
 
-        self.account_content_age = ttk.Entry(self.account_content_view_lf, width=40)
-        self.account_content_age.grid(column=1, row=3)
+        self.account_content_age_e = ttk.Entry(self.account_content_view_lf, width=40)
+        self.account_content_age_e.grid(column=1, row=3)
 
         ttk.Label(self.account_content_view_lf, text="Gender",
                   style="body.TLabel").grid(column=0, row=4, padx=5, pady=5, sticky="w")
 
-        self.account_content_gender = ttk.Entry(self.account_content_view_lf, width=40)
-        self.account_content_gender.grid(column=1, row=4)
+        self.account_content_gender_e = ttk.Entry(self.account_content_view_lf, width=40)
+        self.account_content_gender_e.grid(column=1, row=4)
 
         # Configure button state
         self.state_button(self.account_b, self.loan_b, self.home_b)
+
+    def login_validation(self):
+        try:
+            self.database_connect()
+            self.mycursor.execute(
+                "SELECT * FROM user where username = '" + self.login_username_entry.get() + "' and password = '" +
+                self.login_password_entry.get() + "';")
+            myresult = self.mycursor.fetchone()
+            if myresult is None:
+                messagebox.showerror("Error", "Invalid User Name And Password")
+            else:
+                self.mycursor.execute(
+                    "SELECT DISTINCT userid FROM user where username = '" + self.login_username_entry.get() + "';")
+
+                # Converts the tuple into integer
+                self.key = functools.reduce(lambda sub, ele: sub * 10 + ele, self.mycursor.fetchone())
+                self.key_str = str(self.key)
+                print(self.key_str)
+
+                # Instantiate create_widgets method
+                self.create_widgets()
+
+            self.db1.close()
+            self.mycursor.close()
+        except Exception as e:
+            print("Could not connect to lmsdatabase")
+            print(e)
+
+    def register_validation(self):
+        try:
+            self.database_connect()
+            self.mycursor.execute("INSERT INTO user (username, password, email) VALUES (%s,%s,%s)",
+                                  (self.register_user_name_entry.get(), self.register_password_entry.get(),
+                                   self.register_email_entry.get()))
+            self.db1.commit()
+            self.db1.close()
+            self.mycursor.close()
+
+            # Destroy window contents
+            Content.destroy_content(self.master)
+
+            # Initializes login_win
+            self.login_win()
+
+        except Exception as e:
+            print("Could not connect to lmsdatabase")
+            print(e)
+            # Deletes all entries from ttk.Entry
+            Content.delete_entry(self.master)
 
     def add_people(self):
         # Create instance
@@ -492,6 +495,24 @@ class Window:
         except Exception as e:
             print("Could not connect to lmsdatabase")
             print(e)
+
+    def database_view_account_info(self, event):
+        # Clear all entry
+        Content.delete_entry(self.account_content_view_lf)
+
+        # Grab record number
+        selected = self.account_borrower_lb.focus()
+
+        # Grab record values
+        values = self.account_borrower_lb.item(selected, "values")
+
+        # Insert values to entry widgets
+        self.account_content_name_e.insert(0, values[0])
+        self.account_content_address_e.insert(0, values[1])
+        self.account_content_age_e.insert(0, values[2])
+        self.account_content_gender_e.insert(0, values[3])
+
+        print(event)
 
     @staticmethod
     def state_button(widget1, widget2, widget3):
