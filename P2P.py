@@ -20,19 +20,45 @@ class Window:
     def __init__(self, master):
         # Instance attributes define within init scope conforming to PEP standards
         self.master = master
-        self.login_lf, self.login_l, self.login_username_entry, self.login_password_entry = None, None, None, None
-        self.register_lf, self.register_b, self.register_cancel_b, self.login_b = ttk.LabelFrame, None, None, None
-        self.key, self.key_str = None, None
-        self.register_top, self.register_user_name_entry, self.register_password_entry, self.\
-            register_email_entry, self.register_done_b = None, None, None, None, None
-        self.menu_lf, self.home_b, self.loan_b, self.account_b, self.body_lf, self.\
-            toolbar_lf, self.logout_b = None, tk.Button, tk.Button, tk.Button, None, None, None
-        self.content_lf, self.home_lf, self.home_dashboard_lf, self.loan_lf, self.\
-            loans_menu_lf, self.account_lf = None, None, None, None, None, None
-        self.account_database_view_f, self.account_database_view_scr, self.account_buttons_lf, self.\
-            account_database_view_lf, self.account_content_view_lf, self.account_content_name_e, self.\
-            account_content_address_e, self.account_content_age_e, self.account_content_gender_e, self.\
-            delete_account_b, self.save_account_b = None, None, None, None, None, None, None, None, None, None, None
+        self.login_lf = None
+        self.login_l = None
+        self.login_username_entry = None
+        self.login_password_entry = None
+        self.register_lf = None
+        self.register_b = None
+        self.register_cancel_b = None
+        self.login_b = None
+        self.key = None
+        self.key_str = None
+        self.register_top = None
+        self.register_user_name_entry = None
+        self.register_password_entry = None
+        self.register_email_entry = None
+        self.register_done_b = None
+        self.menu_lf = None
+        self.home_b = tk.Button
+        self.loan_b = tk.Button
+        self.account_b = tk.Button
+        self.body_lf = None
+        self.toolbar_lf = None
+        self.logout_b = tk.Button
+        self.content_lf = None
+        self.home_lf = None
+        self.home_dashboard_lf = None
+        self.loan_lf = None
+        self.loans_menu_lf = None
+        self.account_lf = None
+        self.account_database_view_f = None
+        self.account_database_view_scr = None
+        self.account_buttons_lf = None
+        self.account_database_view_lf = None
+        self.account_content_view_lf = None
+        self.account_content_name_e = None
+        self.account_content_address_e = None
+        self.account_content_age_e = None
+        self.account_content_gender_e = None
+        self.delete_account_b = None
+        self.save_account_b = None
         self.account_borrower_header = None
         self.account_borrower_lb = ttk.Treeview
         self.add_people_b = None
@@ -45,7 +71,8 @@ class Window:
         self.finish_add_people_b = None
         self.cancel_add_people_b = None
         self.success_add_people_message = None
-        self.db1, self.mycursor = None, None
+        self.db1 = None
+        self.mycursor = None
 
         # Instantiate Database class
         Database()
