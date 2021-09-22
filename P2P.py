@@ -5,6 +5,7 @@ from databaseController import Database
 import mysql.connector as mysql
 from contentController import Content
 import functools
+
 # import numpy as np
 # import matplotlib.pyplot as plt
 
@@ -19,41 +20,19 @@ class Window:
     def __init__(self, master):
         # Instance attributes define within init scope conforming to PEP standards
         self.master = master
-        self.login_lf = ttk.LabelFrame
-        self.login_l = None
-        self.login_username_entry = None
-        self.login_password_entry = None
-        self.register_lf = ttk.LabelFrame
-        self.register_b = None
-        self.register_cancel_b = None
-        self.login_b = None
-        self.key = None
-        self.key_str = str
-        self.register_top = None
-        self.register_user_name_entry = None
-        self.register_password_entry = None
-        self.register_email_entry = None
-        self.register_done_b = None
-        self.menu_lf = None
-        self.home_b = tk.Button
-        self.loan_b = tk.Button
-        self.account_b = tk.Button
-        self.logout_b = tk.Button
-        self.content_lf = None
-        self.home_lf = None
-        self.home_dashboard_lf = None
-        self.loan_lf = None
-        self.loans_menu_lf = None
-        self.account_lf = None
-        self.account_database_view_f = None
-        self.account_database_view_scr = None
-        self.account_buttons_lf = None
-        self.account_database_view_lf = None
-        self.account_content_view_lf = None
-        self.account_content_name_e = None
-        self.account_content_address_e = None
-        self.account_content_age_e = None
-        self.account_content_gender_e = None
+        self.login_lf, self.login_l, self.login_username_entry, self.login_password_entry = None, None, None, None
+        self.register_lf, self.register_b, self.register_cancel_b, self.login_b = ttk.LabelFrame, None, None, None
+        self.key, self.key_str = None, None
+        self.register_top, self.register_user_name_entry, self.register_password_entry, self.\
+            register_email_entry, self.register_done_b = None, None, None, None, None
+        self.menu_lf, self.home_b, self.loan_b, self.account_b, self.body_lf, self.\
+            toolbar_lf, self.logout_b = None, tk.Button, tk.Button, tk.Button, None, None, None
+        self.content_lf, self.home_lf, self.home_dashboard_lf, self.loan_lf, self.\
+            loans_menu_lf, self.account_lf = None, None, None, None, None, None
+        self.account_database_view_f, self.account_database_view_scr, self.account_buttons_lf, self.\
+            account_database_view_lf, self.account_content_view_lf, self.account_content_name_e, self.\
+            account_content_address_e, self.account_content_age_e, self.account_content_gender_e, self.\
+            delete_account_b, self.save_account_b = None, None, None, None, None, None, None, None, None, None, None
         self.account_borrower_header = None
         self.account_borrower_lb = ttk.Treeview
         self.add_people_b = None
@@ -66,8 +45,7 @@ class Window:
         self.finish_add_people_b = None
         self.cancel_add_people_b = None
         self.success_add_people_message = None
-        self.db1 = None
-        self.mycursor = None
+        self.db1, self.mycursor = None, None
 
         # Instantiate Database class
         Database()
@@ -189,12 +167,25 @@ class Window:
                                    fg="#FFFFFF", anchor="w", command=self.switch_account)
         self.account_b.pack(side="top", fill="both")
 
-        self.logout_b = tk.Button(self.menu_lf, text="Logout", font="OpenSans, 10", relief="flat", bg="#2C441D",
-                                  fg="#FFFFFF", highlightcolor="#2C441D", command=self.login_win)
-        self.logout_b.pack(side="bottom", fill="both", pady=20)
+        # Content Container
+        self.body_lf = tk.LabelFrame(self.master, relief="flat")
+        self.body_lf.pack(side="left", fill="both", expand="true")
+
+        # Toolbar Button Container
+        self.toolbar_lf = tk.LabelFrame(self.body_lf, bg="#FFFFFF", relief="flat")
+        self.toolbar_lf.pack(side="top", fill="x")
+
+        # Button for opening form for adding borrower
+        self.add_people_b = tk.Button(self.toolbar_lf, text="Add people", font="OpenSans, 10", fg="#FFFFFF",
+                                      bg="#4C8404", relief="flat", command=self.add_people)
+        self.add_people_b.pack(side="left", padx=5, pady=5)
+
+        self.logout_b = tk.Button(self.toolbar_lf, text="Logout", font="OpenSans, 10", relief="flat", bg="#FFFFFF",
+                                  fg="green", highlightcolor="#2C441D", command=self.login_win)
+        self.logout_b.pack(side="right", padx=100, pady=5)
 
         # Contents container
-        self.content_lf = tk.LabelFrame(self.master, relief="flat")
+        self.content_lf = tk.LabelFrame(self.body_lf, relief="flat")
         self.content_lf.pack(side="left", fill="both", expand="true")
 
         # Initialize switch_home method for the default content
@@ -211,9 +202,6 @@ class Window:
         # Home dashboard container
         self.home_dashboard_lf = tk.LabelFrame(self.home_lf, bg="#FFFFFF", relief="flat")
         self.home_dashboard_lf.pack(side="top", fill="x")
-
-        ttk.Label(self.home_dashboard_lf, text="Overview Dashboard", style="h1.TLabel",
-                  background="#FFFFFF").pack(side="top", fill="x")
 
         # Configure button state
         self.state_button(self.home_b, self.account_b, self.loan_b)
@@ -240,15 +228,6 @@ class Window:
         # Profile container
         self.account_lf = tk.LabelFrame(self.content_lf, relief="flat")
         self.account_lf.pack(fill="both", expand=True)
-
-        # Profile Button Container
-        self.account_buttons_lf = tk.LabelFrame(self.account_lf, bg="#FFFFFF", relief="flat")
-        self.account_buttons_lf.pack(side="top", fill="x")
-
-        # Button for opening form for adding borrower
-        self.add_people_b = tk.Button(self.account_buttons_lf, text="Add people", font="OpenSans, 10", fg="#FFFFFF",
-                                      bg="#4C8404", relief="flat", command=self.add_people)
-        self.add_people_b.pack(side="left", padx=5, pady=5)
 
         # Profile view database container
         self.account_database_view_lf = tk.LabelFrame(self.account_lf, bg="#FFFFFF", relief="flat")
@@ -299,29 +278,8 @@ class Window:
         ttk.Label(self.account_content_view_lf, text="Account Information",
                   style="heading.TLabel").grid(column=0, row=0, columnspan=2, pady=5, sticky="w")
 
-        ttk.Label(self.account_content_view_lf, text="Name",
+        ttk.Label(self.account_content_view_lf, text="No information Available",
                   style="body.TLabel").grid(column=0, row=1, padx=5, pady=5, sticky="w")
-
-        self.account_content_name_e = ttk.Entry(self.account_content_view_lf, width=40)
-        self.account_content_name_e.grid(column=1, row=1)
-
-        ttk.Label(self.account_content_view_lf, text="Address",
-                  style="body.TLabel").grid(column=0, row=2, padx=5, pady=5, sticky="w")
-
-        self.account_content_address_e = ttk.Entry(self.account_content_view_lf, width=40)
-        self.account_content_address_e.grid(column=1, row=2)
-
-        ttk.Label(self.account_content_view_lf, text="Age",
-                  style="body.TLabel").grid(column=0, row=3, padx=5, pady=5, sticky="w")
-
-        self.account_content_age_e = ttk.Entry(self.account_content_view_lf, width=40)
-        self.account_content_age_e.grid(column=1, row=3)
-
-        ttk.Label(self.account_content_view_lf, text="Gender",
-                  style="body.TLabel").grid(column=0, row=4, padx=5, pady=5, sticky="w")
-
-        self.account_content_gender_e = ttk.Entry(self.account_content_view_lf, width=40)
-        self.account_content_gender_e.grid(column=1, row=4)
 
         # Configure button state
         self.state_button(self.account_b, self.loan_b, self.home_b)
@@ -497,8 +455,36 @@ class Window:
             print(e)
 
     def database_view_account_info(self, event):
-        # Clear all entry
-        Content.delete_entry(self.account_content_view_lf)
+        # Destroy content of account_content_view_lf
+        Content.destroy_content(self.account_content_view_lf)
+
+        # Create widgets for displaying account information
+        ttk.Label(self.account_content_view_lf, text="Account Information",
+                  style="heading.TLabel").grid(column=0, row=0, columnspan=2, pady=5, sticky="w")
+
+        ttk.Label(self.account_content_view_lf, text="Name",
+                  style="body.TLabel").grid(column=0, row=1, padx=5, pady=5, sticky="w")
+
+        self.account_content_name_e = ttk.Entry(self.account_content_view_lf, width=40)
+        self.account_content_name_e.grid(column=1, row=1, columnspan=2)
+
+        ttk.Label(self.account_content_view_lf, text="Address",
+                  style="body.TLabel").grid(column=0, row=2, padx=5, pady=5, sticky="w")
+
+        self.account_content_address_e = ttk.Entry(self.account_content_view_lf, width=40)
+        self.account_content_address_e.grid(column=1, row=2, columnspan=2)
+
+        ttk.Label(self.account_content_view_lf, text="Age",
+                  style="body.TLabel").grid(column=0, row=3, padx=5, pady=5, sticky="w")
+
+        self.account_content_age_e = ttk.Entry(self.account_content_view_lf, width=40)
+        self.account_content_age_e.grid(column=1, row=3, columnspan=2)
+
+        ttk.Label(self.account_content_view_lf, text="Gender",
+                  style="body.TLabel").grid(column=0, row=4, padx=5, pady=5, sticky="w")
+
+        self.account_content_gender_e = ttk.Entry(self.account_content_view_lf, width=40)
+        self.account_content_gender_e.grid(column=1, row=4, columnspan=2)
 
         # Grab record number
         selected = self.account_borrower_lb.focus()
@@ -511,6 +497,16 @@ class Window:
         self.account_content_address_e.insert(0, values[1])
         self.account_content_age_e.insert(0, values[2])
         self.account_content_gender_e.insert(0, values[3])
+
+        # Button for opening form for adding borrower
+        self.delete_account_b = tk.Button(self.account_content_view_lf, text="Delete Account", font="OpenSans, 10",
+                                          fg="#FFFFFF", bg="#4C8404", relief="flat", command=self.add_people)
+        self.delete_account_b.grid(column=0, row=5, padx=5, pady=5, sticky="w")
+
+        # Button for opening form for adding borrower
+        self.save_account_b = tk.Button(self.account_content_view_lf, text="Delete Account", font="OpenSans, 10",
+                                        fg="#FFFFFF", bg="#4C8404", relief="flat", command=self.add_people)
+        self.save_account_b.grid(column=1, row=5, padx=5, pady=5, sticky="w")
 
         print(event)
 
