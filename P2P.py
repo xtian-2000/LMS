@@ -61,6 +61,8 @@ class Window:
         self.save_account_b = None
         self.account_borrower_header = None
         self.account_borrower_lb = ttk.Treeview
+        self.borrower_key = None
+        self.borrower_key_str = None
         self.add_people_b = None
         self.add_people_top = None
         self.add_people_lf = None
@@ -432,6 +434,9 @@ class Window:
 
             # Show a messagebox for successfully adding people
             messagebox.showinfo("Borrower's Account", "Account added successfully")
+
+            # Updates account window
+            self.switch_account()
         except Exception as e:
             # Deletes all entries from ttk.Entry
             Content.delete_entry(self.master)
@@ -456,7 +461,8 @@ class Window:
         # Method for viewing accounts database
         try:
             self.database_connect()
-            self.mycursor.execute("SELECT name, address, age, gender FROM borrower where userid = '" + self.key_str +
+            self.mycursor.execute("SELECT name, address, age, gender, borrowerid FROM borrower where userid = '"
+                                  + self.key_str +
                                   "';")
             borrowers = self.mycursor.fetchall()
             print(borrowers)
@@ -476,7 +482,10 @@ class Window:
                                                     tags=("evenrow",))
                 count += 1
 
+            self.db1.commit()
+            self.mycursor.close()
             self.db1.close()
+
         except Exception as e:
             print("Could not connect to lmsdatabase")
             print(e)
@@ -527,15 +536,64 @@ class Window:
 
         # Button for opening form for adding borrower
         self.delete_account_b = tk.Button(self.account_content_view_lf, text="Delete Account", font="OpenSans, 10",
-                                          fg="#FFFFFF", bg="#4C8404", relief="flat", command=self.add_people)
+                                          fg="#FFFFFF", bg="#4C8404", relief="flat",
+                                          command=self.delete_database_record)
         self.delete_account_b.grid(column=0, row=5, padx=5, pady=5, sticky="w")
 
         # Button for opening form for adding borrower
         self.save_account_b = tk.Button(self.account_content_view_lf, text="Save changes", font="OpenSans, 10",
-                                        fg="#FFFFFF", bg="#4C8404", relief="flat", command=self.add_people)
+                                        fg="#FFFFFF", bg="#4C8404", relief="flat",
+                                        command=self.update_database_record)
         self.save_account_b.grid(column=1, row=5, padx=5, pady=5, sticky="w")
 
         print(event)
+
+        # Assign variable to borrower id
+        self.show_borrower_id()
+
+    def show_borrower_id(self):
+        try:
+            self.database_connect()
+
+            self.mycursor.execute("SELECT DISTINCT borrowerid FROM borrower WHERE NAME = '"
+                                  + self.account_content_name_e.get() + "' AND userid = '" + self.key_str + "';")
+
+            # Converts the tuple into integer
+            self.borrower_key = functools.reduce(lambda sub, ele: sub * 10 + ele, self.mycursor.fetchone())
+            self.borrower_key_str = str(self.borrower_key)
+            print(self.borrower_key_str)
+
+            self.mycursor.close()
+            self.db1.close()
+
+        except Exception as e:
+            print("Could not connect to lmsdatabase")
+            print(e)
+
+    def update_database_record(self):
+        self.database_connect()
+        self.mycursor.execute(
+            "UPDATE borrower SET name = '"
+            + self.account_content_name_e.get() + "', address = '"
+            + self.account_content_address_e.get() + "', age = '"
+            + self.account_content_age_e.get() + "', gender = '"
+            + self.account_content_gender_e.get() + "' WHERE borrowerid = '" + self.borrower_key_str + "';")
+
+        self.db1.commit()
+        self.db1.close()
+        self.mycursor.close()
+
+        # Update account window
+        self.switch_account()
+
+    def delete_database_record(self):
+        self.database_connect()
+        self.mycursor.execute("DELETE FROM borrower WHERE borrowerid = '" + self.borrower_key_str +
+                              "';")
+        self.db1.commit()
+        self.db1.close()
+        self.mycursor.close()
+        self.switch_account()
 
     @staticmethod
     def state_button(widget1, widget2, widget3):
