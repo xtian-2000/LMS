@@ -74,4 +74,19 @@ class Database:
             print("'borrower' table could not be created")
             print(e)
 
+        # Creating loans table in database
+        try:
+            self.mycursor = self.db1.cursor()
+            self.mycursor.execute("CREATE TABLE `lmsdatabase`.`loan` (`loanid` INT NOT NULL AUTO_INCREMENT,"
+                                  "`borrowerid` INT NOT NULL, `amount` INT NOT NULL, `interest` INT NOT NULL,"
+                                  " `days` INT NOT NULL, `created` VARCHAR(45) NOT NULL, PRIMARY KEY (`loanid`),"
+                                  " INDEX `borrowerid_idx` (`borrowerid` ASC) VISIBLE, CONSTRAINT `borrowerid`"
+                                  " FOREIGN KEY (`borrowerid`) REFERENCES `lmsdatabase`.`borrower` (`borrowerid`)"
+                                  " ON DELETE NO ACTION ON UPDATE NO ACTION);")
+
+            print("'loan' table is created successfully")
+        except Exception as e:
+            print("'loan' table could not be created")
+            print(e)
+
 

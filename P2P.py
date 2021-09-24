@@ -230,7 +230,13 @@ class Window:
 
         # Home dashboard container
         self.home_dashboard_lf = tk.LabelFrame(self.home_lf, bg="#FFFFFF", relief="flat")
-        self.home_dashboard_lf.pack(side="top", fill="x")
+        self.home_dashboard_lf.pack(side="top", fill="both")
+
+        ttk.Label(self.home_dashboard_lf, text="Analytics Dashboard",
+                  style="heading.TLabel").grid(column=0, row=0, columnspan=2, pady=5, sticky="w")
+
+        ttk.Label(self.home_dashboard_lf, text="This section is under development",
+                  style="body.TLabel").grid(column=0, row=1, padx=5, pady=5, sticky="w")
 
         # Configure button state
         self.state_button(self.home_b, self.account_b, self.loan_b)
@@ -307,7 +313,7 @@ class Window:
         ttk.Label(self.account_content_view_lf, text="Account Information",
                   style="heading.TLabel").grid(column=0, row=0, columnspan=2, pady=5, sticky="w")
 
-        ttk.Label(self.account_content_view_lf, text="No information Available",
+        ttk.Label(self.account_content_view_lf, text="No information available",
                   style="body.TLabel").grid(column=0, row=1, padx=5, pady=5, sticky="w")
 
         # Configure button state
