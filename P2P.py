@@ -385,7 +385,7 @@ class Window:
     def add_people(self):
         # Create instance
         self.add_people_top = tk.Toplevel(self.master)
-        self.add_people_top.geometry("500x280")
+        # self.add_people_top.geometry("500x280")
         self.add_people_top.title("Borrower's Profile")
         self.add_people_top.configure(bg="#4C8404")
 
@@ -580,7 +580,7 @@ class Window:
     def issue_loan(self):
         # Create instance
         self.issue_loan_top = tk.Toplevel(self.master)
-        self.issue_loan_top.geometry("500x280")
+        # self.issue_loan_top.geometry("500x280")
         self.issue_loan_top.title("Issue loan")
         self.issue_loan_top.configure(bg="#4C8404")
 
