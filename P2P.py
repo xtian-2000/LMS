@@ -46,7 +46,7 @@ class Window:
         self.home_lf = None
         self.home_dashboard_lf = None
         self.loan_lf = None
-        self.loans_menu_lf = None
+        self.loan_dashboard_lf = None
         self.account_lf = None
         self.account_database_view_f = None
         self.account_database_view_scr = None
@@ -59,6 +59,14 @@ class Window:
         self.account_content_gender_e = None
         self.delete_account_b = None
         self.save_account_b = None
+        self.issue_loan_b = None
+        self.issue_loan_top = None
+        self.issue_loan_lf = None
+        self.issue_loan_amount_sb = None
+        self.issue_loan_interest_sb = None
+        self.issue_loan_days_sb = None
+        self.cancel_issue_loan_b = None
+        self.finish_issue_loan_b = None
         self.account_borrower_header = None
         self.account_borrower_lb = ttk.Treeview
         self.borrower_key = None
@@ -205,7 +213,7 @@ class Window:
         self.toolbar_lf.pack(side="top", fill="x")
 
         # Button for opening form for adding borrower
-        self.add_people_b = tk.Button(self.toolbar_lf, text="Add people", font="OpenSans, 10", fg="#FFFFFF",
+        self.add_people_b = tk.Button(self.toolbar_lf, text="Add borrower", font="OpenSans, 10", fg="#FFFFFF",
                                       bg="#4C8404", relief="flat", command=self.add_people)
         self.add_people_b.pack(side="left", padx=5, pady=5)
 
@@ -249,9 +257,15 @@ class Window:
         self.loan_lf = tk.LabelFrame(self.content_lf, relief="flat")
         self.loan_lf.pack(fill="both", expand=True)
 
-        # Loan menu container
-        self.loans_menu_lf = tk.LabelFrame(self.loan_lf, bg="#FFFFFF", relief="flat")
-        self.loans_menu_lf.pack(side="top", fill="x")
+        # Home dashboard container
+        self.loan_dashboard_lf = tk.LabelFrame(self.loan_lf, bg="#FFFFFF", relief="flat")
+        self.loan_dashboard_lf.pack(side="top", fill="both")
+
+        ttk.Label(self.loan_dashboard_lf, text="Loans Dashboard",
+                  style="heading.TLabel").grid(column=0, row=0, columnspan=2, pady=5, sticky="w")
+
+        ttk.Label(self.loan_dashboard_lf, text="This section is under development",
+                  style="body.TLabel").grid(column=0, row=1, padx=5, pady=5, sticky="w")
 
         # Configure button state
         self.state_button(self.loan_b, self.account_b, self.home_b)
@@ -540,22 +554,78 @@ class Window:
         self.account_content_age_e.insert(0, values[2])
         self.account_content_gender_e.insert(0, values[3])
 
-        # Button for opening form for adding borrower
+        # Button for deleting a record
         self.delete_account_b = tk.Button(self.account_content_view_lf, text="Delete Account", font="OpenSans, 10",
                                           fg="#FFFFFF", bg="#4C8404", relief="flat",
                                           command=self.delete_database_record)
         self.delete_account_b.grid(column=0, row=5, padx=5, pady=5, sticky="w")
 
-        # Button for opening form for adding borrower
+        # Button for updating a record
         self.save_account_b = tk.Button(self.account_content_view_lf, text="Save changes", font="OpenSans, 10",
                                         fg="#FFFFFF", bg="#4C8404", relief="flat",
                                         command=self.update_database_record)
         self.save_account_b.grid(column=1, row=5, padx=5, pady=5, sticky="w")
 
+        # Button for opening form for adding borrower
+        self.issue_loan_b = tk.Button(self.account_content_view_lf, text="Issue loan", font="OpenSans, 10",
+                                      fg="#FFFFFF", bg="#4C8404", relief="flat",
+                                      command=self.issue_loan)
+        self.issue_loan_b.grid(column=2, row=5, padx=5, pady=5, sticky="w")
+
         print(event)
 
         # Assign variable to borrower id
         self.show_borrower_id()
+
+    def issue_loan(self):
+        # Create instance
+        self.issue_loan_top = tk.Toplevel(self.master)
+        self.issue_loan_top.geometry("500x280")
+        self.issue_loan_top.title("Issue loan")
+        self.issue_loan_top.configure(bg="#4C8404")
+
+        # Register container
+        self.issue_loan_lf = tk.LabelFrame(self.issue_loan_top, padx=20, pady=20, relief="flat")
+        self.issue_loan_lf.pack(anchor="center", expand=True)
+
+        # Creating widgets
+        ttk.Label(self.issue_loan_lf, text="Amount", font="OpenSans, 10").grid(column=0, row=0, columnspan=2,
+                                                                               padx=5, pady=5, sticky="w")
+
+        self.issue_loan_amount_sb = ttk.Spinbox(self.issue_loan_lf, from_=0, to=200000, width=10)
+        self.issue_loan_amount_sb.grid(column=1, row=0, padx=5, pady=5, sticky="w")
+
+        # Focuses cursor on add name entry
+        self.issue_loan_amount_sb.focus()
+
+        ttk.Label(self.issue_loan_lf, text="Interest rate", font="OpenSans, 10").grid(column=0, row=1, padx=5, pady=5,
+                                                                                      sticky="w")
+
+        self.issue_loan_interest_sb = ttk.Spinbox(self.issue_loan_lf, from_=0, to=200000, width=5)
+        self.issue_loan_interest_sb.grid(column=1, row=1, padx=5, pady=5, sticky="w")
+
+        ttk.Label(self.issue_loan_lf, text="per", font="OpenSans, 10").grid(column=0, row=2, padx=5, pady=5, sticky="w")
+
+        self.issue_loan_days_sb = ttk.Spinbox(self.issue_loan_lf, from_=0, to=200000, width=5)
+        self.issue_loan_days_sb.grid(column=1, row=2, padx=5, pady=5, sticky="w")
+
+        ttk.Label(self.issue_loan_lf, text="days", font="OpenSans, 10",).grid(column=2, row=2, padx=5, pady=5,
+                                                                              sticky="w")
+
+        # Button for adding people to database
+        self.cancel_issue_loan_b = tk.Button(self.issue_loan_lf, text="Done", font="OpenSans, 12", fg="#FFFFFF",
+                                             bg="#4C8404", relief="flat", command=self.finish_add_people)
+        self.cancel_issue_loan_b.grid(column=0, row=4, padx=5, pady=5)
+
+        # Button for adding people to database
+        self.finish_issue_loan_b = tk.Button(self.issue_loan_lf, text="Cancel", font="OpenSans, 12", fg="#4C8404",
+                                             bg="#FFFFFF", relief="flat", command=self.issue_loan_top.destroy)
+        self.finish_issue_loan_b.grid(column=1, row=4, padx=5, pady=5, sticky="w")
+
+        # Disables underlying window
+        self.issue_loan_top.grab_set()
+
+        self.issue_loan_top.mainloop()
 
     def show_borrower_id(self):
         try:
