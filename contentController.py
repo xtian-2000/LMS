@@ -28,6 +28,16 @@ class Content(tk.Tk, ttk.LabelFrame, ttk.Entry, ttk.Label, tk.Button, tk.Topleve
             if isinstance(widget, ttk.Entry):
                 widget.delete(0, "end")
 
+    def destroy_button(self):
+        for widget in self.winfo_children():
+            if isinstance(widget, tk.Button):
+                widget.destroy()
+
+    def disable_entry(self):
+        for widget in self.winfo_children():
+            if isinstance(widget, ttk.Entry):
+                widget.config(state="disabled")
+
     def background_change_label(self, background: object):
         for widget in self.winfo_children():
             if isinstance(widget, ttk.Label):

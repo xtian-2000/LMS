@@ -83,10 +83,10 @@ class Database:
                                   " INDEX `borrowerid_idx` (`borrowerid` ASC) VISIBLE, CONSTRAINT `borrowerid`"
                                   " FOREIGN KEY (`borrowerid`) REFERENCES `lmsdatabase`.`borrower` (`borrowerid`)"
                                   " ON DELETE NO ACTION ON UPDATE NO ACTION);")
+            self.mycursor.execute("ALTER TABLE `lmsdatabase`.`loan` ADD COLUMN `userid` INT NOT"
+                                  " NULL AFTER `borrowerid`;")
 
             print("'loan' table is created successfully")
         except Exception as e:
             print("'loan' table could not be created")
             print(e)
-
-
