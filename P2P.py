@@ -6,6 +6,7 @@ import mysql.connector as mysql
 from contentController import Content
 import functools
 from PIL import ImageTk, Image
+from tkcalendar import Calendar
 
 # import numpy as np
 # import matplotlib.pyplot as plt
@@ -48,7 +49,13 @@ class Window:
         self.home_lf = None
         self.home_dashboard_lf = None
         self.loan_lf = None
+        self.loan_database_view_lf = None
         self.loan_dashboard_lf = None
+        self.loan_database_view_f = None
+        self.loan_database_view_scr = None
+        self.loan_borrower_lb = None
+        self.loan_content_view_lf = None
+        self.issue_loan_date_cal = None
         self.account_lf = None
         self.account_database_view_f = None
         self.account_database_view_scr = None
@@ -85,6 +92,10 @@ class Window:
         self.success_add_people_message = None
         self.db1 = None
         self.mycursor = None
+
+        self.year = datetime.today().year
+        self.month = datetime.today().month
+        self.day = datetime.today().day
 
         # Instantiate Database class
         Database()
@@ -286,21 +297,25 @@ class Window:
         self.loan_database_view_scr.configure(command=self.loan_borrower_lb.yview)
 
         # Define column
-        self.loan_borrower_lb["columns"] = ("Name", "Amount", "Interest", "(n) days")
+        self.loan_borrower_lb["columns"] = ("Order ID", "Name", "Amount", "Interest", "(n) days", "Date issued")
 
         # Format column
         self.loan_borrower_lb.column("#0", width=0, stretch="no")
-        self.loan_borrower_lb.column("Name", anchor="w", width=120)
-        self.loan_borrower_lb.column("Amount", anchor="center", width=120)
-        self.loan_borrower_lb.column("Interest", anchor="center", width=80)
-        self.loan_borrower_lb.column("(n) days", anchor="center", width=80)
+        self.loan_borrower_lb.column("Order ID", anchor="center", width=50)
+        self.loan_borrower_lb.column("Name", anchor="w", width=80)
+        self.loan_borrower_lb.column("Amount", anchor="center", width=50)
+        self.loan_borrower_lb.column("Interest", anchor="center", width=50)
+        self.loan_borrower_lb.column("(n) days", anchor="center", width=50)
+        self.loan_borrower_lb.column("Date issued", anchor="center", width=50)
 
         # Create headings
         self.loan_borrower_lb.heading("#0", text="", anchor="w")
+        self.loan_borrower_lb.heading("Order ID", text="Order ID", anchor="center")
         self.loan_borrower_lb.heading("Name", text="Name", anchor="w")
         self.loan_borrower_lb.heading("Amount", text="Amount", anchor="center")
         self.loan_borrower_lb.heading("Interest", text="Interest", anchor="center")
-        self.loan_borrower_lb.heading("(n) days", text="(n) days", anchor="center")
+        self.loan_borrower_lb.heading("(n) days", text="interest per (n) days", anchor="center")
+        self.loan_borrower_lb.heading("Date issued", text="Date issued", anchor="center")
 
         self.loan_borrower_lb.pack(side="left", fill="both", expand=True)
 
@@ -455,8 +470,8 @@ class Window:
         self.add_people_lf.pack(anchor="center", expand=True, fill="both")
 
         # Creating widgets
-        ttk.Label(self.add_people_lf, text="Name", font="OpenSans, 10").grid(column=0, row=0, padx=5, pady=5,
-                                                                             sticky="w")
+        ttk.Label(self.add_people_lf, text="Name", style="h3.TLabel").grid(column=0, row=0, padx=5, pady=5,
+                                                                           sticky="w")
 
         self.add_people_name_entry = ttk.Entry(self.add_people_lf, width=50)
         self.add_people_name_entry.grid(column=1, row=0, padx=5, pady=5, sticky="w")
@@ -464,20 +479,20 @@ class Window:
         # Focuses cursor on add name entry
         self.add_people_name_entry.focus()
 
-        ttk.Label(self.add_people_lf, text="Address", font="OpenSans, 10").grid(column=0, row=1, padx=5, pady=5,
-                                                                                sticky="w")
+        ttk.Label(self.add_people_lf, text="Address", style="h3.TLabel").grid(column=0, row=1, padx=5, pady=5,
+                                                                              sticky="w")
 
         self.add_people_address_entry = ttk.Entry(self.add_people_lf, width=50)
         self.add_people_address_entry.grid(column=1, row=1, padx=5, pady=5, sticky="w")
 
-        ttk.Label(self.add_people_lf, text="Age", font="OpenSans, 10").grid(column=0, row=2, padx=5, pady=5, sticky="w")
+        ttk.Label(self.add_people_lf, text="Age", style="h3.TLabel").grid(column=0, row=2, padx=5, pady=5, sticky="w")
 
         self.age_spinbox = ttk.Spinbox(self.add_people_lf, from_=0, to=200, width=5)
         self.age_spinbox.grid(column=1, row=2, padx=5, pady=5, sticky="w")
 
         # Combobox for gender
-        ttk.Label(self.add_people_lf, text="Gender", font="OpenSans, 10").grid(column=0, row=3, padx=5, pady=5,
-                                                                               sticky="w")
+        ttk.Label(self.add_people_lf, text="Gender", style="h3.TLabel").grid(column=0, row=3, padx=5, pady=5,
+                                                                             sticky="w")
         self.gender_combobox = ttk.Combobox(self.add_people_lf, width=10)
         self.gender_combobox['values'] = "Male", "Female", "Others"
         self.gender_combobox.grid(column=1, row=3, padx=5, pady=5, sticky="w")
@@ -531,8 +546,8 @@ class Window:
         self.issue_loan_lf.pack(anchor="center", expand=True, fill="both")
 
         # Creating widgets
-        ttk.Label(self.issue_loan_lf, text="Amount", font="OpenSans, 10").grid(column=0, row=0, columnspan=2,
-                                                                               padx=5, pady=5, sticky="w")
+        ttk.Label(self.issue_loan_lf, text="Amount", style="h3.TLabel").grid(column=0, row=0, columnspan=2,
+                                                                             padx=5, pady=5, sticky="w")
 
         self.issue_loan_amount_sb = ttk.Spinbox(self.issue_loan_lf, from_=0, to=200000, width=10)
         self.issue_loan_amount_sb.grid(column=1, row=0, padx=5, pady=5, sticky="w")
@@ -540,30 +555,34 @@ class Window:
         # Focuses cursor on add name entry
         self.issue_loan_amount_sb.focus()
 
-        ttk.Label(self.issue_loan_lf, text="Interest rate", font="OpenSans, 10").grid(column=0, row=1, padx=5, pady=5,
-                                                                                      sticky="w")
+        ttk.Label(self.issue_loan_lf, text="Interest rate", style="h3.TLabel").grid(column=0, row=1, padx=5, pady=5,
+                                                                                    sticky="w")
 
         self.issue_loan_interest_sb = ttk.Spinbox(self.issue_loan_lf, from_=0, to=200000, width=5)
         self.issue_loan_interest_sb.grid(column=1, row=1, padx=5, pady=5, sticky="w")
 
-        ttk.Label(self.issue_loan_lf, text="per", font="OpenSans, 10").grid(column=0, row=2, padx=5, pady=5,
-                                                                            sticky="w")
+        ttk.Label(self.issue_loan_lf, text="interest per (n) days", style="h3.TLabel").grid(column=0, row=2, padx=5,
+                                                                                            pady=5, sticky="w")
 
         self.issue_loan_days_sb = ttk.Spinbox(self.issue_loan_lf, from_=0, to=200000, width=5)
         self.issue_loan_days_sb.grid(column=1, row=2, padx=5, pady=5, sticky="w")
 
-        ttk.Label(self.issue_loan_lf, text="days", font="OpenSans, 10", ).grid(column=2, row=2, padx=5, pady=5,
-                                                                               sticky="w")
+        ttk.Label(self.issue_loan_lf, text="Date issued", style="h3.TLabel").grid(column=0, row=3, padx=5, pady=5,
+                                                                                  sticky="w")
+
+        self.issue_loan_date_cal = Calendar(self.issue_loan_lf, selectmode="day", year=self.year, month=self.month,
+                                            day=self.day)
+        self.issue_loan_date_cal.grid(column=0, row=4, columnspan=3, padx=5, pady=5, sticky="w")
 
         # Button for adding people to database
         self.cancel_issue_loan_b = tk.Button(self.issue_loan_lf, text="Done", font="OpenSans, 12", fg="#FFFFFF",
                                              bg="#4C8404", relief="flat", command=self.finish_issue_loan)
-        self.cancel_issue_loan_b.grid(column=0, row=4, padx=5, pady=5)
+        self.cancel_issue_loan_b.grid(column=0, row=5, padx=5, pady=5)
 
         # Button for adding people to database
         self.finish_issue_loan_b = tk.Button(self.issue_loan_lf, text="Cancel", font="OpenSans, 12", fg="#4C8404",
-                                             bg="#FFFFFF", relief="flat", command=self.issue_loan_lf.destroy)
-        self.finish_issue_loan_b.grid(column=1, row=4, padx=5, pady=5, sticky="w")
+                                             bg="#FFFFFF", relief="flat", command=self.add_people_top.destroy)
+        self.finish_issue_loan_b.grid(column=1, row=5, padx=5, pady=5, sticky="w")
 
     def finish_add_people(self):
         try:
@@ -598,10 +617,11 @@ class Window:
             self.database_connect()
 
             self.mycursor.execute(
-                "INSERT INTO loan (borrowerid, userid, amount, interest, days, created) VALUES (%s, %s, %s,%s,"
-                "%s,%s)",
+                "INSERT INTO loan (borrowerid, userid, amount, interest, days, created, dateissued) VALUES (%s, %s, %s,"
+                "%s, %s, %s, %s)",
                 (self.borrower_key_str, self.key_str, self.issue_loan_amount_sb.get(),
-                 self.issue_loan_interest_sb.get(), self.issue_loan_days_sb.get(), datetime.now()))
+                 self.issue_loan_interest_sb.get(), self.issue_loan_days_sb.get(), datetime.now(),
+                 self.issue_loan_date_cal.get_date()))
 
             self.db1.commit()
             self.db1.close()
@@ -672,9 +692,10 @@ class Window:
         # Method for viewing accounts database
         try:
             self.database_connect()
-            print(self.borrower_key_str)
-            self.mycursor.execute("SELECT name FROM borrower AND SELECT amount, interest, days FROM loan where"
-                                  " borrowerid = '" + self.borrower_key_str + "';")
+            self.mycursor.execute("SELECT loan.loanid, borrower.name, loan.amount, loan.interest, loan.days,"
+                                  " loan.dateissued, borrower.userid FROM loan INNER JOIN borrower ON"
+                                  " loan.borrowerid=borrower.borrowerid "
+                                  "where borrower.userid = '" + self.key_str + "';")
             loans = self.mycursor.fetchall()
             print(loans)
 
@@ -683,16 +704,16 @@ class Window:
             self.loan_borrower_lb.tag_configure("evenrow", background="#FAFAFA")
             count = 0
             for record in loans:
-                print(record[count])
-                """
                 if count % 2 == 0:
                     self.loan_borrower_lb.insert(parent="", index="end", iid=count, text="",
-                                                    values=(record[0], record[1], record[2], record[3]),
-                                                    tags=("oddrow",))
+                                                 values=(record[0], record[1], record[2], record[3], record[4],
+                                                         record[5]),
+                                                 tags=("oddrow",))
                 else:
                     self.loan_borrower_lb.insert(parent="", index="end", iid=count, text="",
-                                                    values=(record[0], record[1], record[2], record[3]),
-                                                    tags=("evenrow",))"""
+                                                 values=(record[0], record[1], record[2], record[3], record[4],
+                                                         record[5]),
+                                                 tags=("evenrow",))
                 count += 1
 
             self.db1.commit()
