@@ -89,8 +89,26 @@ class Database:
                                   " NOT NULL AFTER `created`;")
             self.mycursor.execute("ALTER TABLE `lmsdatabase`.`loan` ADD COLUMN `status` VARCHAR(45) NOT NULL AFTER "
                                   "`dateissued`;")
+            self.mycursor.execute("ALTER TABLE `lmsdatabase`.`loan` ADD COLUMN `balance` INT NOT NULL AFTER "
+                                  "`borrowerid`;")
 
-            print("'loan' table is created successfully")
+            print("loan table is created successfully")
         except Exception as e:
-            print("'loan' table could not be created")
+            print("loan table could not be created")
+            print(e)
+
+        # Creating payment table in database
+        try:
+            self.mycursor = self.db1.cursor()
+            self.mycursor.execute("CREATE TABLE `lmsdatabase`.`payment` (`paymentid` INT NOT NULL,`loanid` INT NOT"
+                                  " NULL,`amount` INT NOT NULL, `dateissued` VARCHAR(45) NOT NULL, PRIMARY KEY"
+                                  " (`paymentid`), INDEX `loanid_idx` (`loanid` ASC) VISIBLE, CONSTRAINT `loanid`"
+                                  " FOREIGN KEY (`loanid`) REFERENCES `lmsdatabase`.`loan` (`loanid`) ON DELETE NO"
+                                  " ACTION ON UPDATE NO ACTION);")
+            self.mycursor.execute("ALTER TABLE `lmsdatabase`.`payment` CHANGE COLUMN `paymentid` `paymentid` INT NOT"
+                                  " NULL AUTO_INCREMENT ;")
+
+            print("payment table is created successfully")
+        except Exception as e:
+            print("payment table could not be created")
             print(e)

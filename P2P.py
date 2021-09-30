@@ -84,7 +84,7 @@ class Window:
         self.loan_content_amount_e = None
         self.loan_content_interest_e = None
         self.loan_content_interest_pd_e = None
-        self.loan_content_date_issued_cal = None
+        self.loan_content_date_issued_e = None
         self.loan_content_status_cb = None
         self.loan_content_date_issued_str = None
         self.delete_loan_b = None
@@ -104,6 +104,18 @@ class Window:
         self.finish_add_people_b = None
         self.cancel_add_people_b = None
         self.success_add_people_message = None
+        self.rp_info_lf = None
+        self.rp_info_name_l = None
+        self.rp_info_loanid_l = None
+        self.rp_info_amount_l = None
+        self.rp_interest_l = None
+        self.rp_info_balance_l = None
+        self.rp_info_recommend_pay_l = None
+        self.rp_info_payment_entry = None
+        self.loan_content_date_issued_cal = None
+        self.rp_buttons_lf = None
+        self.register_payment_done_b = None
+        self.register_payment_cancel_b = None
         self.db1 = None
         self.mycursor = None
         self.count = None
@@ -312,7 +324,7 @@ class Window:
 
         # Define column
         self.loan_borrower_lb["columns"] = ("Loan ID", "Name", "Amount", "Interest", "(n) days", "Date issued",
-                                            "Status")
+                                            "Status", "Balance")
 
         # Format column
         self.loan_borrower_lb.column("#0", width=0, stretch="no")
@@ -323,6 +335,7 @@ class Window:
         self.loan_borrower_lb.column("(n) days", anchor="center", width=50)
         self.loan_borrower_lb.column("Date issued", anchor="center", width=50)
         self.loan_borrower_lb.column("Status", anchor="center", width=50)
+        self.loan_borrower_lb.column("Balance", anchor="center", width=50)
 
         # Create headings
         self.loan_borrower_lb.heading("#0", text="", anchor="w")
@@ -333,6 +346,7 @@ class Window:
         self.loan_borrower_lb.heading("(n) days", text="interest per (n) days", anchor="center")
         self.loan_borrower_lb.heading("Date issued", text="Date issued", anchor="center")
         self.loan_borrower_lb.heading("Status", text="Status", anchor="center")
+        self.loan_borrower_lb.heading("Balance", text="Balance", anchor="center")
 
         self.loan_borrower_lb.pack(side="left", fill="both", expand=True)
 
@@ -608,63 +622,6 @@ class Window:
                                              bg="#FFFFFF", relief="flat", command=self.add_people_top.destroy)
         self.finish_issue_loan_b.grid(column=1, row=5, padx=5, pady=5, sticky="w")
 
-    def register_payment(self):
-        # Create instance
-        self.add_people_top = tk.Toplevel(self.master)
-        # self.add_people_top.geometry("500x280")
-        self.add_people_top.title("Register payment")
-        self.add_people_top.configure(bg="#FFFFFF")
-
-        # Register container
-        self.rp_info_lf = tk.LabelFrame(self.add_people_top, padx=20, pady=20, relief="flat", background="#FFFFFF")
-        self.rp_info_lf.pack(anchor="center", expand=True, fill="both")
-
-        ttk.Label(self.rp_info_lf, text="Name", style="body.TLabel").grid(column=0, row=0, padx=5, pady=5, sticky="w")
-
-        self.rp_info_name_l = ttk.Label(self.rp_info_lf, style="body.TLabel")
-        self.rp_info_name_l.grid(column=1, row=0, padx=5, pady=5, sticky="w")
-
-        ttk.Label(self.rp_info_lf, text="Loan ID", style="body.TLabel").grid(column=0, row=1, padx=5, pady=5,
-                                                                             sticky="w")
-
-        self.rp_info_loanid_l = ttk.Label(self.rp_info_lf, style="body.TLabel")
-        self.rp_info_loanid_l.grid(column=1, row=1, padx=5, pady=5, sticky="w")
-
-        ttk.Label(self.rp_info_lf, text="Loan amount", style="body.TLabel").grid(column=0, row=2, padx=5, pady=5,
-                                                                                 sticky="w")
-
-        self.rp_info_amount_l = ttk.Label(self.rp_info_lf, style="body.TLabel")
-        self.rp_info_amount_l.grid(column=1, row=2, padx=5, pady=5, sticky="w")
-
-        ttk.Label(self.rp_info_lf, text="Interest rate (%)", style="body.TLabel").grid(column=0, row=3, padx=5, pady=5,
-                                                                                 sticky="w")
-
-        self.rp_interest_l = ttk.Label(self.rp_info_lf, style="body.TLabel")
-        self.rp_interest_l.grid(column=1, row=3, padx=5, pady=5, sticky="w")
-
-        ttk.Label(self.rp_info_lf, text="Balance", style="body.TLabel").grid(column=0, row=4, padx=5, pady=5,
-                                                                             sticky="w")
-
-        self.rp_info_balance_l = ttk.Label(self.rp_info_lf, style="body.TLabel")
-        self.rp_info_balance_l.grid(column=1, row=4, padx=5, pady=5, sticky="w")
-
-        ttk.Label(self.rp_info_lf, text="Recommended payment", style="body.TLabel").grid(column=0, row=5, padx=5,
-                                                                                         pady=5, sticky="w")
-
-        self.rp_info_recommend_pay_l = ttk.Label(self.rp_info_lf, style="body.TLabel")
-        self.rp_info_recommend_pay_l.grid(column=1, row=5, padx=5, pady=5, sticky="w")
-
-        ttk.Label(self.rp_info_lf, text="Payment amount", style="body.TLabel").grid(column=0, row=6, padx=5, pady=5,
-                                                                                    sticky="w")
-
-        self.rp_info_payment_entry = ttk.Entry(self.rp_info_lf, width=30)
-        self.rp_info_payment_entry.grid(column=1, row=6, padx=5, pady=5, sticky="w")
-
-        # Disables underlying window
-        self.add_people_top.grab_set()
-
-        self.add_people_top.mainloop()
-
     def finish_add_people(self):
         try:
             self.database_connect()
@@ -698,11 +655,11 @@ class Window:
             self.database_connect()
 
             self.mycursor.execute(
-                "INSERT INTO loan (borrowerid, userid, amount, interest, days, created, dateissued, status) VALUES (%s,"
-                " %s, %s, %s, %s, %s, %s, %s)",
+                "INSERT INTO loan (borrowerid, userid, amount, interest, days, created, dateissued, status, balance)"
+                " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
                 (self.borrower_key_str, self.key_str, self.issue_loan_amount_sb.get(),
                  self.issue_loan_interest_sb.get(), self.issue_loan_days_sb.get(), datetime.now(),
-                 self.issue_loan_date_de.get_date(), self.status_combobox.get()))
+                 self.issue_loan_date_de.get_date(), self.status_combobox.get(), self.issue_loan_amount_sb.get()))
 
             self.db1.commit()
             self.db1.close()
@@ -776,9 +733,9 @@ class Window:
         self.add_people_top.title("Register payment")
         self.add_people_top.configure(bg="#FFFFFF")
 
-        # Register container
+        # Loan info container
         self.rp_info_lf = tk.LabelFrame(self.add_people_top, padx=20, pady=20, relief="flat", background="#FFFFFF")
-        self.rp_info_lf.pack(anchor="center", expand=True, fill="both")
+        self.rp_info_lf.pack(side="top", expand=True, fill="both")
 
         ttk.Label(self.rp_info_lf, text="Name", style="body.TLabel").grid(column=0, row=0, padx=5, pady=5, sticky="w")
 
@@ -821,6 +778,13 @@ class Window:
         self.rp_info_payment_entry = ttk.Entry(self.rp_info_lf, width=30)
         self.rp_info_payment_entry.grid(column=1, row=6, padx=5, pady=5, sticky="w")
 
+        ttk.Label(self.rp_info_lf, text="Date issued",
+                  style="body.TLabel").grid(column=0, row=7, columnspan=2, padx=5, pady=5, sticky="w")
+
+        self.loan_content_date_issued_cal = DateEntry(self.rp_info_lf, width=12, background='green',
+                                                      foreground='white', borderwidth=2)
+        self.loan_content_date_issued_cal.grid(column=1, row=7, columnspan=2, padx=5, pady=5, sticky="w")
+
         # Grab record number
         selected = self.loan_borrower_lb.focus()
 
@@ -836,18 +800,103 @@ class Window:
         self.rp_info_loanid_l.configure(text=values[0])
         self.rp_info_amount_l.configure(text=values[2])
         self.rp_interest_l.configure(text=values[3])
+        self.rp_info_balance_l.configure(text=values[7])
+        self.rp_info_recommend_pay_l.configure(text=int(values[7]) / int(values[3]))
+
+        # Register payment buttons container
+        self.rp_buttons_lf = tk.LabelFrame(self.add_people_top, padx=20, pady=20, relief="flat", background="#FFFFFF")
+        self.rp_buttons_lf.pack(side="top", expand=True, fill="both")
+
+        # Button for registering payment
+        self.register_payment_done_b = tk.Button(self.rp_buttons_lf, text="Done", font="OpenSans, 10",
+                                                 fg="#FFFFFF", bg="#4C8404", relief="flat",
+                                                 command=self.finish_register_payment)
+        self.register_payment_done_b.grid(column=0, row=0, padx=50, pady=5, sticky="w")
+
+        # Button for updating a record
+        self.register_payment_cancel_b = tk.Button(self.rp_buttons_lf, text="Cancel", font="OpenSans, 10",
+                                                   fg="#FFFFFF", bg="#4C8404", relief="flat",
+                                                   command=self.add_people_top.destroy)
+        self.register_payment_cancel_b.grid(column=1, row=0, padx=50, pady=5, sticky="e")
 
         # Disables underlying window
         self.add_people_top.grab_set()
 
         self.add_people_top.mainloop()
 
+    def finish_register_payment(self):
+        try:
+            self.database_connect()
+
+            self.mycursor.execute(
+                "INSERT INTO payment (loanid, amount, dateissued) VALUES (%s, %s, %s)",
+                (self.loan_id, self.rp_info_payment_entry.get(), self.loan_content_date_issued_cal.get()))
+
+            self.db1.commit()
+            self.db1.close()
+            self.mycursor.close()
+
+            # Compute balance
+            self.compute_balance()
+
+            # Destroy add_people_top form
+            self.add_people_top.destroy()
+
+            # Show a messagebox for successfully adding people
+            messagebox.showinfo("Register payment", "Payment registered successfully")
+
+            # Updates loan window
+            self.switch_loan()
+        except Exception as e:
+            # Deletes all entries from ttk.Entry
+            Content.delete_entry(self.master)
+            # Show a messagebox for unsuccessfully adding people
+            messagebox.showerror("Register payment", "Did not succeed in registering payment")
+            print("Could not connect to lmsdatabase")
+            print(e)
+
+    def compute_balance(self):
+        try:
+            # Grab record number
+            selected = self.loan_borrower_lb.focus()
+
+            # Grab record values
+            values = self.loan_borrower_lb.item(selected, "values")
+
+            balance_total = int(values[7]) - int(self.rp_info_payment_entry.get())
+
+            self.database_connect()
+
+            print(values[7], self.rp_info_payment_entry.get())
+
+            if int(values[7]) <= int(self.rp_info_payment_entry.get()):
+                self.mycursor.execute(
+                    "UPDATE loan SET balance = 0, status = 'Fully Amortized' WHERE loanid = '" + self.loan_id + "';")
+            else:
+                self.mycursor.execute(
+                    "UPDATE loan SET balance = '" + str(balance_total) + "' WHERE loanid = '" + self.loan_id + "';")
+
+            print(self.loan_id)
+            self.db1.commit()
+            self.db1.close()
+            self.mycursor.close()
+
+            # Update account window
+            self.switch_loan()
+
+        except Exception as e:
+            # Show a messagebox for unsuccessfully adding people
+            messagebox.showerror("Register payment", "Did not succeed in registering payment")
+            print("Could not connect to lmsdatabase")
+            print(e)
+
     def database_view_loan(self):
         # Method for viewing accounts database
         try:
             self.database_connect()
             self.mycursor.execute("SELECT loan.loanid, borrower.name, loan.amount, loan.interest, loan.days,"
-                                  " loan.dateissued, loan.status, borrower.userid FROM loan INNER JOIN borrower ON"
+                                  " loan.dateissued, loan.status, borrower.userid, loan.balance"
+                                  " FROM loan INNER JOIN borrower ON"
                                   " loan.borrowerid=borrower.borrowerid "
                                   "where borrower.userid = '" + self.key_str + "';")
             loans = self.mycursor.fetchall()
@@ -861,13 +910,14 @@ class Window:
                 if count % 2 == 0:
                     self.loan_borrower_lb.insert(parent="", index="end", iid=count, text="",
                                                  values=(record[0], record[1], record[2], record[3], record[4],
-                                                         record[5], record[6]),
+                                                         record[5], record[6], record[8]),
                                                  tags=("oddrow",))
                 else:
                     self.loan_borrower_lb.insert(parent="", index="end", iid=count, text="",
                                                  values=(record[0], record[1], record[2], record[3], record[4],
-                                                         record[5], record[6]),
+                                                         record[5], record[6], record[8]),
                                                  tags=("evenrow",))
+
                 count += 1
 
             self.db1.commit()
@@ -913,9 +963,8 @@ class Window:
         ttk.Label(self.loan_content_view_lf, text="Date issued",
                   style="body.TLabel").grid(column=0, row=5, columnspan=2, padx=5, pady=5, sticky="w")
 
-        self.loan_content_date_issued_cal = DateEntry(self.loan_content_view_lf, width=12, background='green',
-                                                      foreground='white', borderwidth=2)
-        self.loan_content_date_issued_cal.grid(column=1, row=5, columnspan=2, sticky="w")
+        self.loan_content_date_issued_e = ttk.Entry(self.loan_content_view_lf, width=40)
+        self.loan_content_date_issued_e.grid(column=1, row=5, columnspan=2)
 
         # Combobox for loan
         ttk.Label(self.loan_content_view_lf, text="Status", style="body.TLabel").grid(column=0, row=6, padx=5, pady=5,
@@ -925,9 +974,6 @@ class Window:
         self.loan_content_status_cb['values'] = "Active", "Fully Amortized", "Default"
         self.loan_content_status_cb.grid(column=1, row=6, sticky="w")
         # self.loan_content_status_cb.current(0)
-
-        # Delete initial entry of date entry
-        self.loan_content_date_issued_cal.delete(0, "end")
 
         # Grab record number
         selected = self.loan_borrower_lb.focus()
@@ -944,7 +990,7 @@ class Window:
         self.loan_content_amount_e.insert(0, values[2])
         self.loan_content_interest_e.insert(0, values[3])
         self.loan_content_interest_pd_e.insert(0, values[4])
-        self.loan_content_date_issued_cal.insert(0, values[5])
+        self.loan_content_date_issued_e.insert(0, values[5])
         self.loan_content_status_cb.insert(0, values[6])
 
         # Button for deleting a loan
@@ -1101,13 +1147,11 @@ class Window:
 
     def update_loan_record(self):
         self.database_connect()
-        self.loan_content_date_issued_str = str(self.loan_content_date_issued_cal.get_date())
-        print(type(self.loan_content_date_issued_str))
         self.mycursor.execute(
             "UPDATE loan SET amount = '" + self.loan_content_amount_e.get() + "', interest = '"
             + self.loan_content_interest_e.get() + "', days = '"
             + self.loan_content_interest_pd_e.get() + "', dateissued = '"
-            + self.loan_content_date_issued_str + "', status = '"
+            + self.loan_content_date_issued_e.get() + "', status = '"
             + self.loan_content_status_cb.get() + "' WHERE loanid = '" + self.loan_id + "';")
 
         self.db1.commit()
