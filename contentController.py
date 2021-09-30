@@ -17,7 +17,8 @@ class Content(tk.Tk, ttk.LabelFrame, ttk.Entry, ttk.Label, tk.Button, tk.Topleve
         style.configure('h1.TLabel', font=("OpenSans", 20, "bold"), foreground='green', background="#EBEBEB")
         style.configure('h3.TLabel', font=("OpenSans", 10), foreground='#000000', background="#EBEBEB")
         style.configure('heading.TLabel', font=("OpenSans", 12, "bold"), foreground='green', background="#FFFFFF")
-        style.configure('body.TLabel', font=("OpenSans", 10), foreground='#000000', background="#FFFFFF")
+        style.configure('body.TLabel', font=("OpenSans", 10, "bold"), foreground='#000000', background="#FFFFFF")
+        style.configure('body_content.TLabel', font=("OpenSans", 10), foreground='green', background="#FFFFFF")
 
     def destroy_content(self):
         for child in self.winfo_children():
@@ -27,6 +28,11 @@ class Content(tk.Tk, ttk.LabelFrame, ttk.Entry, ttk.Label, tk.Button, tk.Topleve
         for widget in self.winfo_children():
             if isinstance(widget, ttk.Entry):
                 widget.delete(0, "end")
+
+    def delete_label(self):
+        for widget in self.winfo_children():
+            if isinstance(widget, ttk.Label):
+                widget.configure(text=0)
 
     def destroy_button(self):
         for widget in self.winfo_children():

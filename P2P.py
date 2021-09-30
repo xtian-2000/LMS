@@ -6,7 +6,7 @@ import mysql.connector as mysql
 from contentController import Content
 import functools
 from PIL import ImageTk, Image
-from tkcalendar import Calendar
+from tkcalendar import DateEntry
 
 # import numpy as np
 # import matplotlib.pyplot as plt
@@ -55,13 +55,15 @@ class Window:
         self.loan_database_view_scr = None
         self.loan_borrower_lb = None
         self.loan_content_view_lf = None
-        self.issue_loan_date_cal = None
+        self.issue_loan_date_de = None
+        self.status_combobox = None
         self.account_lf = None
         self.account_database_view_f = None
         self.account_database_view_scr = None
         self.account_buttons_lf = None
         self.account_database_view_lf = None
         self.account_content_view_lf = None
+        self.borrower_id = None
         self.account_content_name_e = None
         self.account_content_address_e = None
         self.account_content_age_e = None
@@ -69,6 +71,7 @@ class Window:
         self.delete_account_b = None
         self.save_account_b = None
         self.issue_loan_b = None
+        self.total_loan_l = None
         self.issue_loan_top = None
         self.issue_loan_lf = None
         self.issue_loan_amount_sb = None
@@ -76,6 +79,17 @@ class Window:
         self.issue_loan_days_sb = None
         self.cancel_issue_loan_b = None
         self.finish_issue_loan_b = None
+        self.loan_id = None
+        self.loan_content_name_l = None
+        self.loan_content_amount_e = None
+        self.loan_content_interest_e = None
+        self.loan_content_interest_pd_e = None
+        self.loan_content_date_issued_cal = None
+        self.loan_content_status_cb = None
+        self.loan_content_date_issued_str = None
+        self.delete_loan_b = None
+        self.save_loan_b = None
+        self.register_payment_b = None
         self.account_borrower_header = None
         self.account_borrower_lb = ttk.Treeview
         self.borrower_key = None
@@ -92,7 +106,7 @@ class Window:
         self.success_add_people_message = None
         self.db1 = None
         self.mycursor = None
-
+        self.count = None
         self.year = datetime.today().year
         self.month = datetime.today().month
         self.day = datetime.today().day
@@ -297,30 +311,33 @@ class Window:
         self.loan_database_view_scr.configure(command=self.loan_borrower_lb.yview)
 
         # Define column
-        self.loan_borrower_lb["columns"] = ("Order ID", "Name", "Amount", "Interest", "(n) days", "Date issued")
+        self.loan_borrower_lb["columns"] = ("Loan ID", "Name", "Amount", "Interest", "(n) days", "Date issued",
+                                            "Status")
 
         # Format column
         self.loan_borrower_lb.column("#0", width=0, stretch="no")
-        self.loan_borrower_lb.column("Order ID", anchor="center", width=50)
+        self.loan_borrower_lb.column("Loan ID", anchor="center", width=50)
         self.loan_borrower_lb.column("Name", anchor="w", width=80)
         self.loan_borrower_lb.column("Amount", anchor="center", width=50)
         self.loan_borrower_lb.column("Interest", anchor="center", width=50)
         self.loan_borrower_lb.column("(n) days", anchor="center", width=50)
         self.loan_borrower_lb.column("Date issued", anchor="center", width=50)
+        self.loan_borrower_lb.column("Status", anchor="center", width=50)
 
         # Create headings
         self.loan_borrower_lb.heading("#0", text="", anchor="w")
-        self.loan_borrower_lb.heading("Order ID", text="Order ID", anchor="center")
+        self.loan_borrower_lb.heading("Loan ID", text="Loan ID", anchor="center")
         self.loan_borrower_lb.heading("Name", text="Name", anchor="w")
         self.loan_borrower_lb.heading("Amount", text="Amount", anchor="center")
-        self.loan_borrower_lb.heading("Interest", text="Interest", anchor="center")
+        self.loan_borrower_lb.heading("Interest", text="Interest (%)", anchor="center")
         self.loan_borrower_lb.heading("(n) days", text="interest per (n) days", anchor="center")
         self.loan_borrower_lb.heading("Date issued", text="Date issued", anchor="center")
+        self.loan_borrower_lb.heading("Status", text="Status", anchor="center")
 
         self.loan_borrower_lb.pack(side="left", fill="both", expand=True)
 
         # Bind the treeview to database_view_info method
-        # self.loan_borrower_lb.bind("<ButtonRelease-1>", self.database_view_account_info)
+        self.loan_borrower_lb.bind("<ButtonRelease-1>", self.database_view_loan_info)
 
         # Initialize method for viewing accounts database
         self.database_view_loan()
@@ -561,7 +578,7 @@ class Window:
         self.issue_loan_interest_sb = ttk.Spinbox(self.issue_loan_lf, from_=0, to=200000, width=5)
         self.issue_loan_interest_sb.grid(column=1, row=1, padx=5, pady=5, sticky="w")
 
-        ttk.Label(self.issue_loan_lf, text="interest per (n) days", style="h3.TLabel").grid(column=0, row=2, padx=5,
+        ttk.Label(self.issue_loan_lf, text="Interest per (n) days", style="h3.TLabel").grid(column=0, row=2, padx=5,
                                                                                             pady=5, sticky="w")
 
         self.issue_loan_days_sb = ttk.Spinbox(self.issue_loan_lf, from_=0, to=200000, width=5)
@@ -569,10 +586,17 @@ class Window:
 
         ttk.Label(self.issue_loan_lf, text="Date issued", style="h3.TLabel").grid(column=0, row=3, padx=5, pady=5,
                                                                                   sticky="w")
+        self.issue_loan_date_de = DateEntry(self.issue_loan_lf, width=15, background='green',
+                                            foreground='white', borderwidth=2)
+        self.issue_loan_date_de.grid(column=1, row=3, columnspan=3, padx=5, pady=5, sticky="w")
 
-        self.issue_loan_date_cal = Calendar(self.issue_loan_lf, selectmode="day", year=self.year, month=self.month,
-                                            day=self.day)
-        self.issue_loan_date_cal.grid(column=0, row=4, columnspan=3, padx=5, pady=5, sticky="w")
+        # Combobox for loan
+        ttk.Label(self.issue_loan_lf, text="Status", style="h3.TLabel").grid(column=0, row=4, padx=5, pady=5,
+                                                                             sticky="w")
+        self.status_combobox = ttk.Combobox(self.issue_loan_lf, width=15)
+        self.status_combobox['values'] = "Active", "Fully Amortized", "Default"
+        self.status_combobox.grid(column=1, row=4, padx=5, pady=5, sticky="w")
+        self.status_combobox.current(0)
 
         # Button for adding people to database
         self.cancel_issue_loan_b = tk.Button(self.issue_loan_lf, text="Done", font="OpenSans, 12", fg="#FFFFFF",
@@ -583,6 +607,63 @@ class Window:
         self.finish_issue_loan_b = tk.Button(self.issue_loan_lf, text="Cancel", font="OpenSans, 12", fg="#4C8404",
                                              bg="#FFFFFF", relief="flat", command=self.add_people_top.destroy)
         self.finish_issue_loan_b.grid(column=1, row=5, padx=5, pady=5, sticky="w")
+
+    def register_payment(self):
+        # Create instance
+        self.add_people_top = tk.Toplevel(self.master)
+        # self.add_people_top.geometry("500x280")
+        self.add_people_top.title("Register payment")
+        self.add_people_top.configure(bg="#FFFFFF")
+
+        # Register container
+        self.rp_info_lf = tk.LabelFrame(self.add_people_top, padx=20, pady=20, relief="flat", background="#FFFFFF")
+        self.rp_info_lf.pack(anchor="center", expand=True, fill="both")
+
+        ttk.Label(self.rp_info_lf, text="Name", style="body.TLabel").grid(column=0, row=0, padx=5, pady=5, sticky="w")
+
+        self.rp_info_name_l = ttk.Label(self.rp_info_lf, style="body.TLabel")
+        self.rp_info_name_l.grid(column=1, row=0, padx=5, pady=5, sticky="w")
+
+        ttk.Label(self.rp_info_lf, text="Loan ID", style="body.TLabel").grid(column=0, row=1, padx=5, pady=5,
+                                                                             sticky="w")
+
+        self.rp_info_loanid_l = ttk.Label(self.rp_info_lf, style="body.TLabel")
+        self.rp_info_loanid_l.grid(column=1, row=1, padx=5, pady=5, sticky="w")
+
+        ttk.Label(self.rp_info_lf, text="Loan amount", style="body.TLabel").grid(column=0, row=2, padx=5, pady=5,
+                                                                                 sticky="w")
+
+        self.rp_info_amount_l = ttk.Label(self.rp_info_lf, style="body.TLabel")
+        self.rp_info_amount_l.grid(column=1, row=2, padx=5, pady=5, sticky="w")
+
+        ttk.Label(self.rp_info_lf, text="Interest rate (%)", style="body.TLabel").grid(column=0, row=3, padx=5, pady=5,
+                                                                                 sticky="w")
+
+        self.rp_interest_l = ttk.Label(self.rp_info_lf, style="body.TLabel")
+        self.rp_interest_l.grid(column=1, row=3, padx=5, pady=5, sticky="w")
+
+        ttk.Label(self.rp_info_lf, text="Balance", style="body.TLabel").grid(column=0, row=4, padx=5, pady=5,
+                                                                             sticky="w")
+
+        self.rp_info_balance_l = ttk.Label(self.rp_info_lf, style="body.TLabel")
+        self.rp_info_balance_l.grid(column=1, row=4, padx=5, pady=5, sticky="w")
+
+        ttk.Label(self.rp_info_lf, text="Recommended payment", style="body.TLabel").grid(column=0, row=5, padx=5,
+                                                                                         pady=5, sticky="w")
+
+        self.rp_info_recommend_pay_l = ttk.Label(self.rp_info_lf, style="body.TLabel")
+        self.rp_info_recommend_pay_l.grid(column=1, row=5, padx=5, pady=5, sticky="w")
+
+        ttk.Label(self.rp_info_lf, text="Payment amount", style="body.TLabel").grid(column=0, row=6, padx=5, pady=5,
+                                                                                    sticky="w")
+
+        self.rp_info_payment_entry = ttk.Entry(self.rp_info_lf, width=30)
+        self.rp_info_payment_entry.grid(column=1, row=6, padx=5, pady=5, sticky="w")
+
+        # Disables underlying window
+        self.add_people_top.grab_set()
+
+        self.add_people_top.mainloop()
 
     def finish_add_people(self):
         try:
@@ -617,11 +698,11 @@ class Window:
             self.database_connect()
 
             self.mycursor.execute(
-                "INSERT INTO loan (borrowerid, userid, amount, interest, days, created, dateissued) VALUES (%s, %s, %s,"
-                "%s, %s, %s, %s)",
+                "INSERT INTO loan (borrowerid, userid, amount, interest, days, created, dateissued, status) VALUES (%s,"
+                " %s, %s, %s, %s, %s, %s, %s)",
                 (self.borrower_key_str, self.key_str, self.issue_loan_amount_sb.get(),
                  self.issue_loan_interest_sb.get(), self.issue_loan_days_sb.get(), datetime.now(),
-                 self.issue_loan_date_cal.get_date()))
+                 self.issue_loan_date_de.get_date(), self.status_combobox.get()))
 
             self.db1.commit()
             self.db1.close()
@@ -688,12 +769,85 @@ class Window:
             print("Could not connect to lmsdatabase")
             print(e)
 
+    def register_payment(self):
+        # Create instance
+        self.add_people_top = tk.Toplevel(self.master)
+        # self.add_people_top.geometry("500x280")
+        self.add_people_top.title("Register payment")
+        self.add_people_top.configure(bg="#FFFFFF")
+
+        # Register container
+        self.rp_info_lf = tk.LabelFrame(self.add_people_top, padx=20, pady=20, relief="flat", background="#FFFFFF")
+        self.rp_info_lf.pack(anchor="center", expand=True, fill="both")
+
+        ttk.Label(self.rp_info_lf, text="Name", style="body.TLabel").grid(column=0, row=0, padx=5, pady=5, sticky="w")
+
+        self.rp_info_name_l = ttk.Label(self.rp_info_lf, style="body_content.TLabel")
+        self.rp_info_name_l.grid(column=1, row=0, padx=5, pady=5, sticky="w")
+
+        ttk.Label(self.rp_info_lf, text="Loan ID", style="body.TLabel").grid(column=0, row=1, padx=5, pady=5,
+                                                                             sticky="w")
+
+        self.rp_info_loanid_l = ttk.Label(self.rp_info_lf, style="body_content.TLabel")
+        self.rp_info_loanid_l.grid(column=1, row=1, padx=5, pady=5, sticky="w")
+
+        ttk.Label(self.rp_info_lf, text="Loan amount", style="body.TLabel").grid(column=0, row=2, padx=5, pady=5,
+                                                                                 sticky="w")
+
+        self.rp_info_amount_l = ttk.Label(self.rp_info_lf, style="body_content.TLabel")
+        self.rp_info_amount_l.grid(column=1, row=2, padx=5, pady=5, sticky="w")
+
+        ttk.Label(self.rp_info_lf, text="Interest rate (%)", style="body.TLabel").grid(column=0, row=3, padx=5, pady=5,
+                                                                                       sticky="w")
+
+        self.rp_interest_l = ttk.Label(self.rp_info_lf, style="body_content.TLabel")
+        self.rp_interest_l.grid(column=1, row=3, padx=5, pady=5, sticky="w")
+
+        ttk.Label(self.rp_info_lf, text="Balance", style="body.TLabel").grid(column=0, row=4, padx=5, pady=5,
+                                                                             sticky="w")
+
+        self.rp_info_balance_l = ttk.Label(self.rp_info_lf, style="body_content.TLabel")
+        self.rp_info_balance_l.grid(column=1, row=4, padx=5, pady=5, sticky="w")
+
+        ttk.Label(self.rp_info_lf, text="Recommended payment", style="body.TLabel").grid(column=0, row=5, padx=5,
+                                                                                         pady=5, sticky="w")
+
+        self.rp_info_recommend_pay_l = ttk.Label(self.rp_info_lf, style="body_content.TLabel")
+        self.rp_info_recommend_pay_l.grid(column=1, row=5, padx=5, pady=5, sticky="w")
+
+        ttk.Label(self.rp_info_lf, text="Payment amount", style="body.TLabel").grid(column=0, row=6, padx=5, pady=5,
+                                                                                    sticky="w")
+
+        self.rp_info_payment_entry = ttk.Entry(self.rp_info_lf, width=30)
+        self.rp_info_payment_entry.grid(column=1, row=6, padx=5, pady=5, sticky="w")
+
+        # Grab record number
+        selected = self.loan_borrower_lb.focus()
+
+        # Grab record values
+        values = self.loan_borrower_lb.item(selected, "values")
+
+        # Get loan id
+        self.loan_id = values[0]
+        print(self.loan_id)
+
+        # Insert values to info widgets
+        self.rp_info_name_l.configure(text=values[1])
+        self.rp_info_loanid_l.configure(text=values[0])
+        self.rp_info_amount_l.configure(text=values[2])
+        self.rp_interest_l.configure(text=values[3])
+
+        # Disables underlying window
+        self.add_people_top.grab_set()
+
+        self.add_people_top.mainloop()
+
     def database_view_loan(self):
         # Method for viewing accounts database
         try:
             self.database_connect()
             self.mycursor.execute("SELECT loan.loanid, borrower.name, loan.amount, loan.interest, loan.days,"
-                                  " loan.dateissued, borrower.userid FROM loan INNER JOIN borrower ON"
+                                  " loan.dateissued, loan.status, borrower.userid FROM loan INNER JOIN borrower ON"
                                   " loan.borrowerid=borrower.borrowerid "
                                   "where borrower.userid = '" + self.key_str + "';")
             loans = self.mycursor.fetchall()
@@ -707,12 +861,12 @@ class Window:
                 if count % 2 == 0:
                     self.loan_borrower_lb.insert(parent="", index="end", iid=count, text="",
                                                  values=(record[0], record[1], record[2], record[3], record[4],
-                                                         record[5]),
+                                                         record[5], record[6]),
                                                  tags=("oddrow",))
                 else:
                     self.loan_borrower_lb.insert(parent="", index="end", iid=count, text="",
                                                  values=(record[0], record[1], record[2], record[3], record[4],
-                                                         record[5]),
+                                                         record[5], record[6]),
                                                  tags=("evenrow",))
                 count += 1
 
@@ -723,6 +877,94 @@ class Window:
         except Exception as e:
             print("Could not connect to lmsdatabase")
             print(e)
+
+    def database_view_loan_info(self, event):
+        # Destroy content of account_content_view_lf
+        Content.destroy_content(self.loan_content_view_lf)
+
+        # Create widgets for displaying account information
+        ttk.Label(self.loan_content_view_lf, text="Loan Information",
+                  style="heading.TLabel").grid(column=0, row=0, columnspan=2, pady=5, sticky="w")
+
+        ttk.Label(self.loan_content_view_lf, text="Name",
+                  style="body.TLabel").grid(column=0, row=1, columnspan=2, padx=5, pady=5, sticky="w")
+
+        self.loan_content_name_l = ttk.Label(self.loan_content_view_lf, style="body_content.TLabel")
+        self.loan_content_name_l.grid(column=1, row=1, columnspan=2, sticky="w")
+
+        ttk.Label(self.loan_content_view_lf, text="Amount",
+                  style="body.TLabel").grid(column=0, row=2, columnspan=2, padx=5, pady=5, sticky="w")
+
+        self.loan_content_amount_e = ttk.Entry(self.loan_content_view_lf, width=40)
+        self.loan_content_amount_e.grid(column=1, row=2, columnspan=2)
+
+        ttk.Label(self.loan_content_view_lf, text="Interest (%)",
+                  style="body.TLabel").grid(column=0, row=3, columnspan=2, padx=5, pady=5, sticky="w")
+
+        self.loan_content_interest_e = ttk.Entry(self.loan_content_view_lf, width=40)
+        self.loan_content_interest_e.grid(column=1, row=3, columnspan=2)
+
+        ttk.Label(self.loan_content_view_lf, text="Interest per (n) days",
+                  style="body.TLabel").grid(column=0, row=4, padx=5, pady=5, sticky="w")
+
+        self.loan_content_interest_pd_e = ttk.Entry(self.loan_content_view_lf, width=40)
+        self.loan_content_interest_pd_e.grid(column=1, row=4, columnspan=2)
+
+        ttk.Label(self.loan_content_view_lf, text="Date issued",
+                  style="body.TLabel").grid(column=0, row=5, columnspan=2, padx=5, pady=5, sticky="w")
+
+        self.loan_content_date_issued_cal = DateEntry(self.loan_content_view_lf, width=12, background='green',
+                                                      foreground='white', borderwidth=2)
+        self.loan_content_date_issued_cal.grid(column=1, row=5, columnspan=2, sticky="w")
+
+        # Combobox for loan
+        ttk.Label(self.loan_content_view_lf, text="Status", style="body.TLabel").grid(column=0, row=6, padx=5, pady=5,
+                                                                                      sticky="w")
+
+        self.loan_content_status_cb = ttk.Combobox(self.loan_content_view_lf, width=12)
+        self.loan_content_status_cb['values'] = "Active", "Fully Amortized", "Default"
+        self.loan_content_status_cb.grid(column=1, row=6, sticky="w")
+        # self.loan_content_status_cb.current(0)
+
+        # Delete initial entry of date entry
+        self.loan_content_date_issued_cal.delete(0, "end")
+
+        # Grab record number
+        selected = self.loan_borrower_lb.focus()
+
+        # Grab record values
+        values = self.loan_borrower_lb.item(selected, "values")
+
+        # Get loan id
+        self.loan_id = values[0]
+        print(self.loan_id)
+
+        # Insert values to entry widgets
+        self.loan_content_name_l.configure(text=values[1])
+        self.loan_content_amount_e.insert(0, values[2])
+        self.loan_content_interest_e.insert(0, values[3])
+        self.loan_content_interest_pd_e.insert(0, values[4])
+        self.loan_content_date_issued_cal.insert(0, values[5])
+        self.loan_content_status_cb.insert(0, values[6])
+
+        # Button for deleting a loan
+        self.delete_loan_b = tk.Button(self.loan_content_view_lf, text="Delete Loan", font="OpenSans, 10",
+                                       fg="#FFFFFF", bg="#4C8404", relief="flat",
+                                       command=self.delete_loan_record)
+        self.delete_loan_b.grid(column=0, row=7, padx=5, pady=5, sticky="w")
+
+        # Button for updating a record
+        self.save_loan_b = tk.Button(self.loan_content_view_lf, text="Save changes", font="OpenSans, 10",
+                                     fg="#FFFFFF", bg="#4C8404", relief="flat",
+                                     command=self.update_loan_record)
+        self.save_loan_b.grid(column=1, row=7, padx=5, pady=5, sticky="w")
+
+        # Button for registering payment
+        self.register_payment_b = tk.Button(self.loan_content_view_lf, text="Register payment", font="OpenSans, 10",
+                                            fg="#FFFFFF", bg="#4C8404", relief="flat", command=self.register_payment)
+        self.register_payment_b.grid(column=2, row=7, padx=5, pady=5, sticky="w")
+
+        print(event)
 
     def database_view_account_info(self, event):
         # Destroy content of account_content_view_lf
@@ -736,25 +978,25 @@ class Window:
                   style="body.TLabel").grid(column=0, row=1, padx=5, pady=5, sticky="w")
 
         self.account_content_name_e = ttk.Entry(self.account_content_view_lf, width=40)
-        self.account_content_name_e.grid(column=1, row=1, columnspan=2)
+        self.account_content_name_e.grid(column=1, row=1, columnspan=3)
 
         ttk.Label(self.account_content_view_lf, text="Address",
                   style="body.TLabel").grid(column=0, row=2, padx=5, pady=5, sticky="w")
 
         self.account_content_address_e = ttk.Entry(self.account_content_view_lf, width=40)
-        self.account_content_address_e.grid(column=1, row=2, columnspan=2)
+        self.account_content_address_e.grid(column=1, row=2, columnspan=3)
 
         ttk.Label(self.account_content_view_lf, text="Age",
                   style="body.TLabel").grid(column=0, row=3, padx=5, pady=5, sticky="w")
 
         self.account_content_age_e = ttk.Entry(self.account_content_view_lf, width=40)
-        self.account_content_age_e.grid(column=1, row=3, columnspan=2)
+        self.account_content_age_e.grid(column=1, row=3, columnspan=3)
 
         ttk.Label(self.account_content_view_lf, text="Gender",
                   style="body.TLabel").grid(column=0, row=4, padx=5, pady=5, sticky="w")
 
         self.account_content_gender_e = ttk.Entry(self.account_content_view_lf, width=40)
-        self.account_content_gender_e.grid(column=1, row=4, columnspan=2)
+        self.account_content_gender_e.grid(column=1, row=4, columnspan=3)
 
         # Grab record number
         selected = self.account_borrower_lb.focus()
@@ -771,13 +1013,13 @@ class Window:
         # Button for deleting a record
         self.delete_account_b = tk.Button(self.account_content_view_lf, text="Delete Account", font="OpenSans, 10",
                                           fg="#FFFFFF", bg="#4C8404", relief="flat",
-                                          command=self.delete_database_record)
+                                          command=self.delete_account_record)
         self.delete_account_b.grid(column=0, row=5, padx=5, pady=5, sticky="w")
 
         # Button for updating a record
         self.save_account_b = tk.Button(self.account_content_view_lf, text="Save changes", font="OpenSans, 10",
                                         fg="#FFFFFF", bg="#4C8404", relief="flat",
-                                        command=self.update_database_record)
+                                        command=self.update_account_record)
         self.save_account_b.grid(column=1, row=5, padx=5, pady=5, sticky="w")
 
         # Button for opening form for adding borrower
@@ -786,10 +1028,41 @@ class Window:
                                       command=self.issue_loan)
         self.issue_loan_b.grid(column=2, row=5, padx=5, pady=5, sticky="w")
 
+        ttk.Label(self.account_content_view_lf, text="Total loans",
+                  style="body.TLabel").grid(column=4, row=1, padx=5, pady=5, sticky="w")
+
+        self.total_loan_l = ttk.Label(self.account_content_view_lf, text=0, style="body_content.TLabel")
+        self.total_loan_l.grid(column=5, row=1, padx=5, pady=5, sticky="w")
+
         print(event)
 
         # Assign variable to borrower id
         self.show_borrower_id()
+
+        # Initialize additional info on account
+        self.database_view_account_add_info()
+
+    def database_view_account_add_info(self):
+        self.total_loan_l.configure(text=0)
+        # Method for viewing accounts database
+        self.database_connect()
+        self.mycursor.execute("SELECT loanid FROM loan where borrowerid = '"
+                              + self.borrower_key_str +
+                              "';")
+        loan = self.mycursor.fetchall()
+        print(loan)
+
+        self.count = 0
+
+        for self.count, item in enumerate(loan):
+            self.count += 1
+
+        print(self.count)
+
+        self.total_loan_l.configure(text=self.count)
+        self.db1.commit()
+        self.mycursor.close()
+        self.db1.close()
 
     def show_borrower_id(self):
         try:
@@ -810,7 +1083,7 @@ class Window:
             print("Could not connect to lmsdatabase")
             print(e)
 
-    def update_database_record(self):
+    def update_account_record(self):
         self.database_connect()
         self.mycursor.execute(
             "UPDATE borrower SET name = '"
@@ -826,17 +1099,47 @@ class Window:
         # Update account window
         self.switch_account()
 
-    def delete_database_record(self):
+    def update_loan_record(self):
         self.database_connect()
-        self.mycursor.execute("SET FOREIGN_KEY_CHECKS=0;")
+        self.loan_content_date_issued_str = str(self.loan_content_date_issued_cal.get_date())
+        print(type(self.loan_content_date_issued_str))
+        self.mycursor.execute(
+            "UPDATE loan SET amount = '" + self.loan_content_amount_e.get() + "', interest = '"
+            + self.loan_content_interest_e.get() + "', days = '"
+            + self.loan_content_interest_pd_e.get() + "', dateissued = '"
+            + self.loan_content_date_issued_str + "', status = '"
+            + self.loan_content_status_cb.get() + "' WHERE loanid = '" + self.loan_id + "';")
+
+        self.db1.commit()
+        self.db1.close()
+        self.mycursor.close()
+
+        # Update account window
+        self.switch_loan()
+
+    def delete_account_record(self):
+        self.database_connect()
+        # self.mycursor.execute("SET FOREIGN_KEY_CHECKS=0;")
 
         self.mycursor.execute("DELETE FROM borrower WHERE borrowerid = '" + self.borrower_key_str +
                               "';")
-        self.mycursor.execute("SET FOREIGN_KEY_CHECKS=1;")
+        # self.mycursor.execute("SET FOREIGN_KEY_CHECKS=1;")
         self.db1.commit()
         self.db1.close()
         self.mycursor.close()
         self.switch_account()
+
+    def delete_loan_record(self):
+        self.database_connect()
+        # self.mycursor.execute("SET FOREIGN_KEY_CHECKS=0;")
+
+        self.mycursor.execute("DELETE FROM loan WHERE loanid = '" + self.loan_id +
+                              "';")
+        # self.mycursor.execute("SET FOREIGN_KEY_CHECKS=1;")
+        self.db1.commit()
+        self.db1.close()
+        self.mycursor.close()
+        self.switch_loan()
 
     @staticmethod
     def state_button(widget1, widget2, widget3):

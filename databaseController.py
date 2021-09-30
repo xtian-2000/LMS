@@ -87,6 +87,8 @@ class Database:
                                   " NULL AFTER `borrowerid`;")
             self.mycursor.execute("ALTER TABLE `lmsdatabase`.`loan` ADD COLUMN `dateissued` VARCHAR(45)"
                                   " NOT NULL AFTER `created`;")
+            self.mycursor.execute("ALTER TABLE `lmsdatabase`.`loan` ADD COLUMN `status` VARCHAR(45) NOT NULL AFTER "
+                                  "`dateissued`;")
 
             print("'loan' table is created successfully")
         except Exception as e:
