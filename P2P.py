@@ -42,6 +42,7 @@ class Window:
         self.home_b = tk.Button
         self.loan_b = tk.Button
         self.account_b = tk.Button
+        self.payment_b = tk.Button
         self.body_lf = None
         self.toolbar_lf = None
         self.logout_b = tk.Button
@@ -252,6 +253,10 @@ class Window:
                                    fg="#FFFFFF", anchor="w", command=self.switch_account)
         self.account_b.pack(side="top", fill="both")
 
+        self.payment_b = tk.Button(self.menu_lf, text="Payments", font="OpenSans, 18", relief="flat", bg="#2C441D",
+                                   fg="#FFFFFF", anchor="w", command=self.switch_payment)
+        self.payment_b.pack(side="top", fill="both")
+
         # Content Container
         self.body_lf = tk.LabelFrame(self.master, relief="flat")
         self.body_lf.pack(side="left", fill="both", expand="true")
@@ -295,7 +300,7 @@ class Window:
                   style="body.TLabel").grid(column=0, row=1, padx=5, pady=5, sticky="w")
 
         # Configure button state
-        self.state_button(self.home_b, self.account_b, self.loan_b)
+        self.state_button(self.home_b, self.account_b, self.loan_b, self.payment_b)
 
     def switch_loan(self):
         # Destroy content_lf
@@ -367,7 +372,7 @@ class Window:
                   style="body.TLabel").grid(column=0, row=1, padx=5, pady=5, sticky="w")
 
         # Configure button state
-        self.state_button(self.loan_b, self.account_b, self.home_b)
+        self.state_button(self.loan_b, self.account_b, self.home_b, self.payment_b)
 
     def switch_account(self):
         # Destroy content_lf
@@ -430,7 +435,77 @@ class Window:
                   style="body.TLabel").grid(column=0, row=1, padx=5, pady=5, sticky="w")
 
         # Configure button state
-        self.state_button(self.account_b, self.loan_b, self.home_b)
+        self.state_button(self.account_b, self.loan_b, self.home_b, self.payment_b)
+
+    def switch_payment(self):
+        # Destroy content_lf
+        Content.destroy_content(self.content_lf)
+
+        # Payment container
+        self.payment_lf = tk.LabelFrame(self.content_lf, relief="flat")
+        self.payment_lf.pack(fill="both", expand=True)
+
+        # Payment view database container
+        self.payment_database_view_lf = tk.LabelFrame(self.payment_lf, bg="#FFFFFF", relief="flat")
+        self.payment_database_view_lf.pack(side="top", pady=10, fill="both")
+
+        # Profile view database frame
+        self.payment_database_view_f = tk.Frame(self.payment_database_view_lf, relief="flat")
+        self.payment_database_view_f.pack(side="top", fill="both")
+
+        self.payment_database_view_scr = tk.Scrollbar(self.payment_database_view_f)
+        self.payment_database_view_scr.pack(side="right", fill="y")
+
+        # Create tree
+        self.payment_borrower_lb = ttk.Treeview(self.payment_database_view_f, style="default.Treeview",
+                                                yscrollcommand=self.payment_database_view_scr.set)
+
+        self.payment_database_view_scr.configure(command=self.payment_borrower_lb.yview)
+
+        # Define column
+        self.payment_borrower_lb["columns"] = ("Payment ID", "Loan ID", "Name", "Loan principal", "Balance", "Payment",
+                                               "Date issued")
+
+        # Format column
+        self.payment_borrower_lb.column("#0", width=0, stretch="no")
+        self.payment_borrower_lb.column("Payment ID", anchor="center", width=80)
+        self.payment_borrower_lb.column("Loan ID", anchor="center", width=80)
+        self.payment_borrower_lb.column("Name", anchor="w", width=120)
+        self.payment_borrower_lb.column("Loan principal", anchor="center", width=80)
+        self.payment_borrower_lb.column("Balance", anchor="center", width=80)
+        self.payment_borrower_lb.column("Payment", anchor="center", width=80)
+        self.payment_borrower_lb.column("Date issued", anchor="center", width=80)
+
+        # Create headings
+        self.payment_borrower_lb.heading("#0", text="", anchor="w")
+        self.payment_borrower_lb.heading("Payment ID", text="Payment ID", anchor="center")
+        self.payment_borrower_lb.heading("Loan ID", text="Loan ID", anchor="center")
+        self.payment_borrower_lb.heading("Name", text="Name", anchor="w")
+        self.payment_borrower_lb.heading("Loan principal", text="Loan principal", anchor="center")
+        self.payment_borrower_lb.heading("Balance", text="Balance", anchor="center")
+        self.payment_borrower_lb.heading("Payment", text="Payment", anchor="center")
+        self.payment_borrower_lb.heading("Date issued", text="Date issued", anchor="center")
+
+        self.payment_borrower_lb.pack(side="left", fill="both", expand=True)
+
+        # Bind the treeview to database_view_info method
+        # self.payment_borrower_lb.bind("<ButtonRelease-1>", self.database_view_account_info)
+
+        # Initialize method for viewing accounts database
+        self.database_view_payment()
+
+        # Profile view database container
+        self.payment_content_view_lf = tk.LabelFrame(self.payment_lf, bg="#FFFFFF", relief="flat")
+        self.payment_content_view_lf.pack(side="top", pady=10, fill="both")
+
+        ttk.Label(self.payment_content_view_lf, text="Payment Information",
+                  style="heading.TLabel").grid(column=0, row=0, columnspan=2, pady=5, sticky="w")
+
+        ttk.Label(self.payment_content_view_lf, text="No information available",
+                  style="body.TLabel").grid(column=0, row=1, padx=5, pady=5, sticky="w")
+
+        # Configure button state
+        self.state_button(self.payment_b, self.account_b, self.loan_b, self.home_b)
 
     def login_validation(self):
         try:
@@ -716,6 +791,42 @@ class Window:
                     self.account_borrower_lb.insert(parent="", index="end", iid=count, text="",
                                                     values=(record[0], record[1], record[2], record[3]),
                                                     tags=("evenrow",))
+                count += 1
+
+            self.db1.commit()
+            self.mycursor.close()
+            self.db1.close()
+
+        except Exception as e:
+            print("Could not connect to lmsdatabase")
+            print(e)
+
+    def database_view_payment(self):
+        # Method for viewing payments database
+        try:
+            self.database_connect()
+            self.mycursor.execute("SELECT payment.paymentid, payment.loanid, borrower.name, loan.amount, loan.balance,"
+                                  " payment.amount, payment.dateissued"
+                                  " FROM payment INNER JOIN loan ON payment.loanid=loan.loanid "
+                                  "INNER JOIN borrower ON loan.borrowerid=borrower.borrowerid where borrower.userid = "
+                                  "'" + self.key_str + "';")
+            payments = self.mycursor.fetchall()
+            print(payments)
+
+            # Create configure for striped rows
+            self.payment_borrower_lb.tag_configure("oddrow", background="#FFFFFF")
+            self.payment_borrower_lb.tag_configure("evenrow", background="#FAFAFA")
+            count = 0
+            for record in payments:
+                if count % 2 == 0:
+                    self.payment_borrower_lb.insert(parent="", index="end", iid=count, text="",
+                                                    values=(record[0], record[1], record[2], record[3], record[4],
+                                                            record[5], record[6]), tags=("oddrow",))
+                else:
+                    self.payment_borrower_lb.insert(parent="", index="end", iid=count, text="",
+                                                    values=(record[0], record[1], record[2], record[3], record[4],
+                                                            record[5], record[6]), tags=("oddrow",))
+
                 count += 1
 
             self.db1.commit()
@@ -1186,10 +1297,11 @@ class Window:
         self.switch_loan()
 
     @staticmethod
-    def state_button(widget1, widget2, widget3):
+    def state_button(widget1, widget2, widget3, widget4):
         widget1.configure(bg="#4C8404")
         widget2.configure(bg="#2C441D")
         widget3.configure(bg="#2C441D")
+        widget4.configure(bg="#2C441D")
 
 
 win = tk.Tk()
