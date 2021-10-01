@@ -107,6 +107,8 @@ class Database:
                                   " ACTION ON UPDATE NO ACTION);")
             self.mycursor.execute("ALTER TABLE `lmsdatabase`.`payment` CHANGE COLUMN `paymentid` `paymentid` INT NOT"
                                   " NULL AUTO_INCREMENT ;")
+            self.mycursor.execute("ALTER TABLE `lmsdatabase`.`payment` ADD COLUMN `balance` INT NOT NULL AFTER"
+                                  " `amount`;")
 
             print("payment table is created successfully")
         except Exception as e:

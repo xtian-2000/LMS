@@ -913,10 +913,12 @@ class Window:
         self.rp_interest_l.configure(text=values[3])
         self.rp_info_balance_l.configure(text=values[7])
         self.rp_info_recommend_pay_l.configure(text=int(values[7]) / int(values[3]))
-
         # Register payment buttons container
         self.rp_buttons_lf = tk.LabelFrame(self.add_people_top, padx=20, pady=20, relief="flat", background="#FFFFFF")
         self.rp_buttons_lf.pack(side="top", expand=True, fill="both")
+
+        # Initialize method for inserting balance into payment table
+        self.insert_balance_payment()
 
         # Button for registering payment
         self.register_payment_done_b = tk.Button(self.rp_buttons_lf, text="Done", font="OpenSans, 10",
@@ -934,6 +936,25 @@ class Window:
         self.add_people_top.grab_set()
 
         self.add_people_top.mainloop()
+
+    def insert_balance_payment(self):
+        try:
+            # Grab record number
+            selected = self.loan_borrower_lb.focus()
+
+            # Grab record values
+            values = self.loan_borrower_lb.item(selected, "values")
+            # Insert balance to payment
+            self.database_connect()
+
+            self.mycursor.execute(
+                "INSERT INTO payment (balance) VALUES (%s)", (values[7]))
+
+            self.db1.commit()
+            self.db1.close()
+            self.mycursor.close()
+        except Exception as e:
+            print(e)
 
     def finish_register_payment(self):
         try:
