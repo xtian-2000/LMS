@@ -8,9 +8,11 @@ import functools
 from PIL import ImageTk, Image
 from tkcalendar import DateEntry
 import pandas as pd
-
+import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 # import numpy as np
-# import matplotlib.pyplot as plt
+
 
 # Global variables for database
 host = "localhost"
@@ -134,10 +136,6 @@ class Window:
 
         # Instantiate Database class
         Database()
-        self.mysql_pandas_user()
-        self.mysql_pandas_borrower()
-        self.mysql_pandas_loans()
-        self.mysql_pandas_payment()
 
         # Instantiate login window
         self.login_win()
@@ -207,10 +205,10 @@ class Window:
                                           database="lmsdatabase",
                                           use_pure=True)
             query = "Select * from user;"
-            result_dataframe = pd.read_sql(query, self.pandasdb)
+            df = pd.read_sql(query, self.pandasdb)
             self.pandasdb.close()
             print("User's dataframe")
-            print(result_dataframe)
+            print(df.to_string())
         except Exception as e:
             self.pandasdb.close()
             print(str(e))
@@ -239,10 +237,10 @@ class Window:
                                           database="lmsdatabase",
                                           use_pure=True)
             query = "Select * from loan;"
-            result_dataframe = pd.read_sql(query, self.pandasdb)
+            df = pd.read_sql(query, self.pandasdb)
             self.pandasdb.close()
             print("Loan's dataframe")
-            print(result_dataframe)
+            print(df)
         except Exception as e:
             self.pandasdb.close()
             print(str(e))
@@ -254,14 +252,24 @@ class Window:
                                           password=password,
                                           database="lmsdatabase",
                                           use_pure=True)
-            query = "Select * from payment;"
-            result_dataframe = pd.read_sql(query, self.pandasdb)
+            query = "Select payment.amount from payment;"
+            df = pd.read_sql(query, self.pandasdb)
             self.pandasdb.close()
             print("Payment's dataframe")
-            print(result_dataframe)
+            print(df)
+            fig = Figure(figsize=(5, 5), dpi=75)
+            a = fig.add_subplot(111)
+            a.plot(df)
+            a.set_title("Payment")
+            a.set_xlabel("No. of payments")
+            a.set_ylabel("Amount of payment")
+
+            canvas = FigureCanvasTkAgg(fig, self.home_dashboard_lf)
+            canvas.draw()
+            canvas.get_tk_widget().pack(anchor="w", padx=10, pady=10)
         except Exception as e:
             self.pandasdb.close()
-            print(str(e))
+            print(e)
 
     def register_win(self):
         # Destroy window content
@@ -370,10 +378,9 @@ class Window:
         self.home_dashboard_lf.pack(side="top", fill="both")
 
         ttk.Label(self.home_dashboard_lf, text="Analytics Dashboard",
-                  style="heading.TLabel").grid(column=0, row=0, columnspan=2, pady=5, sticky="w")
+                  style="heading.TLabel").pack(side="top", anchor="w")
 
-        ttk.Label(self.home_dashboard_lf, text="This section is under development",
-                  style="body.TLabel").grid(column=0, row=1, padx=5, pady=5, sticky="w")
+        self.mysql_pandas_payment()
 
         # Configure button state
         self.state_button(self.home_b, self.account_b, self.loan_b, self.payment_b)
