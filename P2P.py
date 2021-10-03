@@ -7,6 +7,7 @@ from contentController import Content
 import functools
 from PIL import ImageTk, Image
 from tkcalendar import DateEntry
+import pandas as pd
 
 # import numpy as np
 # import matplotlib.pyplot as plt
@@ -58,6 +59,12 @@ class Window:
         self.loan_content_view_lf = None
         self.issue_loan_date_de = None
         self.status_combobox = None
+        self.payment_lf = None
+        self.payment_database_view_lf = None
+        self.payment_database_view_f = None
+        self.payment_database_view_scr = None
+        self.payment_borrower_lb = None
+        self.payment_content_view_lf = None
         self.account_lf = None
         self.account_database_view_f = None
         self.account_database_view_scr = None
@@ -118,6 +125,7 @@ class Window:
         self.register_payment_done_b = None
         self.register_payment_cancel_b = None
         self.db1 = None
+        self.pandasdb = None
         self.mycursor = None
         self.count = None
         self.year = datetime.today().year
@@ -126,6 +134,10 @@ class Window:
 
         # Instantiate Database class
         Database()
+        self.mysql_pandas_user()
+        self.mysql_pandas_borrower()
+        self.mysql_pandas_loans()
+        self.mysql_pandas_payment()
 
         # Instantiate login window
         self.login_win()
@@ -186,6 +198,70 @@ class Window:
 
         Content.background_change_labelframe(self.master, "#EBEBEB")
         Content.background_change_label(self.login_lf, "#EBEBEB")
+
+    def mysql_pandas_user(self):
+        try:
+            self.pandasdb = mysql.connect(host=host,
+                                          user=user,
+                                          password=password,
+                                          database="lmsdatabase",
+                                          use_pure=True)
+            query = "Select * from user;"
+            result_dataframe = pd.read_sql(query, self.pandasdb)
+            self.pandasdb.close()
+            print("User's dataframe")
+            print(result_dataframe)
+        except Exception as e:
+            self.pandasdb.close()
+            print(str(e))
+
+    def mysql_pandas_borrower(self):
+        try:
+            self.pandasdb = mysql.connect(host=host,
+                                          user=user,
+                                          password=password,
+                                          database="lmsdatabase",
+                                          use_pure=True)
+            query = "Select * from borrower;"
+            result_dataframe = pd.read_sql(query, self.pandasdb)
+            self.pandasdb.close()
+            print("Borrower's dataframe")
+            print(result_dataframe)
+        except Exception as e:
+            self.pandasdb.close()
+            print(str(e))
+
+    def mysql_pandas_loans(self):
+        try:
+            self.pandasdb = mysql.connect(host=host,
+                                          user=user,
+                                          password=password,
+                                          database="lmsdatabase",
+                                          use_pure=True)
+            query = "Select * from loan;"
+            result_dataframe = pd.read_sql(query, self.pandasdb)
+            self.pandasdb.close()
+            print("Loan's dataframe")
+            print(result_dataframe)
+        except Exception as e:
+            self.pandasdb.close()
+            print(str(e))
+
+    def mysql_pandas_payment(self):
+        try:
+            self.pandasdb = mysql.connect(host=host,
+                                          user=user,
+                                          password=password,
+                                          database="lmsdatabase",
+                                          use_pure=True)
+            query = "Select * from payment;"
+            result_dataframe = pd.read_sql(query, self.pandasdb)
+            self.pandasdb.close()
+            print("Payment's dataframe")
+            print(result_dataframe)
+        except Exception as e:
+            self.pandasdb.close()
+            print(str(e))
 
     def register_win(self):
         # Destroy window content
@@ -463,8 +539,8 @@ class Window:
         self.payment_database_view_scr.configure(command=self.payment_borrower_lb.yview)
 
         # Define column
-        self.payment_borrower_lb["columns"] = ("Payment ID", "Loan ID", "Name", "Loan principal", "Balance", "Payment",
-                                               "Date issued")
+        self.payment_borrower_lb["columns"] = ("Payment ID", "Loan ID", "Name", "Loan principal", "Payment",
+                                               "Remaining balance", "Date issued")
 
         # Format column
         self.payment_borrower_lb.column("#0", width=0, stretch="no")
@@ -472,7 +548,7 @@ class Window:
         self.payment_borrower_lb.column("Loan ID", anchor="center", width=80)
         self.payment_borrower_lb.column("Name", anchor="w", width=120)
         self.payment_borrower_lb.column("Loan principal", anchor="center", width=80)
-        self.payment_borrower_lb.column("Balance", anchor="center", width=80)
+        self.payment_borrower_lb.column("Remaining balance", anchor="center", width=80)
         self.payment_borrower_lb.column("Payment", anchor="center", width=80)
         self.payment_borrower_lb.column("Date issued", anchor="center", width=80)
 
@@ -482,8 +558,8 @@ class Window:
         self.payment_borrower_lb.heading("Loan ID", text="Loan ID", anchor="center")
         self.payment_borrower_lb.heading("Name", text="Name", anchor="w")
         self.payment_borrower_lb.heading("Loan principal", text="Loan principal", anchor="center")
-        self.payment_borrower_lb.heading("Balance", text="Balance", anchor="center")
         self.payment_borrower_lb.heading("Payment", text="Payment", anchor="center")
+        self.payment_borrower_lb.heading("Remaining balance", text="Remaining balance", anchor="center")
         self.payment_borrower_lb.heading("Date issued", text="Date issued", anchor="center")
 
         self.payment_borrower_lb.pack(side="left", fill="both", expand=True)
@@ -805,8 +881,8 @@ class Window:
         # Method for viewing payments database
         try:
             self.database_connect()
-            self.mycursor.execute("SELECT payment.paymentid, payment.loanid, borrower.name, loan.amount, loan.balance,"
-                                  " payment.amount, payment.dateissued"
+            self.mycursor.execute("SELECT payment.paymentid, payment.loanid, borrower.name, loan.amount, "
+                                  "payment.amount, loan.balance, payment.dateissued"
                                   " FROM payment INNER JOIN loan ON payment.loanid=loan.loanid "
                                   "INNER JOIN borrower ON loan.borrowerid=borrower.borrowerid where borrower.userid = "
                                   "'" + self.key_str + "';")
