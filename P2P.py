@@ -1,5 +1,6 @@
 import tkinter as tk
 from datetime import datetime
+from datetime import timedelta
 from tkinter import ttk, messagebox
 from databaseController import Database
 import mysql.connector as mysql
@@ -11,6 +12,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+
 # import numpy as np
 
 
@@ -19,6 +21,14 @@ host = "localhost"
 user = "PongoDev"
 password = "PongoDev44966874"
 
+# Global variables
+# Create variable for first day of the month
+fday_month = datetime.today().replace(day=1)
+fday_month = fday_month.strftime("%x")
+# Create variable for current day of the month
+currentday_month = datetime.today()
+currentday_month = currentday_month.strftime("%x")
+print(datetime.today() + timedelta(days=30))
 
 class Window:
 
@@ -133,6 +143,7 @@ class Window:
         self.year = datetime.today().year
         self.month = datetime.today().month
         self.day = datetime.today().day
+        self.interest = None
 
         # Instantiate Database class
         Database()
@@ -252,17 +263,20 @@ class Window:
                                           password=password,
                                           database="lmsdatabase",
                                           use_pure=True)
-            query = "Select payment.amount from payment;"
+            print(currentday_month)
+            query = "Select payment.amount from payment where dateissued >= '" \
+                    + fday_month + "' AND dateissued <= '" + currentday_month + "';"
             df = pd.read_sql(query, self.pandasdb)
             self.pandasdb.close()
             print("Payment's dataframe")
             print(df)
             fig = Figure(figsize=(5, 5), dpi=75)
-            a = fig.add_subplot(111)
-            a.plot(df)
-            a.set_title("Payment")
-            a.set_xlabel("No. of payments")
-            a.set_ylabel("Amount of payment")
+            ax1 = fig.add_subplot(111)
+            ax1.plot(df, marker="o", label="amount of payment")
+            ax1.set_title("Payment")
+            ax1.set_xlabel("No. of payments")
+            ax1.set_ylabel("Amount of payment")
+            ax1.legend()
 
             canvas = FigureCanvasTkAgg(fig, self.home_dashboard_lf)
             canvas.draw()
@@ -431,7 +445,7 @@ class Window:
         self.loan_borrower_lb.heading("Name", text="Name", anchor="w")
         self.loan_borrower_lb.heading("Amount", text="Amount", anchor="center")
         self.loan_borrower_lb.heading("Interest", text="Interest (%)", anchor="center")
-        self.loan_borrower_lb.heading("(n) days", text="interest per (n) days", anchor="center")
+        self.loan_borrower_lb.heading("(n) days", text="Interest per (n) days", anchor="center")
         self.loan_borrower_lb.heading("Date issued", text="Date issued", anchor="center")
         self.loan_borrower_lb.heading("Status", text="Status", anchor="center")
         self.loan_borrower_lb.heading("Balance", text="Balance", anchor="center")
@@ -758,7 +772,7 @@ class Window:
 
         ttk.Label(self.issue_loan_lf, text="Date issued", style="h3.TLabel").grid(column=0, row=3, padx=5, pady=5,
                                                                                   sticky="w")
-        self.issue_loan_date_de = DateEntry(self.issue_loan_lf, width=15, background='green',
+        self.issue_loan_date_de = DateEntry(self.issue_loan_lf, width=15, background='green', date_pattern="MM/dd/yyyy",
                                             foreground='white', borderwidth=2)
         self.issue_loan_date_de.grid(column=1, row=3, columnspan=3, padx=5, pady=5, sticky="w")
 
@@ -809,6 +823,10 @@ class Window:
             print(e)
 
     def finish_issue_loan(self):
+        balance = (int(self.issue_loan_interest_sb.get()) / 100) * (int(self.issue_loan_amount_sb.get()))
+        balance = balance + int(self.issue_loan_amount_sb.get())
+        balance = str(balance)
+        print(balance)
         try:
             self.database_connect()
 
@@ -817,7 +835,7 @@ class Window:
                 " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
                 (self.borrower_key_str, self.key_str, self.issue_loan_amount_sb.get(),
                  self.issue_loan_interest_sb.get(), self.issue_loan_days_sb.get(), datetime.now(),
-                 self.issue_loan_date_de.get_date(), self.status_combobox.get(), self.issue_loan_amount_sb.get()))
+                 self.issue_loan_date_de.get(), self.status_combobox.get(), balance))
 
             self.db1.commit()
             self.db1.close()
@@ -976,7 +994,7 @@ class Window:
                   style="body.TLabel").grid(column=0, row=7, columnspan=2, padx=5, pady=5, sticky="w")
 
         self.loan_content_date_issued_cal = DateEntry(self.rp_info_lf, width=12, background='green',
-                                                      foreground='white', borderwidth=2)
+                                                      date_pattern="MM/dd/yyyy", foreground='white', borderwidth=2)
         self.loan_content_date_issued_cal.grid(column=1, row=7, columnspan=2, padx=5, pady=5, sticky="w")
 
         # Grab record number
@@ -995,13 +1013,10 @@ class Window:
         self.rp_info_amount_l.configure(text=values[2])
         self.rp_interest_l.configure(text=values[3])
         self.rp_info_balance_l.configure(text=values[7])
-        self.rp_info_recommend_pay_l.configure(text=int(values[7]) / int(values[3]))
+        self.rp_info_recommend_pay_l.configure(text=(int(values[7]) / 100) * int(values[3]))
         # Register payment buttons container
         self.rp_buttons_lf = tk.LabelFrame(self.add_people_top, padx=20, pady=20, relief="flat", background="#FFFFFF")
         self.rp_buttons_lf.pack(side="top", expand=True, fill="both")
-
-        # Initialize method for inserting balance into payment table
-        self.insert_balance_payment()
 
         # Button for registering payment
         self.register_payment_done_b = tk.Button(self.rp_buttons_lf, text="Done", font="OpenSans, 10",
@@ -1020,32 +1035,14 @@ class Window:
 
         self.add_people_top.mainloop()
 
-    def insert_balance_payment(self):
-        try:
-            # Grab record number
-            selected = self.loan_borrower_lb.focus()
-
-            # Grab record values
-            values = self.loan_borrower_lb.item(selected, "values")
-            # Insert balance to payment
-            self.database_connect()
-
-            self.mycursor.execute(
-                "INSERT INTO payment (balance) VALUES (%s)", (values[7]))
-
-            self.db1.commit()
-            self.db1.close()
-            self.mycursor.close()
-        except Exception as e:
-            print(e)
-
     def finish_register_payment(self):
+        balance = int(self.rp_info_balance_l.cget("text")) + int(self.rp_info_payment_entry.get())
         try:
             self.database_connect()
 
             self.mycursor.execute(
-                "INSERT INTO payment (loanid, amount, dateissued) VALUES (%s, %s, %s)",
-                (self.loan_id, self.rp_info_payment_entry.get(), self.loan_content_date_issued_cal.get()))
+                "INSERT INTO payment (loanid, amount, balance, dateissued) VALUES (%s, %s, %s, %s)",
+                (self.loan_id, self.rp_info_payment_entry.get(), balance, self.loan_content_date_issued_cal.get()))
 
             self.db1.commit()
             self.db1.close()
