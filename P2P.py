@@ -30,6 +30,7 @@ currentday_month = datetime.today()
 currentday_month = currentday_month.strftime("%x")
 print(datetime.today() + timedelta(days=30))
 
+
 class Window:
 
     def __init__(self, master):
@@ -1405,7 +1406,8 @@ class Window:
         widget4.configure(bg="#2C441D")
 
 
-win = tk.Tk()
-initialize = Window(win)
+if __name__ == '__main__':
+    win = tk.Tk()
+    initialize = Window(win)
 
-win.mainloop()
+    win.mainloop()
