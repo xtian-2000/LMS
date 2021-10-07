@@ -1251,33 +1251,39 @@ class Window:
         date_issued_plus_delta_time = date_issued + timedelta(days=int(self.loan_content_interest_pd_e.get()))
         print("Due Date: ", date_issued_plus_delta_time)
         self.remaining_days = date_issued_plus_delta_time - datetime.today()
+        print(self.remaining_days.total_seconds())
 
         self.database_connect()
         self.mycursor.execute("SELECT loan.status FROM lmsdatabase.loan WHERE loan.loanid = '" + self.loan_id + "';")
         status = self.mycursor.fetchone()
         status = ''.join(status)
+
         # Condition for automating
         if self.remaining_days.total_seconds() <= 0 and status != "Fully Amortized":
-            pass
-        else:
-
-            self.mycursor.execute("SELECT loan.interest, loan.balance FROM lmsdatabase.loan WHERE loan.loanid = '"
+            self.mycursor.execute("SELECT loan.interest, loan.balance, loan.days"
+                                  " FROM lmsdatabase.loan WHERE loan.loanid = '"
                                   + self.loan_id + "';")
             result = self.mycursor.fetchall()
             print(result)
 
-            # Compute balance
+            # Updates the database
             for record in result:
+                # Computes balance
                 balance = ((record[0]/100) * record[1])
                 balance = balance + record[1]
-                self.mycursor.execute("UPDATE lmsdatabase.loan SET balance = '"
-                                      + str(balance) + "' WHERE loan.loanid = '" + self.loan_id + "';")
+                print(type(record[3]))
+
+                new_due_date = date_issued_plus_delta_time + timedelta(days=int(record[2]))
+                print("New date: ", new_due_date)
+                self.mycursor.execute("UPDATE lmsdatabase.loan SET loan.balance = '"
+                                      + str(balance) + "', loan.duedate = '"
+                                      + str(new_due_date) + "' WHERE loan.loanid = '" + self.loan_id + "';")
                 self.db1.commit()
 
             self.db1.close()
             self.mycursor.close()
-
-
+        else:
+            print("Next interest not due today")
 
     def database_view_account_info(self, event):
         # Destroy content of account_content_view_lf
