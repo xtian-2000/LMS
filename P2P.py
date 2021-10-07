@@ -1,5 +1,6 @@
 import tkinter as tk
 from datetime import datetime
+# from datetime import date
 from datetime import timedelta
 from tkinter import ttk, messagebox
 from databaseController import Database
@@ -9,10 +10,10 @@ import functools
 from PIL import ImageTk, Image
 from tkcalendar import DateEntry
 import pandas as pd
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+# from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 # import numpy as np
 
 
@@ -28,7 +29,6 @@ fday_month = fday_month.strftime("%x")
 # Create variable for current day of the month
 currentday_month = datetime.today()
 currentday_month = currentday_month.strftime("%x")
-print(datetime.today() + timedelta(days=30))
 
 
 class Window:
@@ -111,6 +111,7 @@ class Window:
         self.delete_loan_b = None
         self.save_loan_b = None
         self.register_payment_b = None
+        self.time_rem_interest_l = None
         self.account_borrower_header = None
         self.account_borrower_lb = ttk.Treeview
         self.borrower_key = None
@@ -144,6 +145,7 @@ class Window:
         self.year = datetime.today().year
         self.month = datetime.today().month
         self.day = datetime.today().day
+        self.remaining_days = None
         self.interest = None
 
         # Instantiate Database class
@@ -773,7 +775,7 @@ class Window:
 
         ttk.Label(self.issue_loan_lf, text="Date issued", style="h3.TLabel").grid(column=0, row=3, padx=5, pady=5,
                                                                                   sticky="w")
-        self.issue_loan_date_de = DateEntry(self.issue_loan_lf, width=15, background='green', date_pattern="MM/dd/yyyy",
+        self.issue_loan_date_de = DateEntry(self.issue_loan_lf, width=15, background='green', date_pattern="MM/dd/yy",
                                             foreground='white', borderwidth=2)
         self.issue_loan_date_de.grid(column=1, row=3, columnspan=3, padx=5, pady=5, sticky="w")
 
@@ -824,19 +826,27 @@ class Window:
             print(e)
 
     def finish_issue_loan(self):
+        # Computation for balance
         balance = (int(self.issue_loan_interest_sb.get()) / 100) * (int(self.issue_loan_amount_sb.get()))
         balance = balance + int(self.issue_loan_amount_sb.get())
         balance = str(balance)
         print(balance)
+
+        # Computation for balance due date
+        date_issued = datetime.strptime(self.issue_loan_date_de.get(), "%x")
+        date_issued_plus_delta_time = date_issued + timedelta(days=int(self.issue_loan_days_sb.get()))
+        print("Due Date: ", date_issued_plus_delta_time)
+
         try:
             self.database_connect()
 
             self.mycursor.execute(
-                "INSERT INTO loan (borrowerid, userid, amount, interest, days, created, dateissued, status, balance)"
-                " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                "INSERT INTO loan (borrowerid, userid, amount, interest, days, created, dateissued, status, balance, "
+                "duedate)"
+                " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
                 (self.borrower_key_str, self.key_str, self.issue_loan_amount_sb.get(),
                  self.issue_loan_interest_sb.get(), self.issue_loan_days_sb.get(), datetime.now(),
-                 self.issue_loan_date_de.get(), self.status_combobox.get(), balance))
+                 self.issue_loan_date_de.get(), self.status_combobox.get(), balance, date_issued_plus_delta_time))
 
             self.db1.commit()
             self.db1.close()
@@ -1183,7 +1193,7 @@ class Window:
         ttk.Label(self.loan_content_view_lf, text="Status", style="body.TLabel").grid(column=0, row=6, padx=5, pady=5,
                                                                                       sticky="w")
 
-        self.loan_content_status_cb = ttk.Combobox(self.loan_content_view_lf, width=12)
+        self.loan_content_status_cb = ttk.Combobox(self.loan_content_view_lf, width=15)
         self.loan_content_status_cb['values'] = "Active", "Fully Amortized", "Default"
         self.loan_content_status_cb.grid(column=1, row=6, sticky="w")
         # self.loan_content_status_cb.current(0)
@@ -1196,7 +1206,7 @@ class Window:
 
         # Get loan id
         self.loan_id = values[0]
-        print(self.loan_id)
+        print("Loan ID:", self.loan_id)
 
         # Insert values to entry widgets
         self.loan_content_name_l.configure(text=values[1])
@@ -1205,6 +1215,9 @@ class Window:
         self.loan_content_interest_pd_e.insert(0, values[4])
         self.loan_content_date_issued_e.insert(0, values[5])
         self.loan_content_status_cb.insert(0, values[6])
+
+        # Instantiate method that automates adding balance based on the due date
+        self.automate_adding_balance()
 
         # Button for deleting a loan
         self.delete_loan_b = tk.Button(self.loan_content_view_lf, text="Delete Loan", font="OpenSans, 10",
@@ -1223,7 +1236,48 @@ class Window:
                                             fg="#FFFFFF", bg="#4C8404", relief="flat", command=self.register_payment)
         self.register_payment_b.grid(column=2, row=7, padx=5, pady=5, sticky="w")
 
+        ttk.Label(self.loan_content_view_lf, text="Remaining days until next interest:",
+                  style="body.TLabel").grid(column=3, row=1, padx=5, pady=5, sticky="w")
+
+        self.time_rem_interest_l = ttk.Label(self.loan_content_view_lf, text=self.remaining_days,
+                                             style="body_content.TLabel")
+        self.time_rem_interest_l.grid(column=4, row=1, padx=5, pady=5, sticky="w")
+
         print(event)
+
+    def automate_adding_balance(self):
+        # Computation for balance due date
+        date_issued = datetime.strptime(self.loan_content_date_issued_e.get(), "%x")
+        date_issued_plus_delta_time = date_issued + timedelta(days=int(self.loan_content_interest_pd_e.get()))
+        print("Due Date: ", date_issued_plus_delta_time)
+        self.remaining_days = date_issued_plus_delta_time - datetime.today()
+
+        self.database_connect()
+        self.mycursor.execute("SELECT loan.status FROM lmsdatabase.loan WHERE loan.loanid = '" + self.loan_id + "';")
+        status = self.mycursor.fetchone()
+        status = ''.join(status)
+        # Condition for automating
+        if self.remaining_days.total_seconds() <= 0 and status != "Fully Amortized":
+            pass
+        else:
+
+            self.mycursor.execute("SELECT loan.interest, loan.balance FROM lmsdatabase.loan WHERE loan.loanid = '"
+                                  + self.loan_id + "';")
+            result = self.mycursor.fetchall()
+            print(result)
+
+            # Compute balance
+            for record in result:
+                balance = ((record[0]/100) * record[1])
+                balance = balance + record[1]
+                self.mycursor.execute("UPDATE lmsdatabase.loan SET balance = '"
+                                      + str(balance) + "' WHERE loan.loanid = '" + self.loan_id + "';")
+                self.db1.commit()
+
+            self.db1.close()
+            self.mycursor.close()
+
+
 
     def database_view_account_info(self, event):
         # Destroy content of account_content_view_lf
@@ -1359,13 +1413,19 @@ class Window:
         self.switch_account()
 
     def update_loan_record(self):
+        # Computation for balance due date
+        date_issued = datetime.strptime(self.loan_content_date_issued_e.get(), "%x")
+        date_issued_plus_delta_time = date_issued + timedelta(days=int(self.loan_content_interest_pd_e.get()))
+        print("Due Date: ", date_issued_plus_delta_time)
+
         self.database_connect()
         self.mycursor.execute(
             "UPDATE loan SET amount = '" + self.loan_content_amount_e.get() + "', interest = '"
             + self.loan_content_interest_e.get() + "', days = '"
             + self.loan_content_interest_pd_e.get() + "', dateissued = '"
             + self.loan_content_date_issued_e.get() + "', status = '"
-            + self.loan_content_status_cb.get() + "' WHERE loanid = '" + self.loan_id + "';")
+            + self.loan_content_status_cb.get() + "', duedate = '"
+            + str(date_issued_plus_delta_time) + "' WHERE loanid = '" + self.loan_id + "';")
 
         self.db1.commit()
         self.db1.close()
