@@ -29,6 +29,7 @@ fday_month = fday_month.strftime("%x")
 # Create variable for current day of the month
 currentday_month = datetime.today()
 currentday_month = currentday_month.strftime("%x")
+peso = u"\u20B1"
 
 
 class Window:
@@ -234,14 +235,28 @@ class Window:
                                           password=password,
                                           database="lmsdatabase",
                                           use_pure=True)
-            query = "Select * from borrower;"
-            result_dataframe = pd.read_sql(query, self.pandasdb)
+            print(currentday_month)
+            query = "Select loan.amount from loan where dateissued >= '" \
+                    + fday_month + "' AND dateissued <= '" + currentday_month + "';"
+            print(fday_month)
+            df = pd.read_sql(query, self.pandasdb)
             self.pandasdb.close()
-            print("Borrower's dataframe")
-            print(result_dataframe)
+            print("Loan's dataframe")
+            print(df)
+            fig = Figure(figsize=(5, 5), dpi=75)
+            ax1 = fig.add_subplot(111)
+            ax1.plot(df, marker="o", label="amount of loans")
+            ax1.set_title("Loans")
+            ax1.set_xlabel("No. of loans")
+            ax1.set_ylabel("Amount of loans")
+            ax1.legend()
+
+            canvas = FigureCanvasTkAgg(fig, self.home_dashboard_lf)
+            canvas.draw()
+            canvas.get_tk_widget().pack(side="left", anchor="w", padx=10, pady=10)
         except Exception as e:
             self.pandasdb.close()
-            print(str(e))
+            print(e)
 
     def mysql_pandas_loans(self):
         try:
@@ -250,14 +265,30 @@ class Window:
                                           password=password,
                                           database="lmsdatabase",
                                           use_pure=True)
-            query = "Select * from loan;"
+            print(currentday_month)
+            query = "Select loan.amount from loan where dateissued >= '" \
+                    + fday_month + "' AND dateissued <= '" + currentday_month + "';"
+            print(fday_month)
             df = pd.read_sql(query, self.pandasdb)
             self.pandasdb.close()
             print("Loan's dataframe")
             print(df)
+            print(df.sum())
+            print(type(df.sum()))
+            fig = Figure(figsize=(5, 5), dpi=75)
+            ax1 = fig.add_subplot(111)
+            ax1.plot(df, marker="o", label="amount of loans")
+            ax1.set_title("Loans")
+            ax1.set_xlabel("No. of loans")
+            ax1.set_ylabel("Amount of loans")
+            ax1.legend()
+
+            canvas = FigureCanvasTkAgg(fig, self.home_dashboard_lf)
+            canvas.draw()
+            canvas.get_tk_widget().pack(side="left", anchor="w", padx=10, pady=10)
         except Exception as e:
             self.pandasdb.close()
-            print(str(e))
+            print(e)
 
     def mysql_pandas_payment(self):
         try:
@@ -276,14 +307,14 @@ class Window:
             fig = Figure(figsize=(5, 5), dpi=75)
             ax1 = fig.add_subplot(111)
             ax1.plot(df, marker="o", label="amount of payment")
-            ax1.set_title("Payment")
+            ax1.set_title("Payments")
             ax1.set_xlabel("No. of payments")
             ax1.set_ylabel("Amount of payment")
             ax1.legend()
 
             canvas = FigureCanvasTkAgg(fig, self.home_dashboard_lf)
             canvas.draw()
-            canvas.get_tk_widget().pack(anchor="w", padx=10, pady=10)
+            canvas.get_tk_widget().pack(side="left", anchor="w", padx=10, pady=10)
         except Exception as e:
             self.pandasdb.close()
             print(e)
@@ -397,7 +428,16 @@ class Window:
         ttk.Label(self.home_dashboard_lf, text="Analytics Dashboard",
                   style="heading.TLabel").pack(side="top", anchor="w")
 
+        ttk.Label(self.home_dashboard_lf, text="Date from",
+                  style="body.TLabel").pack(side="left", anchor="w")
+
+        ttk.Label(self.home_dashboard_lf, text="to",
+                  style="body.TLabel").pack(side="left", anchor="w")
+
+        # Initiate methods for charts
+        self.mysql_pandas_loans()
         self.mysql_pandas_payment()
+        # self.mysql_pandas_borrower()
 
         # Configure button state
         self.state_button(self.home_b, self.account_b, self.loan_b, self.payment_b)
