@@ -5,6 +5,7 @@ from timeit import timeit
 from datetime import timedelta
 from tkinter import ttk, messagebox
 from databaseController import Database
+from ScrollableFrame import ScrollableFrame
 import mysql.connector as mysql
 from contentController import Content
 import functools
@@ -67,7 +68,7 @@ class Window:
         self.home_lf = None
         self.home_dashboard_f = None
         self.home_dashboard_scr = None
-        self.loans_analytics_lf = None
+        self.loan_analytics_content = tk.LabelFrame
         self.payment_analytics_content = tk.LabelFrame
         self.loan_lf = None
         self.loan_database_view_lf = None
@@ -173,6 +174,7 @@ class Window:
         self.master.iconbitmap(r"C:\Users\SSD\IdeaProjects\LMS\p2p_official_logo.ico")
         width = self.master.winfo_screenwidth()
         height = self.master.winfo_screenheight()
+        print(width)
         self.master.geometry("%dx%d" % (width, height))
         self.master.resizable(True, True)
         self.master.configure(bg="#4C8404")
@@ -280,19 +282,21 @@ class Window:
         print("Loan's dataframe")
         print(df)
         print(df.sum())
-        print(type(df.sum()))
 
-        fig = Figure(figsize=(5, 5), dpi=75)
+        width = self.master.winfo_screenmmwidth()
+        print("screen size: ", width/25.4)
+
+        fig = Figure(figsize=(width/25.4, 5), dpi=75)
         ax1 = fig.add_subplot(111)
-        ax1.plot(df, marker="o", label="amount of loans")
+        ax1.plot(df, marker="o", label="loan amount in PHP")
         ax1.set_title("Loans")
         ax1.set_xlabel("No. of loans")
-        ax1.set_ylabel("Amount of loans")
+        ax1.set_ylabel("loan amounts in Philippine Peso")
         ax1.legend()
 
-        canvas = FigureCanvasTkAgg(fig, self.loans_analytics_lf)
+        canvas = FigureCanvasTkAgg(fig, self.loan_analytics_content)
         canvas.draw()
-        canvas.get_tk_widget().pack(side="left", anchor="w", padx=10, pady=10)
+        canvas.get_tk_widget().pack(side="left", padx=10, pady=10, fill="both", expand=True)
 
     def mysql_pandas_payment(self):
         pandasdb = mysql.connect(host=host,
@@ -310,15 +314,15 @@ class Window:
 
         fig = Figure(figsize=(5, 5), dpi=75)
         ax1 = fig.add_subplot(111)
-        ax1.plot(df, marker="o", label="amount of payment")
+        ax1.plot(df, marker="o", label="payment amount in Philippine Peso")
         ax1.set_title("Payments")
         ax1.set_xlabel("No. of payments")
-        ax1.set_ylabel("Amount of payment")
+        ax1.set_ylabel("payment amount in Philippine Peso")
         ax1.legend()
 
         canvas = FigureCanvasTkAgg(fig, self.payment_analytics_content)
         canvas.draw()
-        canvas.get_tk_widget().pack(side="left", anchor="w", padx=10, pady=10)
+        canvas.get_tk_widget().pack(side="left", padx=10, pady=10, fill="both", expand=True)
 
     def register_win(self):
         # Destroy window content
@@ -418,53 +422,88 @@ class Window:
         # Destroy content_lf
         Content.destroy_content(self.content_lf)
 
-        # Home container
-        self.home_lf = tk.LabelFrame(self.content_lf, relief="flat")
-        self.home_lf.pack(fill="both", expand=True)
+        # Scrollable home container
+        home_f = ScrollableFrame(self.content_lf)
 
-        # Home dashboard container
-        self.home_dashboard_f = tk.Frame(self.home_lf, bg="#FFFFFF", relief="flat")
-        self.home_dashboard_f.pack(side="top", fill="both")
+# ================================================ Loan Analytics ======================================================
+        # Containers for loan analytics
+        loans_analytics_f = tk.Frame(home_f.scrollable_frame, relief="flat")
+        loans_analytics_f.pack(side="top", fill="both", padx=10, pady=5, expand=True)
 
-        self.home_dashboard_scr = tk.Scrollbar(self.home_dashboard_f)
-        self.home_dashboard_scr.pack(side="right", fill="y")
+        loan_analytics_menu = tk.LabelFrame(loans_analytics_f, bg="#FFFFFF", relief="flat")
+        loan_analytics_menu.pack(side="top", fill="both", expand=True)
 
-        ttk.Label(self.home_dashboard_f, text="Analytics Dashboard",
-                  style="heading.TLabel").pack(side="top", anchor="w")
-
-        self.loans_analytics_lf = tk.LabelFrame(self.home_dashboard_f, bg="#FFFFFF", relief="flat")
-        self.loans_analytics_lf.pack(side="top", pady=10, fill="both")
-
-        # Containers for payment analytics
-        payment_analytics_lf = tk.LabelFrame(self.home_dashboard_f, bg="#FFFFFF", relief="flat")
-        payment_analytics_lf.pack(side="top", pady=10, fill="both")
-
-        payment_analytics_menu = tk.LabelFrame(payment_analytics_lf, bg="#FFFFFF", relief="flat")
-        payment_analytics_menu.pack(side="top", pady=10, fill="both")
-
-        self.payment_analytics_content = tk.LabelFrame(payment_analytics_lf, bg="#FFFFFF", relief="flat")
-        self.payment_analytics_content.pack(side="top", pady=10, fill="both")
-
-        # Initiate methods for charts
-        self.mysql_pandas_loans()
+        self.loan_analytics_content = tk.LabelFrame(loans_analytics_f, bg="#FFFFFF", relief="flat")
+        self.loan_analytics_content.pack(side="top", fill="both", expand=True)
 
         # Content for payment analytics
+        ttk.Label(loan_analytics_menu, text="Loan Analytics",
+                  style="heading.TLabel").grid(column=0, row=0, columnspan=2, pady=5, sticky="w")
+
+        ttk.Label(loan_analytics_menu, text="Date from",
+                  style="body.TLabel").grid(column=0, row=1, padx=2.5, sticky="w")
+
+        pandas_loan_date_from = DateEntry(loan_analytics_menu, width=15,
+                                          date_pattern="MM/dd/yy", borderwidth=2)
+        pandas_loan_date_from.grid(column=1, row=1, padx=2.5, sticky="w")
+
+        ttk.Label(loan_analytics_menu, text="to", style="body.TLabel").grid(column=2, row=1, padx=2.5, sticky="w")
+
+        pandas_loan_date_to = DateEntry(loan_analytics_menu, width=15,
+                                        date_pattern="MM/dd/yy", borderwidth=2)
+        pandas_loan_date_to.grid(column=3, row=1, padx=2.5, sticky="w")
+
+        # Insert values to Date Entry
+        pandas_loan_date_from.delete(0, "end")
+        pandas_loan_date_from.insert(0, fday_month)
+
+        pandas_loan_date_to.delete(0, "end")
+        pandas_loan_date_to.insert(0, currentday_month)
+
+        # Initialize method for loans analytics
+        self.mysql_pandas_loans()
+
+# ================================================ Payment Analytics ===================================================
+        # Containers for payment analytics
+        payment_analytics_f = tk.Frame(home_f.scrollable_frame, bg="#FFFFFF", relief="flat")
+        payment_analytics_f.pack(side="top", padx=10, pady=5, fill="both", expand=True)
+
+        payment_analytics_menu = tk.LabelFrame(payment_analytics_f, bg="#FFFFFF", relief="flat")
+        payment_analytics_menu.pack(side="top", pady=10, fill="both", expand=True)
+
+        self.payment_analytics_content = tk.LabelFrame(payment_analytics_f, bg="#FFFFFF", relief="flat")
+        self.payment_analytics_content.pack(side="top", pady=10, fill="both", expand=True)
+
+        # Content for payment analytics
+        ttk.Label(payment_analytics_menu, text="Payment Analytics",
+                  style="heading.TLabel").grid(column=0, row=0, columnspan=2, pady=5, sticky="w")
+
         ttk.Label(payment_analytics_menu, text="Date from",
-                  style="body.TLabel").grid(column=0, row=0, pady=10, sticky="w")
+                  style="body.TLabel").grid(column=0, row=1, padx=2.5, sticky="w")
 
         pandas_payment_date_from = DateEntry(payment_analytics_menu, width=15,
                                              date_pattern="MM/dd/yy", borderwidth=2)
-        pandas_payment_date_from.grid(column=1, row=0, padx=5, pady=5, sticky="w")
+        pandas_payment_date_from.grid(column=1, row=1, padx=2.5, sticky="w")
 
         ttk.Label(payment_analytics_menu, text="to",
-                  style="body.TLabel").grid(column=2, row=0, pady=10, sticky="w")
+                  style="body.TLabel").grid(column=2, row=1, padx=2.5, sticky="w")
 
         pandas_payment_date_to = DateEntry(payment_analytics_menu, width=15,
                                            date_pattern="MM/dd/yy", borderwidth=2)
-        pandas_payment_date_to.grid(column=3, row=0, padx=5, pady=5, sticky="w")
+        pandas_payment_date_to.grid(column=3, row=1, padx=2.5, sticky="w")
 
+        # Insert values to Date Entry
+        pandas_payment_date_from.delete(0, "end")
+        pandas_payment_date_from.insert(0, fday_month)
+
+        pandas_payment_date_to.delete(0, "end")
+        pandas_payment_date_to.insert(0, currentday_month)
+
+        # Initialize method for payment analytics
         self.mysql_pandas_payment()
-        # self.mysql_pandas_borrower()
+
+        # Wrap contents to allow scrollable frame function
+        home_f.pack(side="top", fill="both", expand=True)
 
         # Configure button state
         self.state_button(self.home_b, self.account_b, self.loan_b, self.payment_b)
