@@ -1,18 +1,20 @@
 import tkinter as tk
 from datetime import datetime
-# from datetime import date
+from timeit import timeit
+# from timeit import default_timer as timer
 from datetime import timedelta
 from tkinter import ttk, messagebox
 from databaseController import Database
 import mysql.connector as mysql
 from contentController import Content
 import functools
-from PIL import ImageTk, Image
+# from PIL import ImageTk, Image
 from tkcalendar import DateEntry
 import pandas as pd
 # import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
 # from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 # import numpy as np
 
@@ -63,7 +65,10 @@ class Window:
         self.logout_b = tk.Button
         self.content_lf = None
         self.home_lf = None
-        self.home_dashboard_lf = None
+        self.home_dashboard_f = None
+        self.home_dashboard_scr = None
+        self.loans_analytics_lf = None
+        self.payment_analytics_content = tk.LabelFrame
         self.loan_lf = None
         self.loan_database_view_lf = None
         self.loan_dashboard_lf = None
@@ -159,6 +164,7 @@ class Window:
         Content.widget_styles(self.master)
 
     def login_win(self):
+
         # Destroy window contents
         Content.destroy_content(self.master)
 
@@ -175,9 +181,9 @@ class Window:
         self.logo_lf = tk.LabelFrame(self.master, padx=20, pady=20, relief="flat")
         self.logo_lf.pack(side="left", expand=True, fill="both")
 
-        my_image = ImageTk.PhotoImage(Image.open("P2P_official_logo.png"))
-        my_label = ttk.Label(self.logo_lf, image=my_image)
-        my_label.pack()
+        # my_image = ImageTk.PhotoImage(Image.open("P2P_official_logo.png"))
+        # my_label = ttk.Label(self.logo_lf, image=my_image)
+        # my_label.pack()
 
         # Login container
         self.login_lf = tk.LabelFrame(self.master, padx=20, pady=20, relief="flat")
@@ -251,7 +257,7 @@ class Window:
             ax1.set_ylabel("Amount of loans")
             ax1.legend()
 
-            canvas = FigureCanvasTkAgg(fig, self.home_dashboard_lf)
+            canvas = FigureCanvasTkAgg(fig, self.home_dashboard_f)
             canvas.draw()
             canvas.get_tk_widget().pack(side="left", anchor="w", padx=10, pady=10)
         except Exception as e:
@@ -259,65 +265,60 @@ class Window:
             print(e)
 
     def mysql_pandas_loans(self):
-        try:
-            self.pandasdb = mysql.connect(host=host,
-                                          user=user,
-                                          password=password,
-                                          database="lmsdatabase",
-                                          use_pure=True)
-            print(currentday_month)
-            query = "Select loan.amount from loan where dateissued >= '" \
-                    + fday_month + "' AND dateissued <= '" + currentday_month + "';"
-            print(fday_month)
-            df = pd.read_sql(query, self.pandasdb)
-            self.pandasdb.close()
-            print("Loan's dataframe")
-            print(df)
-            print(df.sum())
-            print(type(df.sum()))
-            fig = Figure(figsize=(5, 5), dpi=75)
-            ax1 = fig.add_subplot(111)
-            ax1.plot(df, marker="o", label="amount of loans")
-            ax1.set_title("Loans")
-            ax1.set_xlabel("No. of loans")
-            ax1.set_ylabel("Amount of loans")
-            ax1.legend()
+        pandasdb = mysql.connect(host=host,
+                                 user=user,
+                                 password=password,
+                                 database="lmsdatabase",
+                                 use_pure=True)
+        print(currentday_month)
+        query = "Select loan.amount from loan where dateissued >= '" \
+                + fday_month + "' AND dateissued <= '" + currentday_month + "';"
+        print(fday_month)
+        df = pd.read_sql(query, pandasdb)
+        pandasdb.close()
 
-            canvas = FigureCanvasTkAgg(fig, self.home_dashboard_lf)
-            canvas.draw()
-            canvas.get_tk_widget().pack(side="left", anchor="w", padx=10, pady=10)
-        except Exception as e:
-            self.pandasdb.close()
-            print(e)
+        print("Loan's dataframe")
+        print(df)
+        print(df.sum())
+        print(type(df.sum()))
+
+        fig = Figure(figsize=(5, 5), dpi=75)
+        ax1 = fig.add_subplot(111)
+        ax1.plot(df, marker="o", label="amount of loans")
+        ax1.set_title("Loans")
+        ax1.set_xlabel("No. of loans")
+        ax1.set_ylabel("Amount of loans")
+        ax1.legend()
+
+        canvas = FigureCanvasTkAgg(fig, self.loans_analytics_lf)
+        canvas.draw()
+        canvas.get_tk_widget().pack(side="left", anchor="w", padx=10, pady=10)
 
     def mysql_pandas_payment(self):
-        try:
-            self.pandasdb = mysql.connect(host=host,
-                                          user=user,
-                                          password=password,
-                                          database="lmsdatabase",
-                                          use_pure=True)
-            print(currentday_month)
-            query = "Select payment.amount from payment where dateissued >= '" \
-                    + fday_month + "' AND dateissued <= '" + currentday_month + "';"
-            df = pd.read_sql(query, self.pandasdb)
-            self.pandasdb.close()
-            print("Payment's dataframe")
-            print(df)
-            fig = Figure(figsize=(5, 5), dpi=75)
-            ax1 = fig.add_subplot(111)
-            ax1.plot(df, marker="o", label="amount of payment")
-            ax1.set_title("Payments")
-            ax1.set_xlabel("No. of payments")
-            ax1.set_ylabel("Amount of payment")
-            ax1.legend()
+        pandasdb = mysql.connect(host=host,
+                                 user=user,
+                                 password=password,
+                                 database="lmsdatabase",
+                                 use_pure=True)
+        print(currentday_month)
+        query = "Select payment.amount from payment where dateissued >= '" \
+                + fday_month + "' AND dateissued <= '" + currentday_month + "';"
+        df = pd.read_sql(query, pandasdb)
+        pandasdb.close()
+        print("Payment's dataframe")
+        print(df)
 
-            canvas = FigureCanvasTkAgg(fig, self.home_dashboard_lf)
-            canvas.draw()
-            canvas.get_tk_widget().pack(side="left", anchor="w", padx=10, pady=10)
-        except Exception as e:
-            self.pandasdb.close()
-            print(e)
+        fig = Figure(figsize=(5, 5), dpi=75)
+        ax1 = fig.add_subplot(111)
+        ax1.plot(df, marker="o", label="amount of payment")
+        ax1.set_title("Payments")
+        ax1.set_xlabel("No. of payments")
+        ax1.set_ylabel("Amount of payment")
+        ax1.legend()
+
+        canvas = FigureCanvasTkAgg(fig, self.payment_analytics_content)
+        canvas.draw()
+        canvas.get_tk_widget().pack(side="left", anchor="w", padx=10, pady=10)
 
     def register_win(self):
         # Destroy window content
@@ -422,20 +423,46 @@ class Window:
         self.home_lf.pack(fill="both", expand=True)
 
         # Home dashboard container
-        self.home_dashboard_lf = tk.LabelFrame(self.home_lf, bg="#FFFFFF", relief="flat")
-        self.home_dashboard_lf.pack(side="top", fill="both")
+        self.home_dashboard_f = tk.Frame(self.home_lf, bg="#FFFFFF", relief="flat")
+        self.home_dashboard_f.pack(side="top", fill="both")
 
-        ttk.Label(self.home_dashboard_lf, text="Analytics Dashboard",
+        self.home_dashboard_scr = tk.Scrollbar(self.home_dashboard_f)
+        self.home_dashboard_scr.pack(side="right", fill="y")
+
+        ttk.Label(self.home_dashboard_f, text="Analytics Dashboard",
                   style="heading.TLabel").pack(side="top", anchor="w")
 
-        ttk.Label(self.home_dashboard_lf, text="Date from",
-                  style="body.TLabel").pack(side="left", anchor="w")
+        self.loans_analytics_lf = tk.LabelFrame(self.home_dashboard_f, bg="#FFFFFF", relief="flat")
+        self.loans_analytics_lf.pack(side="top", pady=10, fill="both")
 
-        ttk.Label(self.home_dashboard_lf, text="to",
-                  style="body.TLabel").pack(side="left", anchor="w")
+        # Containers for payment analytics
+        payment_analytics_lf = tk.LabelFrame(self.home_dashboard_f, bg="#FFFFFF", relief="flat")
+        payment_analytics_lf.pack(side="top", pady=10, fill="both")
+
+        payment_analytics_menu = tk.LabelFrame(payment_analytics_lf, bg="#FFFFFF", relief="flat")
+        payment_analytics_menu.pack(side="top", pady=10, fill="both")
+
+        self.payment_analytics_content = tk.LabelFrame(payment_analytics_lf, bg="#FFFFFF", relief="flat")
+        self.payment_analytics_content.pack(side="top", pady=10, fill="both")
 
         # Initiate methods for charts
         self.mysql_pandas_loans()
+
+        # Content for payment analytics
+        ttk.Label(payment_analytics_menu, text="Date from",
+                  style="body.TLabel").grid(column=0, row=0, pady=10, sticky="w")
+
+        pandas_payment_date_from = DateEntry(payment_analytics_menu, width=15,
+                                             date_pattern="MM/dd/yy", borderwidth=2)
+        pandas_payment_date_from.grid(column=1, row=0, padx=5, pady=5, sticky="w")
+
+        ttk.Label(payment_analytics_menu, text="to",
+                  style="body.TLabel").grid(column=2, row=0, pady=10, sticky="w")
+
+        pandas_payment_date_to = DateEntry(payment_analytics_menu, width=15,
+                                           date_pattern="MM/dd/yy", borderwidth=2)
+        pandas_payment_date_to.grid(column=3, row=0, padx=5, pady=5, sticky="w")
+
         self.mysql_pandas_payment()
         # self.mysql_pandas_borrower()
 
@@ -711,6 +738,7 @@ class Window:
         self.add_people_top.mainloop()
 
     def add_people_widget(self):
+
         # Register container
         self.add_people_lf = tk.LabelFrame(self.add_people_top, padx=20, pady=20, relief="flat")
         self.add_people_lf.pack(anchor="center", expand=True, fill="both")
@@ -1309,7 +1337,7 @@ class Window:
             # Updates the database
             for record in result:
                 # Computes balance
-                balance = ((record[0]/100) * record[1])
+                balance = ((record[0] / 100) * record[1])
                 balance = balance + record[1]
                 print(type(record[3]))
 
@@ -1503,6 +1531,12 @@ class Window:
         self.db1.close()
         self.mycursor.close()
         self.switch_loan()
+
+    @staticmethod
+    def time_it(fun=classmethod):
+        test_time = timeit(lambda: fun, number=1)
+
+        print(f"test={test_time:.3f}")
 
     @staticmethod
     def state_button(widget1, widget2, widget3, widget4):

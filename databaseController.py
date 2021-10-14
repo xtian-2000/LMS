@@ -26,16 +26,6 @@ class Database:
             print("Could not create database")
             print(e)
 
-        # Viewing all databases
-        try:
-            self.mycursor.execute("SHOW DATABASES")
-            print("These are the available databases")
-            for database in self.mycursor:
-                print(database)
-        except Exception as e:
-            print("Could not show all the databases")
-            print(e)
-
         # Connecting to lmsdatabase
         try:
             self.db1 = mysql.connect(host=host,
