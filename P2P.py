@@ -430,7 +430,7 @@ class Window:
                                       bg="#4C8404", relief="flat", command=self.add_people)
         self.add_people_b.pack(side="left", padx=5, pady=5)
 
-        self.add_people_b = tk.Button(self.toolbar_lf, text="Export", font="OpenSans, 10", fg="#FFFFFF",
+        self.add_people_b = tk.Button(self.toolbar_lf, text="Export Data", font="OpenSans, 10", fg="#FFFFFF",
                                       bg="#4C8404", relief="flat", command=self.export_database_widget)
         self.add_people_b.pack(side="left", padx=5, pady=5)
 
