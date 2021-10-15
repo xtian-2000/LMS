@@ -1,7 +1,6 @@
+import tkinter
 import tkinter as tk
 from datetime import datetime
-from timeit import timeit
-# from timeit import default_timer as timer
 from datetime import timedelta
 from tkinter import ttk, messagebox
 from databaseController import Database
@@ -15,10 +14,10 @@ import pandas as pd
 # import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from tkinter import PhotoImage
 
 # from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 # import numpy as np
-
 
 # Global variables for database
 host = "localhost"
@@ -154,6 +153,13 @@ class Window:
         self.day = datetime.today().day
         self.remaining_days = None
         self.interest = None
+        self.borrower_value = tk.IntVar()
+        self.loan_value = tk.IntVar()
+        self.payment_value = tk.IntVar()
+        self.home_icon_inactive_resized = tkinter.PhotoImage
+        self.loans_icon_inactive_resized = tkinter.PhotoImage
+        self.accounts_icon_inactive_resized = tkinter.PhotoImage
+        self.payments_icon_inactive_resized = tkinter.PhotoImage
 
         # Instantiate Database class
         Database()
@@ -273,8 +279,10 @@ class Window:
                                  database="lmsdatabase",
                                  use_pure=True)
         print(currentday_month)
-        query = "Select loan.amount from loan where dateissued >= '" \
-                + fday_month + "' AND dateissued <= '" + currentday_month + "';"
+        query = "Select loan.amount from loan INNER JOIN borrower ON " \
+                "loan.borrowerid=borrower.borrowerid where dateissued >= '" + fday_month + "' AND dateissued <= '" + \
+                currentday_month + "' AND borrower.userid = '" + self.key_str + "'; "
+
         print(fday_month)
         df = pd.read_sql(query, pandasdb)
         pandasdb.close()
@@ -284,9 +292,9 @@ class Window:
         print(df.sum())
 
         width = self.master.winfo_screenmmwidth()
-        print("screen size: ", width/25.4)
+        print("screen size: ", width / 25.4)
 
-        fig = Figure(figsize=(width/25.4, 5), dpi=75)
+        fig = Figure(figsize=(width / 25.4, 5), dpi=75)
         ax1 = fig.add_subplot(111)
         ax1.plot(df, marker="o", label="loan amount in PHP")
         ax1.set_title("Loans")
@@ -305,8 +313,10 @@ class Window:
                                  database="lmsdatabase",
                                  use_pure=True)
         print(currentday_month)
-        query = "Select payment.amount from payment where dateissued >= '" \
-                + fday_month + "' AND dateissued <= '" + currentday_month + "';"
+        query = "Select payment.amount from payment INNER JOIN loan ON payment.loanid=loan.loanid INNER " \
+                "JOIN borrower ON loan.borrowerid=borrower.borrowerid where payment.dateissued >= '"\
+                + fday_month + "' AND payment.dateissued <= '" + currentday_month + \
+                "' AND borrower.userid = '" + self.key_str + "'; "
         df = pd.read_sql(query, pandasdb)
         pandasdb.close()
         print("Payment's dataframe")
@@ -374,24 +384,37 @@ class Window:
         Content.destroy_content(self.master)
 
         # Menu container
-        self.menu_lf = tk.LabelFrame(self.master, bg="#2C441D", relief="flat")
+        self.menu_lf = tk.LabelFrame(self.master, bg="#4C8404", relief="flat")
         self.menu_lf.pack(side="left", fill="both")
 
+        # Create variables for images
+        home_icon_inactive = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\home_icon_inactive.png")
+        self.home_icon_inactive_resized = home_icon_inactive.subsample(8, 8)
+
+        loans_icon_inactive = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\loan_icon_inactive.png")
+        self.loans_icon_inactive_resized = loans_icon_inactive.subsample(8, 8)
+
+        accounts_icon_inactive = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\accounts_icon_inactive.png")
+        self.accounts_icon_inactive_resized = accounts_icon_inactive.subsample(8, 8)
+
+        payments_icon_inactive = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\payments_icon_inactive.png")
+        self.payments_icon_inactive_resized = payments_icon_inactive.subsample(8, 8)
+
         # Menu buttons
-        self.home_b = tk.Button(self.menu_lf, text="Home", font="OpenSans 18", relief="flat", bg="#2C441D",
-                                fg="#FFFFFF", anchor="w", command=self.switch_home)
-        self.home_b.pack(side="top", fill="both")
+        self.home_b = tk.Button(self.menu_lf, image=self.home_icon_inactive_resized, relief="flat", bg="#4C8404",
+                                command=self.switch_home)
+        self.home_b.pack(side="top")
 
-        self.loan_b = tk.Button(self.menu_lf, text="Loans", font="OpenSans, 18", relief="flat", bg="#2C441D",
-                                fg="#FFFFFF", anchor="w", command=self.switch_loan)
-        self.loan_b.pack(side="top", fill="both")
+        self.loan_b = tk.Button(self.menu_lf, image=self.loans_icon_inactive_resized, relief="flat", bg="#4C8404",
+                                command=self.switch_loan)
+        self.loan_b.pack(side="top")
 
-        self.account_b = tk.Button(self.menu_lf, text="Accounts", font="OpenSans, 18", relief="flat", bg="#2C441D",
-                                   fg="#FFFFFF", anchor="w", command=self.switch_account)
+        self.account_b = tk.Button(self.menu_lf, image=self.accounts_icon_inactive_resized, relief="flat", bg="#4C8404",
+                                   command=self.switch_account)
         self.account_b.pack(side="top", fill="both")
 
-        self.payment_b = tk.Button(self.menu_lf, text="Payments", font="OpenSans, 18", relief="flat", bg="#2C441D",
-                                   fg="#FFFFFF", anchor="w", command=self.switch_payment)
+        self.payment_b = tk.Button(self.menu_lf, image=self.payments_icon_inactive_resized, relief="flat", bg="#4C8404",
+                                   command=self.switch_payment)
         self.payment_b.pack(side="top", fill="both")
 
         # Content Container
@@ -405,6 +428,10 @@ class Window:
         # Button for opening form for adding borrower
         self.add_people_b = tk.Button(self.toolbar_lf, text="Add borrower", font="OpenSans, 10", fg="#FFFFFF",
                                       bg="#4C8404", relief="flat", command=self.add_people)
+        self.add_people_b.pack(side="left", padx=5, pady=5)
+
+        self.add_people_b = tk.Button(self.toolbar_lf, text="Export", font="OpenSans, 10", fg="#FFFFFF",
+                                      bg="#4C8404", relief="flat", command=self.export_database_widget)
         self.add_people_b.pack(side="left", padx=5, pady=5)
 
         self.logout_b = tk.Button(self.toolbar_lf, text="Logout", font="OpenSans, 10", relief="flat", bg="#FFFFFF",
@@ -425,7 +452,7 @@ class Window:
         # Scrollable home container
         home_f = ScrollableFrame(self.content_lf)
 
-# ================================================ Loan Analytics ======================================================
+        # ================================================ Loan Analytics ==============================================
         # Containers for loan analytics
         loans_analytics_f = tk.Frame(home_f.scrollable_frame, relief="flat")
         loans_analytics_f.pack(side="top", fill="both", padx=10, pady=5, expand=True)
@@ -463,7 +490,7 @@ class Window:
         # Initialize method for loans analytics
         self.mysql_pandas_loans()
 
-# ================================================ Payment Analytics ===================================================
+        # ================================================ Payment Analytics ===========================================
         # Containers for payment analytics
         payment_analytics_f = tk.Frame(home_f.scrollable_frame, bg="#FFFFFF", relief="flat")
         payment_analytics_f.pack(side="top", padx=10, pady=5, fill="both", expand=True)
@@ -506,7 +533,7 @@ class Window:
         home_f.pack(side="top", fill="both", expand=True)
 
         # Configure button state
-        self.state_button(self.home_b, self.account_b, self.loan_b, self.payment_b)
+        # self.state_button(self.home_b, self.account_b, self.loan_b, self.payment_b)
 
     def switch_loan(self):
         # Destroy content_lf
@@ -578,7 +605,7 @@ class Window:
                   style="body.TLabel").grid(column=0, row=1, padx=5, pady=5, sticky="w")
 
         # Configure button state
-        self.state_button(self.loan_b, self.account_b, self.home_b, self.payment_b)
+        # self.state_button(self.loan_b, self.account_b, self.home_b, self.payment_b)
 
     def switch_account(self):
         # Destroy content_lf
@@ -641,7 +668,7 @@ class Window:
                   style="body.TLabel").grid(column=0, row=1, padx=5, pady=5, sticky="w")
 
         # Configure button state
-        self.state_button(self.account_b, self.loan_b, self.home_b, self.payment_b)
+        # self.state_button(self.account_b, self.loan_b, self.home_b, self.payment_b)
 
     def switch_payment(self):
         # Destroy content_lf
@@ -711,7 +738,7 @@ class Window:
                   style="body.TLabel").grid(column=0, row=1, padx=5, pady=5, sticky="w")
 
         # Configure button state
-        self.state_button(self.payment_b, self.account_b, self.loan_b, self.home_b)
+        # self.state_button(self.payment_b, self.account_b, self.loan_b, self.home_b)
 
     def login_validation(self):
         try:
@@ -825,7 +852,7 @@ class Window:
         # Create instance
         self.add_people_top = tk.Toplevel(self.master)
         # self.add_people_top.geometry("500x280")
-        self.add_people_top.title("Borrower's Profile")
+        self.add_people_top.title("Issue loan")
         self.add_people_top.configure(bg="#4C8404")
 
         self.add_people_widget()
@@ -986,6 +1013,98 @@ class Window:
         except Exception as e:
             print("Could not connect to lmsdatabase")
             print(e)
+
+    def export_database_widget(self):
+        # Create instance
+        export_data_top = tk.Toplevel(self.master)
+        export_data_top.title("Export data")
+        export_data_top.geometry("500x400")
+        export_data_top.configure(bg="#4C8404")
+        export_data_top.resizable(False, False)
+
+        # ================================================ Checkbox for available tables ===============================
+        # Export data container
+        export_data_lf = tk.LabelFrame(export_data_top, padx=20, pady=20, bg="#FFFFFF", relief="flat")
+        export_data_lf.pack(side="top", padx=15, pady=15, fill="both", expand=True)
+
+        ttk.Label(export_data_lf, text="Available tables", style="body_content.TLabel").grid(column=0, row=0,
+                                                                                             padx=5, sticky="w")
+
+        borrower_cb = tk.Checkbutton(export_data_lf, text="Borrowers", variable=self.borrower_value, onvalue=1,
+                                     offvalue=0, bg="#FFFFFF")
+        borrower_cb.grid(column=0, row=1, padx=5, sticky="w")
+
+        loan_cb = tk.Checkbutton(export_data_lf, text="Loans", variable=self.loan_value, onvalue=1, offvalue=0,
+                                 bg="#FFFFFF")
+        loan_cb.grid(column=0, row=2, padx=5, sticky="w")
+
+        payment_cb = tk.Checkbutton(export_data_lf, text="Payments", variable=self.payment_value, onvalue=1, offvalue=0,
+                                    bg="#FFFFFF")
+        payment_cb.grid(column=0, row=3, padx=5, sticky="w")
+
+        # Create variables for images
+        csv_icon = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\csv-autofetch.png")
+        csv_icon_resized = csv_icon.subsample(4, 4)
+
+        excel_icon = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\Microsoft_Excel-Logo.wine.png")
+        excel_icon_resized = excel_icon.subsample(7, 6)
+
+        # Buttons for export
+        export_csv_b = tk.Button(export_data_lf, image=csv_icon_resized, command=self.export_as_csv)
+        export_csv_b.grid(column=0, row=4, padx=5, pady=5, sticky="w")
+
+        ttk.Label(export_data_lf, text="Save as CSV", style="heading.TLabel").grid(column=0, row=5, padx=5)
+
+        ttk.Label(export_data_lf, text="or", style="body.TLabel").grid(column=1, row=4, padx=5)
+
+        export_excel_b = tk.Button(export_data_lf, image=excel_icon_resized)
+        export_excel_b.grid(column=2, row=4, padx=5, sticky="w")
+
+        ttk.Label(export_data_lf, text="Save as Excel", style="heading.TLabel").grid(column=2, row=5, padx=5)
+
+        # Disables underlying window
+        export_data_top.grab_set()
+
+        export_data_top.mainloop()
+
+    def export_as_csv(self):
+        pandasdb = mysql.connect(host=host,
+                                 user=user,
+                                 password=password,
+                                 database="lmsdatabase",
+                                 use_pure=True)
+        """
+        query = "Select * from;"
+        df = pd.read_sql(query, pandasdb)
+        pandasdb.close()
+
+        print("Loan's dataframe")
+        print(df)
+        print(df.sum())"""
+
+        if self.borrower_value.get() == 1:
+            query1 = "Select * from lmsdatabase.borrower where userid = '" + self.key_str + "';"
+            df1 = pd.read_sql(query1, pandasdb)
+            print(df1)
+        else:
+            print("Borrower table is not checked")
+
+        if self.loan_value.get() == 1:
+            query2 = "Select * FROM loan INNER JOIN borrower ON loan.borrowerid=borrower.borrowerid where " \
+                     "borrower.userid = '" + self.key_str + "';"
+            df2 = pd.read_sql(query2, pandasdb)
+            print(df2)
+        else:
+            print("Loan table is not checked")
+
+        if self.payment_value.get() == 1:
+            query3 = "Select * from lmsdatabase.payment;"
+            df3 = pd.read_sql(query3, pandasdb)
+            print(df3)
+        else:
+            print("Payment table is not checked")
+
+        pandasdb.close()
 
     def database_view_account(self):
         # Method for viewing accounts database
@@ -1247,7 +1366,6 @@ class Window:
                                                  values=(record[0], record[1], record[2], record[3], record[4],
                                                          record[5], record[6], record[8]),
                                                  tags=("evenrow",))
-
                 count += 1
 
             self.db1.commit()
@@ -1570,12 +1688,6 @@ class Window:
         self.db1.close()
         self.mycursor.close()
         self.switch_loan()
-
-    @staticmethod
-    def time_it(fun=classmethod):
-        test_time = timeit(lambda: fun, number=1)
-
-        print(f"test={test_time:.3f}")
 
     @staticmethod
     def state_button(widget1, widget2, widget3, widget4):
