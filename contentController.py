@@ -9,16 +9,28 @@ class Content(tk.Tk, ttk.LabelFrame, ttk.Entry, ttk.Label, tk.Button, tk.Topleve
     def widget_styles(self):
         # Configure styles for widgets
         style = ttk.Style(self)
+
+        # ================================================ Style for Treeview ========================================
         style.configure("default.Treeview", background="#D3D3D3", font=("OpenSans", 12), foreground="black"
                         , rowheight=25, bd=10, fieldbackground="#FFFFFF")
         style.configure("default.Treeview.Heading", font=("OpenSans", 12, "bold"), foreground="green")
         style.map("default.Treeview", background=[("selected", "green")])
 
-        style.configure('h1.TLabel', font=("OpenSans", 20, "bold"), foreground='green', background="#EBEBEB")
+        # ================================================ Style for Label =============================================
+        style.configure('h1.TLabel', font=("Times New Roman", 20, "bold"), foreground='#4C8404', background="#FFFFFF")
+        style.configure('h1_title.TLabel', font=("Times New Roman", 20, "bold"), foreground='#585456',
+                        background="#FFFFFF")
+        style.configure('h1_body.TLabel', font=("Times New Roman", 15), foreground='#585456',
+                        background="#FFFFFF")
+        style.configure('h1_footnote.TLabel', font=("Times New Roman", 12), foreground='#585456',
+                        background="#FFFFFF")
         style.configure('h3.TLabel', font=("OpenSans", 10), foreground='#000000', background="#EBEBEB")
         style.configure('heading.TLabel', font=("OpenSans", 12, "bold"), foreground='green', background="#FFFFFF")
         style.configure('body.TLabel', font=("OpenSans", 10, "bold"), foreground='#000000', background="#FFFFFF")
         style.configure('body_content.TLabel', font=("OpenSans", 10), foreground='green', background="#FFFFFF")
+
+        # ================================================ Style for LabelFrame ========================================
+        style.configure('forms.TLabelframe', background="#FFFFFF", relief="solid", bordercolor="green", borderwidth=1)
 
     def destroy_content(self):
         for child in self.winfo_children():

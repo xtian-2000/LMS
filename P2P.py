@@ -56,6 +56,7 @@ class Window:
         self.register_email_entry = None
         self.register_done_b = None
         self.menu_lf = None
+        self.home_f = None
         self.home_b = tk.Button
         self.loan_b = tk.Button
         self.account_b = tk.Button
@@ -78,6 +79,7 @@ class Window:
         self.loan_content_view_lf = None
         self.issue_loan_date_de = None
         self.status_combobox = None
+        self.show_more_dashboard_b = None
         self.payment_lf = None
         self.payment_database_view_lf = None
         self.payment_database_view_f = None
@@ -160,6 +162,8 @@ class Window:
         self.loans_icon_inactive_resized = tkinter.PhotoImage
         self.accounts_icon_inactive_resized = tkinter.PhotoImage
         self.payments_icon_inactive_resized = tkinter.PhotoImage
+        self.p2p_logo_resized = tkinter.PhotoImage
+        self.total_loan_amount = None
 
         # Instantiate Database class
         Database()
@@ -171,13 +175,12 @@ class Window:
         Content.widget_styles(self.master)
 
     def login_win(self):
-
         # Destroy window contents
         Content.destroy_content(self.master)
 
         # Create window attribute
         self.master.title("P2P Lending Management System")
-        self.master.iconbitmap(r"C:\Users\SSD\IdeaProjects\LMS\p2p_official_logo.ico")
+        self.master.iconbitmap(r"C:\Users\SSD\IdeaProjects\LMS\images\p2p_icon.ico")
         width = self.master.winfo_screenwidth()
         height = self.master.winfo_screenheight()
         print(width)
@@ -185,46 +188,59 @@ class Window:
         self.master.resizable(True, True)
         self.master.configure(bg="#4C8404")
 
+        # ================================================ Logo section ================================================
         # Logo container
-        self.logo_lf = tk.LabelFrame(self.master, padx=20, pady=20, relief="flat")
-        self.logo_lf.pack(side="left", expand=True, fill="both")
+        self.main_lf = tk.LabelFrame(self.master, bg="#FFFFFF", relief="flat")
+        self.main_lf.pack(side="top", fill="x")
 
-        # my_image = ImageTk.PhotoImage(Image.open("P2P_official_logo.png"))
-        # my_label = ttk.Label(self.logo_lf, image=my_image)
-        # my_label.pack()
+        description_lf = tk.LabelFrame(self.main_lf, bg="#FFFFFF", relief="flat")
+        description_lf.pack(side="top", fill="x")
 
+        p2p_logo = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\p2p_logo.png")
+        self.p2p_logo_resized = p2p_logo.subsample(1, 1)
+
+        ttk.Label(self.main_lf, image=self.p2p_logo_resized).pack(side="left", padx=10, pady=10)
+        ttk.Label(self.main_lf, text="Welcome to P2P LMS", style="h1_title.TLabel").pack(side="top",
+                                                                                         anchor="w", pady=10)
+        ttk.Label(self.main_lf, text="P2P LMS is a tool that allows managing, storing and processing information "
+                                     "\ngathered for lending purposes. ",
+                  style="h1_body.TLabel").pack(side="top", anchor="w")
+        ttk.Label(self.main_lf, text="Email: christian.gealone1@gmail.com / pongodev0914@gmail.com",
+                  style="h1_footnote.TLabel").pack(side="bottom", anchor="w", pady=10)
+        ttk.Label(self.main_lf, text="Contact us:",
+                  style="h1_footnote.TLabel").pack(side="bottom", anchor="w")
+
+        # ================================================ Login section ===============================================
         # Login container
-        self.login_lf = tk.LabelFrame(self.master, padx=20, pady=20, relief="flat")
-        self.login_lf.pack(side="right", expand=True)
+        self.login_lf = ttk.LabelFrame(self.main_lf, style="forms.TLabelframe")
+        self.login_lf.pack(side="left", anchor="e")
 
         # Login widgets
-        ttk.Label(self.login_lf, text="Log in", style="h1.TLabel").grid(column=0, row=0, pady=10)
+        ttk.Label(self.main_lf, text="Login", style="h1.TLabel").grid(column=0, row=0, pady=10)
 
-        ttk.Label(self.login_lf, text="User Name", style="h3.TLabel").grid(column=0, row=1, pady=10, sticky="w")
+        ttk.Label(self.main_lf, text="User Name", style="h1_footnote.TLabel").grid(column=0,
+                                                                                    row=1, pady=10, sticky="w")
 
-        self.login_username_entry = ttk.Entry(self.login_lf, width=40)
+        self.login_username_entry = ttk.Entry(self.main_lf, width=40)
         self.login_username_entry.grid(column=1, row=1, pady=10)
 
         # Focuses cursor on username entry
         self.login_username_entry.focus()
 
-        ttk.Label(self.login_lf, text="Password", style="h3.TLabel").grid(column=0, row=2, pady=10, sticky="w")
+        ttk.Label(self.main_lf, text="Password", style="h1_footnote.TLabel").grid(column=0, row=2, pady=10, sticky="w")
 
-        self.login_password_entry = ttk.Entry(self.login_lf, show="*", width=40)
+        self.login_password_entry = ttk.Entry(self.main_lf, show="*", width=40)
         self.login_password_entry.grid(column=1, row=2, pady=10)
 
-        self.register_b = tk.Button(self.login_lf, text="                              Register                        "
-                                                        "       ", font="OpenSans, 12", fg="#4C8404", bg="#FFFFFF",
+        self.register_b = tk.Button(self.main_lf, text="                              Register                        "
+                                                        "       ", font="OpenSans, 12", fg="#4C8404", bg="#D4DEC9",
                                     relief="flat", command=self.register_win)
-        self.register_b.grid(column=0, row=3, columnspan=2, pady=10)
+        self.register_b.grid(column=0, row=3, columnspan=2, pady=5)
 
-        self.login_b = tk.Button(self.login_lf, text="                                Log in                           "
+        self.login_b = tk.Button(self.main_lf, text="                                Log in                           "
                                                      "      ", font="OpenSans, 12", fg="#FFFFFF", bg="#4C8404",
                                  relief="flat", command=self.login_validation)
-        self.login_b.grid(column=0, row=4, columnspan=2, pady=10)
-
-        Content.background_change_labelframe(self.master, "#EBEBEB")
-        Content.background_change_label(self.login_lf, "#EBEBEB")
+        self.login_b.grid(column=0, row=4, columnspan=2, pady=5)
 
     def mysql_pandas_user(self):
         try:
@@ -289,10 +305,10 @@ class Window:
 
         print("Loan's dataframe")
         print(df)
-        print(df.sum())
+        self.total_loan_amount = df['amount'].sum()
+        print(self.total_loan_amount)
 
         width = self.master.winfo_screenmmwidth()
-        print("screen size: ", width / 25.4)
 
         fig = Figure(figsize=(width / 25.4, 5), dpi=75)
         ax1 = fig.add_subplot(111)
@@ -314,7 +330,7 @@ class Window:
                                  use_pure=True)
         print(currentday_month)
         query = "Select payment.amount from payment INNER JOIN loan ON payment.loanid=loan.loanid INNER " \
-                "JOIN borrower ON loan.borrowerid=borrower.borrowerid where payment.dateissued >= '"\
+                "JOIN borrower ON loan.borrowerid=borrower.borrowerid where payment.dateissued >= '" \
                 + fday_month + "' AND payment.dateissued <= '" + currentday_month + \
                 "' AND borrower.userid = '" + self.key_str + "'; "
         df = pd.read_sql(query, pandasdb)
@@ -335,17 +351,19 @@ class Window:
         canvas.get_tk_widget().pack(side="left", padx=10, pady=10, fill="both", expand=True)
 
     def register_win(self):
-        # Destroy window content
-        Content.destroy_content(self.master)
-
+        # Destroy login content
+        self.login_lf.destroy()
+        # ================================================ Register section ============================================
         # Register container
-        self.register_lf = tk.LabelFrame(self.master, padx=20, pady=20, relief="flat")
-        self.register_lf.pack(anchor="center", expand=True)
+        self.register_lf = ttk.LabelFrame(self.master, style="forms.TLabelframe")
+        self.register_lf.pack(side="top", pady=50)
 
+        # TLabelframe
         # Creating widgets
         ttk.Label(self.register_lf, text="Register", style="h1.TLabel").grid(column=0, row=0, columnspan=1, pady=10)
 
-        ttk.Label(self.register_lf, text="User Name", style="h3.TLabel").grid(column=0, row=1, pady=10, sticky="w")
+        ttk.Label(self.register_lf, text="User Name", style="h1_footnote.TLabel").grid(column=0, row=1, pady=10,
+                                                                                       sticky="w")
 
         self.register_user_name_entry = ttk.Entry(self.register_lf, width=40)
         self.register_user_name_entry.grid(column=1, row=1, pady=10)
@@ -353,31 +371,29 @@ class Window:
         # Focuses cursor on username entry
         self.register_user_name_entry.focus()
 
-        ttk.Label(self.register_lf, text="Password", style="h3.TLabel").grid(column=0, row=2, pady=10, sticky="w")
+        ttk.Label(self.register_lf, text="Password", style="h1_footnote.TLabel").grid(column=0, row=2, pady=10,
+                                                                                      sticky="w")
 
         self.register_password_entry = ttk.Entry(self.register_lf, width=40)
         self.register_password_entry.grid(column=1, row=2, pady=10)
 
-        ttk.Label(self.register_lf, text="Email", style="h3.TLabel").grid(column=0, row=3, pady=10, sticky="w")
+        ttk.Label(self.register_lf, text="Email", style="h1_footnote.TLabel").grid(column=0, row=3, pady=10,
+                                                                                   sticky="w")
 
         self.register_email_entry = ttk.Entry(self.register_lf, width=40)
-        self.register_email_entry.grid(column=1, row=3, pady=10)
+        self.register_email_entry.grid(column=1, row=3, pady=5)
 
         # Button for cancelling registration
         self.register_cancel_b = tk.Button(self.register_lf, text="                                Cancel              "
                                                                   "                   ", font="OpenSans, 12",
-                                           relief="flat", fg="#4C8404", bg="#FFFFFF", command=self.login_win)
-        self.register_cancel_b.grid(column=0, row=4, columnspan=2, pady=10)
+                                           relief="flat", fg="#4C8404", bg="#D4DEC9", command=self.login_win)
+        self.register_cancel_b.grid(column=0, row=4, columnspan=2, pady=5)
 
         # Button for adding people to database
         self.register_done_b = tk.Button(self.register_lf, text="                               Register               "
                                                                 "                 ", font="OpenSans, 12", relief="flat",
                                          fg="#FFFFFF", bg="#4C8404", command=self.register_validation)
         self.register_done_b.grid(column=0, row=5, columnspan=2, pady=10)
-
-        Content.background_change_labelframe(self.master, "#EBEBEB")
-
-        Content.background_change_label(self.register_lf, "#EBEBEB")
 
     def create_widgets(self):
         # Destroy window contents
@@ -450,11 +466,11 @@ class Window:
         Content.destroy_content(self.content_lf)
 
         # Scrollable home container
-        home_f = ScrollableFrame(self.content_lf)
+        self.home_f = ScrollableFrame(self.content_lf)
 
         # ================================================ Loan Analytics ==============================================
         # Containers for loan analytics
-        loans_analytics_f = tk.Frame(home_f.scrollable_frame, relief="flat")
+        loans_analytics_f = tk.Frame(self.home_f.scrollable_frame, relief="flat")
         loans_analytics_f.pack(side="top", fill="both", padx=10, pady=5, expand=True)
 
         loan_analytics_menu = tk.LabelFrame(loans_analytics_f, bg="#FFFFFF", relief="flat")
@@ -472,13 +488,13 @@ class Window:
 
         pandas_loan_date_from = DateEntry(loan_analytics_menu, width=15,
                                           date_pattern="MM/dd/yy", borderwidth=2)
-        pandas_loan_date_from.grid(column=1, row=1, padx=2.5, sticky="w")
+        pandas_loan_date_from.grid(column=1, columnspan=2, row=1, padx=2.5, sticky="w")
 
-        ttk.Label(loan_analytics_menu, text="to", style="body.TLabel").grid(column=2, row=1, padx=2.5, sticky="w")
+        ttk.Label(loan_analytics_menu, text="to", style="body.TLabel").grid(column=3, row=1, padx=2.5, sticky="w")
 
         pandas_loan_date_to = DateEntry(loan_analytics_menu, width=15,
                                         date_pattern="MM/dd/yy", borderwidth=2)
-        pandas_loan_date_to.grid(column=3, row=1, padx=2.5, sticky="w")
+        pandas_loan_date_to.grid(column=4, columnspan=2, row=1, padx=2.5, sticky="w")
 
         # Insert values to Date Entry
         pandas_loan_date_from.delete(0, "end")
@@ -490,9 +506,28 @@ class Window:
         # Initialize method for loans analytics
         self.mysql_pandas_loans()
 
+        # Dashboard information
+        ttk.Label(loan_analytics_menu, text="Total loan amount",
+                  style="body.TLabel").grid(column=0, row=4, columnspan=2, pady=5, sticky="w")
+        ttk.Label(loan_analytics_menu, text=self.total_loan_amount,
+                  style="body_content.TLabel").grid(column=2, row=4, pady=5, sticky="w")
+
+        # Wrap contents to allow scrollable frame function
+        self.home_f.pack(side="top", fill="both", expand=True)
+
+        # Button for showing more dashboards
+        self.show_more_dashboard_b = tk.Button(self.home_f.scrollable_frame, text="Show more analytics",
+                                               font="OpenSans, 10", fg="#FFFFFF", bg="#4C8404", relief="flat",
+                                               command=self.show_more_analytics)
+        self.show_more_dashboard_b.pack(side="bottom", fill="both", expand=True, padx=10, pady=10)
+
+        # Configure button state
+        # self.state_button(self.home_b, self.account_b, self.loan_b, self.payment_b)
+
+    def show_more_analytics(self):
         # ================================================ Payment Analytics ===========================================
         # Containers for payment analytics
-        payment_analytics_f = tk.Frame(home_f.scrollable_frame, bg="#FFFFFF", relief="flat")
+        payment_analytics_f = tk.Frame(self.home_f.scrollable_frame, bg="#FFFFFF", relief="flat")
         payment_analytics_f.pack(side="top", padx=10, pady=5, fill="both", expand=True)
 
         payment_analytics_menu = tk.LabelFrame(payment_analytics_f, bg="#FFFFFF", relief="flat")
@@ -529,11 +564,7 @@ class Window:
         # Initialize method for payment analytics
         self.mysql_pandas_payment()
 
-        # Wrap contents to allow scrollable frame function
-        home_f.pack(side="top", fill="both", expand=True)
-
-        # Configure button state
-        # self.state_button(self.home_b, self.account_b, self.loan_b, self.payment_b)
+        self.show_more_dashboard_b.configure(text="Show less analytics", command=self.switch_home)
 
     def switch_loan(self):
         # Destroy content_lf
