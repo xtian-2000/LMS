@@ -55,6 +55,7 @@ class Window:
         self.register_password_entry = None
         self.register_email_entry = None
         self.register_done_b = None
+        self.main_lf = None
         self.menu_lf = None
         self.home_f = None
         self.home_b = tk.Button
@@ -155,6 +156,7 @@ class Window:
         self.day = datetime.today().day
         self.remaining_days = None
         self.interest = None
+        self.total_loan_amount = None
         self.borrower_value = tk.IntVar()
         self.loan_value = tk.IntVar()
         self.payment_value = tk.IntVar()
@@ -163,7 +165,7 @@ class Window:
         self.accounts_icon_inactive_resized = tkinter.PhotoImage
         self.payments_icon_inactive_resized = tkinter.PhotoImage
         self.p2p_logo_resized = tkinter.PhotoImage
-        self.total_loan_amount = None
+        self.tree_logo = tkinter.PhotoImage
 
         # Instantiate Database class
         Database()
@@ -183,7 +185,6 @@ class Window:
         self.master.iconbitmap(r"C:\Users\SSD\IdeaProjects\LMS\images\p2p_icon.ico")
         width = self.master.winfo_screenwidth()
         height = self.master.winfo_screenheight()
-        print(width)
         self.master.geometry("%dx%d" % (width, height))
         self.master.resizable(True, True)
         self.master.configure(bg="#4C8404")
@@ -200,47 +201,145 @@ class Window:
         self.p2p_logo_resized = p2p_logo.subsample(1, 1)
 
         ttk.Label(self.main_lf, image=self.p2p_logo_resized).pack(side="left", padx=10, pady=10)
-        ttk.Label(self.main_lf, text="Welcome to P2P LMS", style="h1_title.TLabel").pack(side="top",
-                                                                                         anchor="w", pady=10)
-        ttk.Label(self.main_lf, text="P2P LMS is a tool that allows managing, storing and processing information "
-                                     "\ngathered for lending purposes. ",
+
+        # ================================================ Description section =========================================
+        description_lf = tk.LabelFrame(self.main_lf, bg="#FFFFFF", relief="flat")
+        description_lf.pack(side="left")
+
+        ttk.Label(description_lf, text="Welcome to P2P LMS", style="h1_title.TLabel").pack(side="top",
+                                                                                           anchor="w", pady=10)
+        ttk.Label(description_lf, text="P2P LMS is a tool that allows managing, storing and processing information "
+                                       "\ngathered for lending purposes. ",
                   style="h1_body.TLabel").pack(side="top", anchor="w")
-        ttk.Label(self.main_lf, text="Email: christian.gealone1@gmail.com / pongodev0914@gmail.com",
+        ttk.Label(description_lf, text="Email: christian.gealone1@gmail.com / pongodev0914@gmail.com",
                   style="h1_footnote.TLabel").pack(side="bottom", anchor="w", pady=10)
-        ttk.Label(self.main_lf, text="Contact us:",
+        ttk.Label(description_lf, text="Contact us:",
                   style="h1_footnote.TLabel").pack(side="bottom", anchor="w")
 
         # ================================================ Login section ===============================================
         # Login container
-        self.login_lf = ttk.LabelFrame(self.main_lf, style="forms.TLabelframe")
-        self.login_lf.pack(side="left", anchor="e")
+        self.login_lf = tk.LabelFrame(self.main_lf, bg="#FFFFFF")
+        self.login_lf.pack(side="right", padx=20, pady=20)
 
         # Login widgets
-        ttk.Label(self.main_lf, text="Login", style="h1.TLabel").grid(column=0, row=0, pady=10)
+        ttk.Label(self.login_lf, text="Login", style="h1.TLabel").grid(column=0, row=0, pady=10)
 
-        ttk.Label(self.main_lf, text="User Name", style="h1_footnote.TLabel").grid(column=0,
+        ttk.Label(self.login_lf, text="User Name", style="h1_footnote.TLabel").grid(column=0,
                                                                                     row=1, pady=10, sticky="w")
 
-        self.login_username_entry = ttk.Entry(self.main_lf, width=40)
-        self.login_username_entry.grid(column=1, row=1, pady=10)
+        self.login_username_entry = ttk.Entry(self.login_lf, width=40)
+        self.login_username_entry.grid(column=1, row=1, padx=5)
 
         # Focuses cursor on username entry
         self.login_username_entry.focus()
 
-        ttk.Label(self.main_lf, text="Password", style="h1_footnote.TLabel").grid(column=0, row=2, pady=10, sticky="w")
+        ttk.Label(self.login_lf, text="Password", style="h1_footnote.TLabel").grid(column=0, row=2, pady=10, sticky="w")
 
-        self.login_password_entry = ttk.Entry(self.main_lf, show="*", width=40)
-        self.login_password_entry.grid(column=1, row=2, pady=10)
+        self.login_password_entry = ttk.Entry(self.login_lf, show="*", width=40)
+        self.login_password_entry.grid(column=1, row=2, padx=5)
 
-        self.register_b = tk.Button(self.main_lf, text="                              Register                        "
+        self.register_b = tk.Button(self.login_lf, text="                              Register                        "
                                                         "       ", font="OpenSans, 12", fg="#4C8404", bg="#D4DEC9",
                                     relief="flat", command=self.register_win)
         self.register_b.grid(column=0, row=3, columnspan=2, pady=5)
 
-        self.login_b = tk.Button(self.main_lf, text="                                Log in                           "
+        self.login_b = tk.Button(self.login_lf, text="                                Log in                           "
                                                      "      ", font="OpenSans, 12", fg="#FFFFFF", bg="#4C8404",
                                  relief="flat", command=self.login_validation)
         self.login_b.grid(column=0, row=4, columnspan=2, pady=5)
+
+        # ================================================ Features Description section ================================
+        features_lf = tk.LabelFrame(self.master, bg="#FFFFFF", relief="flat")
+        features_lf.pack(side="top", expand=True, anchor="center")
+
+        # ================================================ Features Description section ================================
+        system_features_lf = tk.LabelFrame(features_lf, relief="flat")
+        system_features_lf.pack(side="left", padx=10, pady=10, ipadx=5, ipady=5)
+
+        sf_text_lf = tk.LabelFrame(features_lf, bg="#146CE4", relief="flat")
+        sf_text_lf.pack(side="left")
+
+        ttk.Label(sf_text_lf, text="Featured", style="featured.TLabel").pack(side="top", pady=5, anchor="w")
+        ttk.Label(sf_text_lf, text="Lending Management System",
+                  style="featured_h1.TLabel").pack(side="top", pady=10, anchor="w")
+        ttk.Label(sf_text_lf, text="Lending Management System comes \n"
+                                   "with a slew of capabilities, from \n"
+                                   "a user-friendly interface to extensive \n"
+                                   "data management controls,as well as \n"
+                                   "extra data visualization options. \n"
+                                   "Extend your business with a centralized \n"
+                                   "system that takes care of the hassle of \n"
+                                   "data processing.",
+                  style="featured_h2.TLabel").pack(side="top", anchor="w")
+
+        sf_logo_lf = tk.LabelFrame(features_lf, bg="#146CE4", relief="flat")
+        sf_logo_lf.pack(side="left")
+
+        tree_logo = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\plant.png")
+        self.tree_logo = tree_logo.subsample(7,7)
+
+        ttk.Label(sf_logo_lf, image=self.tree_logo, relief="flat").pack(side="right", pady=5, anchor="w")
+
+        # ================================================ Features Description section ================================
+        system_features_2_lf = tk.LabelFrame(features_lf, bg="#043444", relief="flat")
+        system_features_2_lf.pack(side="left", padx=10, pady=10, ipadx=5, ipady=5)
+
+        ttk.Label(system_features_2_lf, text="Featured", style="featured_2.TLabel").pack(side="top", pady=5, anchor="w")
+        ttk.Label(system_features_2_lf, text="Lending Management System",
+                  style="featured_h1_2.TLabel").pack(side="top", pady=10, anchor="w")
+        ttk.Label(system_features_2_lf, text="Lending Management System comes \n"
+                                             "with a slew of capabilities, from \n"
+                                             "a user-friendly interface to extensive \n"
+                                             "data management controls,as well as \n"
+                                             "extra data visualization options. \n"
+                                             "Extend your business with a centralized \n"
+                                             "system that takes care of the hassle of \n"
+                                             "data processing.",
+                  style="featured_h2_2.TLabel").pack(side="top", anchor="w")
+
+    def register_win(self):
+        # Destroy login content
+        self.login_lf.destroy()
+        # ================================================ Register section ============================================
+        # Register container
+        self.register_lf = tk.LabelFrame(self.main_lf, bg="#FFFFFF")
+        self.register_lf.pack(side="right", padx=20, pady=20)
+
+        # Creating widgets
+        ttk.Label(self.register_lf, text="Register", style="h1.TLabel").grid(column=0, row=0, columnspan=1, pady=10)
+
+        ttk.Label(self.register_lf, text="User Name", style="h1_footnote.TLabel").grid(column=0, row=1, pady=10,
+                                                                                       sticky="w")
+
+        self.register_user_name_entry = ttk.Entry(self.register_lf, width=40)
+        self.register_user_name_entry.grid(column=1, row=1, padx=5)
+
+        # Focuses cursor on username entry
+        self.register_user_name_entry.focus()
+
+        ttk.Label(self.register_lf, text="Password", style="h1_footnote.TLabel").grid(column=0, row=2, pady=10,
+                                                                                      sticky="w")
+
+        self.register_password_entry = ttk.Entry(self.register_lf, width=40)
+        self.register_password_entry.grid(column=1, row=2, padx=5)
+
+        ttk.Label(self.register_lf, text="Email", style="h1_footnote.TLabel").grid(column=0, row=3, padx=5,
+                                                                                   sticky="w")
+
+        self.register_email_entry = ttk.Entry(self.register_lf, width=40)
+        self.register_email_entry.grid(column=1, row=3, pady=5)
+
+        # Button for cancelling registration
+        self.register_cancel_b = tk.Button(self.register_lf, text="                                Cancel              "
+                                                                  "                   ", font="OpenSans, 12",
+                                           relief="flat", fg="#4C8404", bg="#D4DEC9", command=self.login_win)
+        self.register_cancel_b.grid(column=0, row=4, columnspan=2, pady=5)
+
+        # Button for adding people to database
+        self.register_done_b = tk.Button(self.register_lf, text="                               Register               "
+                                                                "                 ", font="OpenSans, 12", relief="flat",
+                                         fg="#FFFFFF", bg="#4C8404", command=self.register_validation)
+        self.register_done_b.grid(column=0, row=5, columnspan=2, pady=10)
 
     def mysql_pandas_user(self):
         try:
@@ -349,51 +448,6 @@ class Window:
         canvas = FigureCanvasTkAgg(fig, self.payment_analytics_content)
         canvas.draw()
         canvas.get_tk_widget().pack(side="left", padx=10, pady=10, fill="both", expand=True)
-
-    def register_win(self):
-        # Destroy login content
-        self.login_lf.destroy()
-        # ================================================ Register section ============================================
-        # Register container
-        self.register_lf = ttk.LabelFrame(self.master, style="forms.TLabelframe")
-        self.register_lf.pack(side="top", pady=50)
-
-        # TLabelframe
-        # Creating widgets
-        ttk.Label(self.register_lf, text="Register", style="h1.TLabel").grid(column=0, row=0, columnspan=1, pady=10)
-
-        ttk.Label(self.register_lf, text="User Name", style="h1_footnote.TLabel").grid(column=0, row=1, pady=10,
-                                                                                       sticky="w")
-
-        self.register_user_name_entry = ttk.Entry(self.register_lf, width=40)
-        self.register_user_name_entry.grid(column=1, row=1, pady=10)
-
-        # Focuses cursor on username entry
-        self.register_user_name_entry.focus()
-
-        ttk.Label(self.register_lf, text="Password", style="h1_footnote.TLabel").grid(column=0, row=2, pady=10,
-                                                                                      sticky="w")
-
-        self.register_password_entry = ttk.Entry(self.register_lf, width=40)
-        self.register_password_entry.grid(column=1, row=2, pady=10)
-
-        ttk.Label(self.register_lf, text="Email", style="h1_footnote.TLabel").grid(column=0, row=3, pady=10,
-                                                                                   sticky="w")
-
-        self.register_email_entry = ttk.Entry(self.register_lf, width=40)
-        self.register_email_entry.grid(column=1, row=3, pady=5)
-
-        # Button for cancelling registration
-        self.register_cancel_b = tk.Button(self.register_lf, text="                                Cancel              "
-                                                                  "                   ", font="OpenSans, 12",
-                                           relief="flat", fg="#4C8404", bg="#D4DEC9", command=self.login_win)
-        self.register_cancel_b.grid(column=0, row=4, columnspan=2, pady=5)
-
-        # Button for adding people to database
-        self.register_done_b = tk.Button(self.register_lf, text="                               Register               "
-                                                                "                 ", font="OpenSans, 12", relief="flat",
-                                         fg="#FFFFFF", bg="#4C8404", command=self.register_validation)
-        self.register_done_b.grid(column=0, row=5, columnspan=2, pady=10)
 
     def create_widgets(self):
         # Destroy window contents

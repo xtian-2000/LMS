@@ -29,8 +29,15 @@ class Content(tk.Tk, ttk.LabelFrame, ttk.Entry, ttk.Label, tk.Button, tk.Topleve
         style.configure('body.TLabel', font=("OpenSans", 10, "bold"), foreground='#000000', background="#FFFFFF")
         style.configure('body_content.TLabel', font=("OpenSans", 10), foreground='green', background="#FFFFFF")
 
+        style.configure('featured.TLabel', font=("OpenSans", 10), foreground='#FFFFFF', background="#146CE4")
+        style.configure('featured_h1.TLabel', font=("OpenSans", 15), foreground='#FFFFFF', background="#146CE4")
+        style.configure('featured_h2.TLabel', font=("OpenSans", 12), foreground='#FFFFFF', background="#146CE4")
+
+        style.configure('featured_2.TLabel', font=("OpenSans", 10), foreground='#FFFFFF', background="#043444")
+        style.configure('featured_h1_2.TLabel', font=("OpenSans", 15), foreground='#FFFFFF', background="#043444")
+        style.configure('featured_h2_2.TLabel', font=("OpenSans", 12), foreground='#FFFFFF', background="#043444")
         # ================================================ Style for LabelFrame ========================================
-        style.configure('forms.TLabelframe', background="#FFFFFF", relief="solid", bordercolor="green", borderwidth=1)
+        style.configure('forms.TLabelframe', background="#FFFFFF", bordercolor="green", borderwidth=1)
 
     def destroy_content(self):
         for child in self.winfo_children():
