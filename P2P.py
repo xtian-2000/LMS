@@ -15,6 +15,7 @@ import pandas as pd
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkinter import PhotoImage
+import webbrowser
 
 # from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 # import numpy as np
@@ -63,8 +64,6 @@ class Window:
         self.account_b = tk.Button
         self.payment_b = tk.Button
         self.body_lf = None
-        self.toolbar_lf = None
-        self.logout_b = tk.Button
         self.content_lf = None
         self.home_lf = None
         self.home_dashboard_f = None
@@ -107,8 +106,6 @@ class Window:
         self.issue_loan_amount_sb = None
         self.issue_loan_interest_sb = None
         self.issue_loan_days_sb = None
-        self.cancel_issue_loan_b = None
-        self.finish_issue_loan_b = None
         self.loan_id = None
         self.loan_content_name_l = None
         self.loan_content_amount_e = None
@@ -125,7 +122,6 @@ class Window:
         self.account_borrower_lb = ttk.Treeview
         self.borrower_key = None
         self.borrower_key_str = None
-        self.add_people_b = None
         self.add_people_top = None
         self.add_people_lf = None
         self.add_people_name_entry = None
@@ -157,6 +153,7 @@ class Window:
         self.remaining_days = None
         self.interest = None
         self.total_loan_amount = None
+        self.total_payment_amount = None
         self.borrower_value = tk.IntVar()
         self.loan_value = tk.IntVar()
         self.payment_value = tk.IntVar()
@@ -165,7 +162,10 @@ class Window:
         self.accounts_icon_inactive_resized = tkinter.PhotoImage
         self.payments_icon_inactive_resized = tkinter.PhotoImage
         self.p2p_logo_resized = tkinter.PhotoImage
-        self.tree_logo = tkinter.PhotoImage
+        self.home_icon_active_resized = tkinter.PhotoImage
+        self.loans_icon_active_resized = tkinter.PhotoImage
+        self.accounts_icon_active_resized = tkinter.PhotoImage
+        self.payments_icon_active_resized = tkinter.PhotoImage
 
         # Instantiate Database class
         Database()
@@ -249,52 +249,37 @@ class Window:
         self.login_b.grid(column=0, row=4, columnspan=2, pady=5)
 
         # ================================================ Features Description section ================================
-        features_lf = tk.LabelFrame(self.master, bg="#FFFFFF", relief="flat")
+        features_lf = tk.LabelFrame(self.master, bg="#D4DEC9", relief="flat")
         features_lf.pack(side="top", expand=True, anchor="center")
 
         # ================================================ Features Description section ================================
-        system_features_lf = tk.LabelFrame(features_lf, relief="flat")
-        system_features_lf.pack(side="left", padx=10, pady=10, ipadx=5, ipady=5)
+        system_features_lf = tk.LabelFrame(features_lf, background="#FFFFFF", relief="flat")
+        system_features_lf.pack(side="left", padx=10, pady=10, ipadx=20, ipady=5)
 
-        sf_text_lf = tk.LabelFrame(features_lf, bg="#146CE4", relief="flat")
-        sf_text_lf.pack(side="left")
-
-        ttk.Label(sf_text_lf, text="Featured", style="featured.TLabel").pack(side="top", pady=5, anchor="w")
-        ttk.Label(sf_text_lf, text="Lending Management System",
+        ttk.Label(system_features_lf, text="P2P Lending Management System",
                   style="featured_h1.TLabel").pack(side="top", pady=10, anchor="w")
-        ttk.Label(sf_text_lf, text="Lending Management System comes \n"
-                                   "with a slew of capabilities, from \n"
-                                   "a user-friendly interface to extensive \n"
-                                   "data management controls,as well as \n"
-                                   "extra data visualization options. \n"
-                                   "Extend your business with a centralized \n"
-                                   "system that takes care of the hassle of \n"
-                                   "data processing.",
+        ttk.Label(system_features_lf, text="Lending Management System comes \n"
+                                           "with a slew of capabilities, from \n"
+                                           "a user-friendly interface to extensive \n"
+                                           "data management controls,as well as \n"
+                                           "extra data visualization options. \n\n"
+                                           "Extend your business with a centralized \n"
+                                           "system that takes care of the hassle of \n"
+                                           "data processing.\n",
                   style="featured_h2.TLabel").pack(side="top", anchor="w")
 
-        sf_logo_lf = tk.LabelFrame(features_lf, bg="#146CE4", relief="flat")
-        sf_logo_lf.pack(side="left")
-
-        tree_logo = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\plant.png")
-        self.tree_logo = tree_logo.subsample(7,7)
-
-        ttk.Label(sf_logo_lf, image=self.tree_logo, relief="flat").pack(side="right", pady=5, anchor="w")
-
         # ================================================ Features Description section ================================
-        system_features_2_lf = tk.LabelFrame(features_lf, bg="#043444", relief="flat")
-        system_features_2_lf.pack(side="left", padx=10, pady=10, ipadx=5, ipady=5)
+        system_features_2_lf = tk.LabelFrame(features_lf, bg="#FFFFFF", relief="flat")
+        system_features_2_lf.pack(side="left", pady=10, padx=10, fill="y")
 
-        ttk.Label(system_features_2_lf, text="Featured", style="featured_2.TLabel").pack(side="top", pady=5, anchor="w")
-        ttk.Label(system_features_2_lf, text="Lending Management System",
+        ttk.Label(system_features_2_lf, text="Developer's Information",
                   style="featured_h1_2.TLabel").pack(side="top", pady=10, anchor="w")
-        ttk.Label(system_features_2_lf, text="Lending Management System comes \n"
-                                             "with a slew of capabilities, from \n"
-                                             "a user-friendly interface to extensive \n"
-                                             "data management controls,as well as \n"
-                                             "extra data visualization options. \n"
-                                             "Extend your business with a centralized \n"
-                                             "system that takes care of the hassle of \n"
-                                             "data processing.",
+        ttk.Label(system_features_2_lf, text="Gealone, Christian A.\n"
+                                             "Anotado, Michael M. \n"
+                                             "Gonzales, John Patrick M.\n"
+                                             "Reyes, Angel Bryan L. \n"
+                                             "Herrera, Jeremy \n"
+                                             "Jaudian, Jeffrey G.\n\n\n",
                   style="featured_h2_2.TLabel").pack(side="top", anchor="w")
 
     def register_win(self):
@@ -436,6 +421,8 @@ class Window:
         pandasdb.close()
         print("Payment's dataframe")
         print(df)
+        self.total_payment_amount = df['amount'].sum()
+        print(self.total_payment_amount)
 
         fig = Figure(figsize=(5, 5), dpi=75)
         ax1 = fig.add_subplot(111)
@@ -457,7 +444,7 @@ class Window:
         self.menu_lf = tk.LabelFrame(self.master, bg="#4C8404", relief="flat")
         self.menu_lf.pack(side="left", fill="both")
 
-        # Create variables for images
+        # Create variables for inactive images
         home_icon_inactive = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\home_icon_inactive.png")
         self.home_icon_inactive_resized = home_icon_inactive.subsample(8, 8)
 
@@ -469,6 +456,19 @@ class Window:
 
         payments_icon_inactive = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\payments_icon_inactive.png")
         self.payments_icon_inactive_resized = payments_icon_inactive.subsample(8, 8)
+
+        # Create variables for active images
+        home_icon_active = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\home_icon_active.png")
+        self.home_icon_active_resized = home_icon_active.subsample(8, 8)
+
+        loans_icon_active = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\loans_icon_active.png")
+        self.loans_icon_active_resized = loans_icon_active.subsample(8, 8)
+
+        accounts_icon_active = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\accounts_icon_active.png")
+        self.accounts_icon_active_resized = accounts_icon_active.subsample(8, 8)
+
+        payments_icon_active = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\payments_icon_active.png")
+        self.payments_icon_active_resized = payments_icon_active.subsample(8, 8)
 
         # Menu buttons
         self.home_b = tk.Button(self.menu_lf, image=self.home_icon_inactive_resized, relief="flat", bg="#4C8404",
@@ -491,22 +491,25 @@ class Window:
         self.body_lf = tk.LabelFrame(self.master, relief="flat")
         self.body_lf.pack(side="left", fill="both", expand="true")
 
-        # Toolbar Button Container
-        self.toolbar_lf = tk.LabelFrame(self.body_lf, bg="#FFFFFF", relief="flat")
-        self.toolbar_lf.pack(side="top", fill="x")
+        # ================================================ Toolbar Section =============================================
+        toolbar_lf = tk.LabelFrame(self.body_lf, bg="#FFFFFF", relief="flat")
+        toolbar_lf.pack(side="top", fill="x")
 
-        # Button for opening form for adding borrower
-        self.add_people_b = tk.Button(self.toolbar_lf, text="Add borrower", font="OpenSans, 10", fg="#FFFFFF",
-                                      bg="#4C8404", relief="flat", command=self.add_people)
-        self.add_people_b.pack(side="left", padx=5, pady=5)
+        add_people_b = tk.Button(toolbar_lf, text="Add borrower", font="OpenSans, 10", fg="#FFFFFF",
+                                 bg="#4C8404", relief="flat", command=self.add_people)
+        add_people_b.pack(side="left", padx=5, pady=5)
 
-        self.add_people_b = tk.Button(self.toolbar_lf, text="Export Data", font="OpenSans, 10", fg="#FFFFFF",
-                                      bg="#4C8404", relief="flat", command=self.export_database_widget)
-        self.add_people_b.pack(side="left", padx=5, pady=5)
+        generate_contract_b = tk.Button(toolbar_lf, text="Generate Contract", font="OpenSans, 10", fg="#FFFFFF",
+                                        bg="#4C8404", relief="flat", command=self.generate_contract)
+        generate_contract_b.pack(side="left", padx=5, pady=5)
 
-        self.logout_b = tk.Button(self.toolbar_lf, text="Logout", font="OpenSans, 10", relief="flat", bg="#FFFFFF",
-                                  fg="green", highlightcolor="#2C441D", command=self.login_win)
-        self.logout_b.pack(side="right", padx=100, pady=5)
+        export_data_b = tk.Button(toolbar_lf, text="Export Data", font="OpenSans, 10", fg="#FFFFFF",
+                                  bg="#4C8404", relief="flat", command=self.export_database_widget)
+        export_data_b.pack(side="left", padx=5, pady=5)
+
+        logout_b = tk.Button(toolbar_lf, text="Logout", font="OpenSans, 10", relief="flat", bg="#FFFFFF",
+                             fg="green", highlightcolor="#2C441D", command=self.login_win)
+        logout_b.pack(side="right", padx=100, pady=5)
 
         # Contents container
         self.content_lf = tk.LabelFrame(self.body_lf, relief="flat")
@@ -576,7 +579,8 @@ class Window:
         self.show_more_dashboard_b.pack(side="bottom", fill="both", expand=True, padx=10, pady=10)
 
         # Configure button state
-        # self.state_button(self.home_b, self.account_b, self.loan_b, self.payment_b)
+        self.state_button()
+        self.home_b.configure(image=self.home_icon_active_resized)
 
     def show_more_analytics(self):
         # ================================================ Payment Analytics ===========================================
@@ -599,14 +603,23 @@ class Window:
 
         pandas_payment_date_from = DateEntry(payment_analytics_menu, width=15,
                                              date_pattern="MM/dd/yy", borderwidth=2)
-        pandas_payment_date_from.grid(column=1, row=1, padx=2.5, sticky="w")
+        pandas_payment_date_from.grid(column=1, row=1, columnspan=2, padx=2.5, sticky="w")
 
         ttk.Label(payment_analytics_menu, text="to",
-                  style="body.TLabel").grid(column=2, row=1, padx=2.5, sticky="w")
+                  style="body.TLabel").grid(column=3, row=1, padx=2.5, sticky="w")
 
         pandas_payment_date_to = DateEntry(payment_analytics_menu, width=15,
                                            date_pattern="MM/dd/yy", borderwidth=2)
-        pandas_payment_date_to.grid(column=3, row=1, padx=2.5, sticky="w")
+        pandas_payment_date_to.grid(column=5, row=1, columnspan=2, padx=2.5, sticky="w")
+
+        # Initialize method for payment analytics
+        self.mysql_pandas_payment()
+
+        # Dashboard information
+        ttk.Label(payment_analytics_menu, text="Total payment amount",
+                  style="body.TLabel").grid(column=0, row=2, columnspan=2, pady=5, sticky="w")
+        ttk.Label(payment_analytics_menu, text=self.total_payment_amount,
+                  style="body_content.TLabel").grid(column=2, row=2, pady=5, sticky="w")
 
         # Insert values to Date Entry
         pandas_payment_date_from.delete(0, "end")
@@ -614,9 +627,6 @@ class Window:
 
         pandas_payment_date_to.delete(0, "end")
         pandas_payment_date_to.insert(0, currentday_month)
-
-        # Initialize method for payment analytics
-        self.mysql_pandas_payment()
 
         self.show_more_dashboard_b.configure(text="Show less analytics", command=self.switch_home)
 
@@ -690,7 +700,8 @@ class Window:
                   style="body.TLabel").grid(column=0, row=1, padx=5, pady=5, sticky="w")
 
         # Configure button state
-        # self.state_button(self.loan_b, self.account_b, self.home_b, self.payment_b)
+        self.state_button()
+        self.loan_b.configure(image=self.loans_icon_active_resized)
 
     def switch_account(self):
         # Destroy content_lf
@@ -753,7 +764,8 @@ class Window:
                   style="body.TLabel").grid(column=0, row=1, padx=5, pady=5, sticky="w")
 
         # Configure button state
-        # self.state_button(self.account_b, self.loan_b, self.home_b, self.payment_b)
+        self.state_button()
+        self.account_b.configure(image=self.accounts_icon_active_resized)
 
     def switch_payment(self):
         # Destroy content_lf
@@ -823,7 +835,8 @@ class Window:
                   style="body.TLabel").grid(column=0, row=1, padx=5, pady=5, sticky="w")
 
         # Configure button state
-        # self.state_button(self.payment_b, self.account_b, self.loan_b, self.home_b)
+        self.state_button()
+        self.payment_b.configure(image=self.payments_icon_active_resized)
 
     def login_validation(self):
         try:
@@ -889,49 +902,53 @@ class Window:
         self.add_people_top.mainloop()
 
     def add_people_widget(self):
-
         # Register container
-        self.add_people_lf = tk.LabelFrame(self.add_people_top, padx=20, pady=20, relief="flat")
+        self.add_people_lf = tk.LabelFrame(self.add_people_top, padx=20, pady=20, bg="#FFFFFF", relief="flat")
         self.add_people_lf.pack(anchor="center", expand=True, fill="both")
 
         # Creating widgets
-        ttk.Label(self.add_people_lf, text="Name", style="h3.TLabel").grid(column=0, row=0, padx=5, pady=5,
-                                                                           sticky="w")
+
+        ttk.Label(self.add_people_lf, text="Add Borrower",
+                  style="h1.TLabel").grid(column=0, row=0, columnspan=2, pady=10, sticky="w")
+
+        ttk.Label(self.add_people_lf, text="Name", style="h1_footnote.TLabel").grid(column=0, row=1, padx=5, pady=5,
+                                                                                    sticky="w")
 
         self.add_people_name_entry = ttk.Entry(self.add_people_lf, width=50)
-        self.add_people_name_entry.grid(column=1, row=0, padx=5, pady=5, sticky="w")
+        self.add_people_name_entry.grid(column=1, row=1, padx=5, pady=5, sticky="w")
 
         # Focuses cursor on add name entry
         self.add_people_name_entry.focus()
 
-        ttk.Label(self.add_people_lf, text="Address", style="h3.TLabel").grid(column=0, row=1, padx=5, pady=5,
-                                                                              sticky="w")
+        ttk.Label(self.add_people_lf, text="Address", style="h1_footnote.TLabel").grid(column=0, row=2, padx=5, pady=5,
+                                                                                       sticky="w")
 
         self.add_people_address_entry = ttk.Entry(self.add_people_lf, width=50)
-        self.add_people_address_entry.grid(column=1, row=1, padx=5, pady=5, sticky="w")
+        self.add_people_address_entry.grid(column=1, row=2, padx=5, pady=5, sticky="w")
 
-        ttk.Label(self.add_people_lf, text="Age", style="h3.TLabel").grid(column=0, row=2, padx=5, pady=5, sticky="w")
+        ttk.Label(self.add_people_lf, text="Age", style="h1_footnote.TLabel").grid(column=0, row=3, padx=5, pady=5,
+                                                                                   sticky="w")
 
         self.age_spinbox = ttk.Spinbox(self.add_people_lf, from_=0, to=200, width=5)
-        self.age_spinbox.grid(column=1, row=2, padx=5, pady=5, sticky="w")
+        self.age_spinbox.grid(column=1, row=3, padx=5, pady=5, sticky="w")
 
         # Combobox for gender
-        ttk.Label(self.add_people_lf, text="Gender", style="h3.TLabel").grid(column=0, row=3, padx=5, pady=5,
-                                                                             sticky="w")
+        ttk.Label(self.add_people_lf, text="Gender", style="h1_footnote.TLabel").grid(column=0, row=4, padx=5, pady=5,
+                                                                                      sticky="w")
         self.gender_combobox = ttk.Combobox(self.add_people_lf, width=10)
         self.gender_combobox['values'] = "Male", "Female", "Others"
-        self.gender_combobox.grid(column=1, row=3, padx=5, pady=5, sticky="w")
+        self.gender_combobox.grid(column=1, row=4, padx=5, pady=5, sticky="w")
         self.gender_combobox.current(0)
 
         # Button for adding people to database
-        self.cancel_add_people_b = tk.Button(self.add_people_lf, text="Add Borrower", font="OpenSans, 12", fg="#FFFFFF",
-                                             bg="#4C8404", relief="flat", command=self.finish_add_people)
-        self.cancel_add_people_b.grid(column=0, row=4, padx=5, pady=5)
+        cancel_add_people_b = tk.Button(self.add_people_lf, text="Add Borrower", font="OpenSans, 12", fg="#FFFFFF",
+                                        bg="#4C8404", relief="flat", command=self.finish_add_people)
+        cancel_add_people_b.grid(column=0, row=5, padx=5, pady=5)
 
         # Button for adding people to database
-        self.finish_add_people_b = tk.Button(self.add_people_lf, text="Cancel", font="OpenSans, 12", fg="#4C8404",
-                                             bg="#FFFFFF", relief="flat", command=self.add_people_top.destroy)
-        self.finish_add_people_b.grid(column=1, row=4, padx=5, pady=5, sticky="w")
+        finish_add_people_b = tk.Button(self.add_people_lf, text="Cancel", font="OpenSans, 12", fg="#4C8404",
+                                        bg="#D4DEC9", relief="flat", command=self.add_people_top.destroy)
+        finish_add_people_b.grid(column=1, row=5, padx=5, pady=5, sticky="w")
 
     def issue_loan(self):
         # Create instance
@@ -1007,14 +1024,14 @@ class Window:
         self.status_combobox.current(0)
 
         # Button for adding people to database
-        self.cancel_issue_loan_b = tk.Button(self.issue_loan_lf, text="Done", font="OpenSans, 12", fg="#FFFFFF",
-                                             bg="#4C8404", relief="flat", command=self.finish_issue_loan)
-        self.cancel_issue_loan_b.grid(column=0, row=5, padx=5, pady=5)
+        cancel_issue_loan_b = tk.Button(self.issue_loan_lf, text="Done", font="OpenSans, 12", fg="#FFFFFF",
+                                        bg="#4C8404", relief="flat", command=self.finish_issue_loan)
+        cancel_issue_loan_b.grid(column=0, row=5, padx=5, pady=5)
 
         # Button for adding people to database
-        self.finish_issue_loan_b = tk.Button(self.issue_loan_lf, text="Cancel", font="OpenSans, 12", fg="#4C8404",
-                                             bg="#FFFFFF", relief="flat", command=self.add_people_top.destroy)
-        self.finish_issue_loan_b.grid(column=1, row=5, padx=5, pady=5, sticky="w")
+        finish_issue_loan_b = tk.Button(self.issue_loan_lf, text="Cancel", font="OpenSans, 12", fg="#4C8404",
+                                        bg="#FFFFFF", relief="flat", command=self.add_people_top.destroy)
+        finish_issue_loan_b.grid(column=1, row=5, padx=5, pady=5, sticky="w")
 
     def finish_add_people(self):
         try:
@@ -1774,12 +1791,18 @@ class Window:
         self.mycursor.close()
         self.switch_loan()
 
+    def state_button(self):
+        self.home_b.configure(image=self.home_icon_inactive_resized)
+        self.loan_b.configure(image=self.loans_icon_inactive_resized)
+        self.account_b.configure(image=self.accounts_icon_inactive_resized)
+        self.payment_b.configure(image=self.payments_icon_inactive_resized)
+
     @staticmethod
-    def state_button(widget1, widget2, widget3, widget4):
-        widget1.configure(bg="#4C8404")
-        widget2.configure(bg="#2C441D")
-        widget3.configure(bg="#2C441D")
-        widget4.configure(bg="#2C441D")
+    def generate_contract():
+        tkinter.messagebox.showinfo("Note!", "We are in no way affiliated with the website or its developers.\n"
+                                             "Here is the link for our recommended website:\n"
+                                             "(https://www.wonder.legal/ph/creation-modele/loan-agreement-ph)\n")
+        webbrowser.open_new(r"https://www.wonder.legal/ph/creation-modele/loan-agreement-ph")
 
 
 if __name__ == '__main__':

@@ -29,13 +29,11 @@ class Content(tk.Tk, ttk.LabelFrame, ttk.Entry, ttk.Label, tk.Button, tk.Topleve
         style.configure('body.TLabel', font=("OpenSans", 10, "bold"), foreground='#000000', background="#FFFFFF")
         style.configure('body_content.TLabel', font=("OpenSans", 10), foreground='green', background="#FFFFFF")
 
-        style.configure('featured.TLabel', font=("OpenSans", 10), foreground='#FFFFFF', background="#146CE4")
-        style.configure('featured_h1.TLabel', font=("OpenSans", 15), foreground='#FFFFFF', background="#146CE4")
-        style.configure('featured_h2.TLabel', font=("OpenSans", 12), foreground='#FFFFFF', background="#146CE4")
+        style.configure('featured_h1.TLabel', font=("OpenSans", 18), foreground='#4C8404', background="#FFFFFF")
+        style.configure('featured_h2.TLabel', font=("OpenSans", 15), foreground='#585456', background="#FFFFFF")
 
-        style.configure('featured_2.TLabel', font=("OpenSans", 10), foreground='#FFFFFF', background="#043444")
-        style.configure('featured_h1_2.TLabel', font=("OpenSans", 15), foreground='#FFFFFF', background="#043444")
-        style.configure('featured_h2_2.TLabel', font=("OpenSans", 12), foreground='#FFFFFF', background="#043444")
+        style.configure('featured_h1_2.TLabel', font=("OpenSans", 15), foreground='#585456', background="#FFFFFF")
+        style.configure('featured_h2_2.TLabel', font=("OpenSans", 12), foreground='#585456', background="#FFFFFF")
         # ================================================ Style for LabelFrame ========================================
         style.configure('forms.TLabelframe', background="#FFFFFF", bordercolor="green", borderwidth=1)
 
@@ -62,20 +60,4 @@ class Content(tk.Tk, ttk.LabelFrame, ttk.Entry, ttk.Label, tk.Button, tk.Topleve
         for widget in self.winfo_children():
             if isinstance(widget, ttk.Entry):
                 widget.config(state="disabled")
-
-    def background_change_label(self, background: object):
-        for widget in self.winfo_children():
-            if isinstance(widget, ttk.Label):
-                widget.configure(background=background)
-
-    def background_change_labelframe(self, bg: object):
-        for widget in self.winfo_children():
-            if isinstance(widget, tk.LabelFrame):
-                widget.configure(bg=bg)
-
-    def background_change_button(self, bg: object):
-        for widget in self.winfo_children():
-            if isinstance(widget, tk.Button):
-                widget.configure(bg=bg)
-
 
