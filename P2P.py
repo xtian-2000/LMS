@@ -166,6 +166,9 @@ class Window:
         self.loans_icon_active_resized = tkinter.PhotoImage
         self.accounts_icon_active_resized = tkinter.PhotoImage
         self.payments_icon_active_resized = tkinter.PhotoImage
+        self.pandas_loan_date_from = None
+        self.pandas_loan_date_to = None
+        self.filter_loan_cb = None
 
         # Instantiate Database class
         Database()
@@ -373,6 +376,7 @@ class Window:
             print(e)
 
     def mysql_pandas_loans(self):
+        Content.destroy_content(self.loan_analytics_content)
         pandasdb = mysql.connect(host=host,
                                  user=user,
                                  password=password,
@@ -380,8 +384,9 @@ class Window:
                                  use_pure=True)
         print(currentday_month)
         query = "Select loan.amount from loan INNER JOIN borrower ON " \
-                "loan.borrowerid=borrower.borrowerid where dateissued >= '" + fday_month + "' AND dateissued <= '" + \
-                currentday_month + "' AND borrower.userid = '" + self.key_str + "'; "
+                "loan.borrowerid=borrower.borrowerid where dateissued >= '" + self.pandas_loan_date_from.get() + \
+                "' AND dateissued <= '" + self.pandas_loan_date_to.get() + "' AND borrower.userid = '" \
+                + self.key_str + "'; "
 
         print(fday_month)
         df = pd.read_sql(query, pandasdb)
@@ -475,13 +480,13 @@ class Window:
                                 command=self.switch_home)
         self.home_b.pack(side="top")
 
-        self.loan_b = tk.Button(self.menu_lf, image=self.loans_icon_inactive_resized, relief="flat", bg="#4C8404",
-                                command=self.switch_loan)
-        self.loan_b.pack(side="top")
-
         self.account_b = tk.Button(self.menu_lf, image=self.accounts_icon_inactive_resized, relief="flat", bg="#4C8404",
                                    command=self.switch_account)
         self.account_b.pack(side="top", fill="both")
+
+        self.loan_b = tk.Button(self.menu_lf, image=self.loans_icon_inactive_resized, relief="flat", bg="#4C8404",
+                                command=self.switch_loan)
+        self.loan_b.pack(side="top")
 
         self.payment_b = tk.Button(self.menu_lf, image=self.payments_icon_inactive_resized, relief="flat", bg="#4C8404",
                                    command=self.switch_payment)
@@ -543,22 +548,26 @@ class Window:
         ttk.Label(loan_analytics_menu, text="Date from",
                   style="body.TLabel").grid(column=0, row=1, padx=2.5, sticky="w")
 
-        pandas_loan_date_from = DateEntry(loan_analytics_menu, width=15,
-                                          date_pattern="MM/dd/yy", borderwidth=2)
-        pandas_loan_date_from.grid(column=1, columnspan=2, row=1, padx=2.5, sticky="w")
+        self.pandas_loan_date_from = DateEntry(loan_analytics_menu, width=15,
+                                               date_pattern="MM/dd/yy", borderwidth=2)
+        self.pandas_loan_date_from.grid(column=1, columnspan=2, row=1, padx=2.5, sticky="w")
 
         ttk.Label(loan_analytics_menu, text="to", style="body.TLabel").grid(column=3, row=1, padx=2.5, sticky="w")
 
-        pandas_loan_date_to = DateEntry(loan_analytics_menu, width=15,
-                                        date_pattern="MM/dd/yy", borderwidth=2)
-        pandas_loan_date_to.grid(column=4, columnspan=2, row=1, padx=2.5, sticky="w")
+        self.pandas_loan_date_to = DateEntry(loan_analytics_menu, width=15,
+                                             date_pattern="MM/dd/yy", borderwidth=2)
+        self.pandas_loan_date_to.grid(column=4, columnspan=2, row=1, padx=2.5, sticky="w")
+
+        filter_analytics_b = tk.Button(loan_analytics_menu, text="Filter Analytics", font="OpenSans, 10", fg="#FFFFFF",
+                                       bg="#4C8404", relief="flat", command=self.mysql_pandas_loans)
+        filter_analytics_b.grid(column=6, columnspan=2, row=1, padx=5)
 
         # Insert values to Date Entry
-        pandas_loan_date_from.delete(0, "end")
-        pandas_loan_date_from.insert(0, fday_month)
+        self.pandas_loan_date_from.delete(0, "end")
+        self.pandas_loan_date_from.insert(0, fday_month)
 
-        pandas_loan_date_to.delete(0, "end")
-        pandas_loan_date_to.insert(0, currentday_month)
+        self.pandas_loan_date_to.delete(0, "end")
+        self.pandas_loan_date_to.insert(0, currentday_month)
 
         # Initialize method for loans analytics
         self.mysql_pandas_loans()
@@ -642,7 +651,19 @@ class Window:
         self.loan_database_view_lf = tk.LabelFrame(self.loan_lf, bg="#FFFFFF", relief="flat")
         self.loan_database_view_lf.pack(side="top", pady=10, fill="both")
 
-        # Loan view database frame
+        # ================================================ Filter section ==============================================
+        filter_lf = tk.LabelFrame(self.loan_database_view_lf, bg="#FFFFFF", relief="flat")
+        filter_lf.pack(side="top", pady=10, fill="both")
+
+        ttk.Label(filter_lf, text="Filter", style="body.TLabel").pack(side="left", anchor="w")
+
+        filter_loan_value = ['Loan ID', 'Status']
+        self.filter_loan_cb = ttk.Combobox(filter_lf, width=15, state="readonly", values=filter_loan_value)
+        self.filter_loan_cb.current(1)
+        self.filter_loan_cb.bind("<<ComboboxSelected>>", self.filter_loan_cb_clicked)
+        self.filter_loan_cb.pack(side="left")
+
+        # ================================================ Loan view section ===========================================
         self.loan_database_view_f = tk.Frame(self.loan_database_view_lf, relief="flat")
         self.loan_database_view_f.pack(side="top", fill="both")
 
@@ -687,9 +708,9 @@ class Window:
         self.loan_borrower_lb.bind("<ButtonRelease-1>", self.database_view_loan_info)
 
         # Initialize method for viewing accounts database
-        self.database_view_loan()
+        self.filter_loan_status()
 
-        # Profile view database container
+        # ================================================ Loan info section ===========================================
         self.loan_content_view_lf = tk.LabelFrame(self.loan_lf, bg="#FFFFFF", relief="flat")
         self.loan_content_view_lf.pack(side="top", pady=10, fill="both")
 
@@ -1144,25 +1165,14 @@ class Window:
                                     bg="#FFFFFF")
         payment_cb.grid(column=0, row=3, padx=5, sticky="w")
 
-        # Create variables for images
-        csv_icon = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\csv-autofetch.png")
-        csv_icon_resized = csv_icon.subsample(4, 4)
-
-        excel_icon = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\Microsoft_Excel-Logo.wine.png")
-        excel_icon_resized = excel_icon.subsample(7, 6)
-
         # Buttons for export
-        export_csv_b = tk.Button(export_data_lf, image=csv_icon_resized, command=self.export_as_csv)
+        export_csv_b = tk.Button(export_data_lf, text="Export as csv", font="OpenSans, 10", fg="#FFFFFF",
+                                 bg="#4C8404", relief="flat", command=self.export_as_csv)
         export_csv_b.grid(column=0, row=4, padx=5, pady=5, sticky="w")
 
-        ttk.Label(export_data_lf, text="Save as CSV", style="heading.TLabel").grid(column=0, row=5, padx=5)
-
-        ttk.Label(export_data_lf, text="or", style="body.TLabel").grid(column=1, row=4, padx=5)
-
-        export_excel_b = tk.Button(export_data_lf, image=excel_icon_resized)
+        export_excel_b = tk.Button(export_data_lf, text="Export as excel", font="OpenSans, 10", fg="#FFFFFF",
+                                   bg="#4C8404", relief="flat")
         export_excel_b.grid(column=2, row=4, padx=5, sticky="w")
-
-        ttk.Label(export_data_lf, text="Save as Excel", style="heading.TLabel").grid(column=2, row=5, padx=5)
 
         # Disables underlying window
         export_data_top.grab_set()
@@ -1443,40 +1453,73 @@ class Window:
 
     def database_view_loan(self):
         # Method for viewing accounts database
-        try:
-            self.database_connect()
-            self.mycursor.execute("SELECT loan.loanid, borrower.name, loan.amount, loan.interest, loan.days,"
-                                  " loan.dateissued, loan.status, borrower.userid, loan.balance"
-                                  " FROM loan INNER JOIN borrower ON"
-                                  " loan.borrowerid=borrower.borrowerid "
-                                  "where borrower.userid = '" + self.key_str + "';")
-            loans = self.mycursor.fetchall()
-            print(loans)
+        self.database_connect()
+        self.mycursor.execute("SELECT loan.loanid, borrower.name, loan.amount, loan.interest, loan.days,"
+                              " loan.dateissued, loan.status, borrower.userid, loan.balance"
+                              " FROM loan INNER JOIN borrower ON"
+                              " loan.borrowerid=borrower.borrowerid "
+                              "where borrower.userid = '" + self.key_str + "' ORDER BY loan.loanid;")
+        loans = self.mycursor.fetchall()
 
-            # Create configure for striped rows
-            self.loan_borrower_lb.tag_configure("oddrow", background="#FFFFFF")
-            self.loan_borrower_lb.tag_configure("evenrow", background="#FAFAFA")
-            count = 0
-            for record in loans:
-                if count % 2 == 0:
-                    self.loan_borrower_lb.insert(parent="", index="end", iid=count, text="",
-                                                 values=(record[0], record[1], record[2], record[3], record[4],
-                                                         record[5], record[6], record[8]),
-                                                 tags=("oddrow",))
-                else:
-                    self.loan_borrower_lb.insert(parent="", index="end", iid=count, text="",
-                                                 values=(record[0], record[1], record[2], record[3], record[4],
-                                                         record[5], record[6], record[8]),
-                                                 tags=("evenrow",))
-                count += 1
+        print(loans)
 
-            self.db1.commit()
-            self.mycursor.close()
-            self.db1.close()
+        # Clear treeview
+        self.clear_treeview(self.loan_borrower_lb)
 
-        except Exception as e:
-            print("Could not connect to lmsdatabase")
-            print(e)
+        # Create configure for striped rows
+        self.loan_borrower_lb.tag_configure("oddrow", background="#FFFFFF")
+        self.loan_borrower_lb.tag_configure("evenrow", background="#FAFAFA")
+        count = 0
+        for record in loans:
+            if count % 2 == 0:
+                self.loan_borrower_lb.insert(parent="", index="end", iid=count, text="",
+                                             values=(record[0], record[1], record[2], record[3], record[4],
+                                                     record[5], record[6], record[8]),
+                                             tags=("oddrow",))
+            else:
+                self.loan_borrower_lb.insert(parent="", index="end", iid=count, text="",
+                                             values=(record[0], record[1], record[2], record[3], record[4],
+                                                     record[5], record[6], record[8]),
+                                             tags=("evenrow",))
+            count += 1
+
+        self.db1.commit()
+        self.mycursor.close()
+        self.db1.close()
+
+    def filter_loan_status(self):
+        # Method for viewing accounts database
+        self.database_connect()
+        self.mycursor.execute("SELECT loan.loanid, borrower.name, loan.amount, loan.interest, loan.days,"
+                              " loan.dateissued, loan.status, borrower.userid, loan.balance"
+                              " FROM loan INNER JOIN borrower ON"
+                              " loan.borrowerid=borrower.borrowerid "
+                              "where borrower.userid = '" + self.key_str + "' ORDER BY loan.status;")
+        loans = self.mycursor.fetchall()
+
+        # Clear treeview
+        self.clear_treeview(self.loan_borrower_lb)
+
+        # Create configure for striped rows
+        self.loan_borrower_lb.tag_configure("oddrow", background="#FFFFFF")
+        self.loan_borrower_lb.tag_configure("evenrow", background="#FAFAFA")
+        count = 0
+        for record in loans:
+            if count % 2 == 0:
+                self.loan_borrower_lb.insert(parent="", index="end", iid=count, text="",
+                                             values=(record[0], record[1], record[2], record[3], record[4],
+                                                     record[5], record[6], record[8]),
+                                             tags=("oddrow",))
+            else:
+                self.loan_borrower_lb.insert(parent="", index="end", iid=count, text="",
+                                             values=(record[0], record[1], record[2], record[3], record[4],
+                                                     record[5], record[6], record[8]),
+                                             tags=("evenrow",))
+            count += 1
+
+        self.db1.commit()
+        self.mycursor.close()
+        self.db1.close()
 
     def database_view_loan_info(self, event):
         # Destroy content of account_content_view_lf
@@ -1598,7 +1641,6 @@ class Window:
                 # Computes balance
                 balance = ((record[0] / 100) * record[1])
                 balance = balance + record[1]
-                print(type(record[3]))
 
                 new_due_date = date_issued_plus_delta_time + timedelta(days=int(record[2]))
                 print("New date: ", new_due_date)
@@ -1797,12 +1839,24 @@ class Window:
         self.account_b.configure(image=self.accounts_icon_inactive_resized)
         self.payment_b.configure(image=self.payments_icon_inactive_resized)
 
+    def filter_loan_cb_clicked(self, event):
+        if self.filter_loan_cb.get() == "Loan ID":
+            self.database_view_loan()
+        else:
+            self.filter_loan_status()
+        print(event)
+
     @staticmethod
     def generate_contract():
         tkinter.messagebox.showinfo("Note!", "We are in no way affiliated with the website or its developers.\n"
                                              "Here is the link for our recommended website:\n"
                                              "(https://www.wonder.legal/ph/creation-modele/loan-agreement-ph)\n")
         webbrowser.open_new(r"https://www.wonder.legal/ph/creation-modele/loan-agreement-ph")
+
+    @staticmethod
+    def clear_treeview(treeview=ttk.Treeview):
+        for item in treeview.get_children():
+            treeview.delete(item)
 
 
 if __name__ == '__main__':

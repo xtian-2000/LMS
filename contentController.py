@@ -61,3 +61,5 @@ class Content(tk.Tk, ttk.LabelFrame, ttk.Entry, ttk.Label, tk.Button, tk.Topleve
             if isinstance(widget, ttk.Entry):
                 widget.config(state="disabled")
 
+
+
