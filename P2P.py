@@ -16,6 +16,8 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkinter import PhotoImage
 import webbrowser
+from tkinter import filedialog
+from tkinter.filedialog import asksaveasfile
 
 # from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 # import numpy as np
@@ -166,6 +168,7 @@ class Window:
         self.loans_icon_active_resized = tkinter.PhotoImage
         self.accounts_icon_active_resized = tkinter.PhotoImage
         self.payments_icon_active_resized = tkinter.PhotoImage
+        self.export_data_top = None
         self.pandas_loan_date_from = None
         self.pandas_loan_date_to = None
         self.filter_loan_cb = None
@@ -655,13 +658,13 @@ class Window:
         filter_lf = tk.LabelFrame(self.loan_database_view_lf, bg="#FFFFFF", relief="flat")
         filter_lf.pack(side="top", pady=10, fill="both")
 
-        ttk.Label(filter_lf, text="Filter", style="body.TLabel").pack(side="left", anchor="w")
+        ttk.Label(filter_lf, text="Filter", style="featured_h2_2.TLabel").pack(side="left", anchor="w")
 
         filter_loan_value = ['Loan ID', 'Status']
         self.filter_loan_cb = ttk.Combobox(filter_lf, width=15, state="readonly", values=filter_loan_value)
         self.filter_loan_cb.current(1)
         self.filter_loan_cb.bind("<<ComboboxSelected>>", self.filter_loan_cb_clicked)
-        self.filter_loan_cb.pack(side="left")
+        self.filter_loan_cb.pack(side="left", padx=5)
 
         # ================================================ Loan view section ===========================================
         self.loan_database_view_f = tk.Frame(self.loan_database_view_lf, relief="flat")
@@ -1139,15 +1142,15 @@ class Window:
 
     def export_database_widget(self):
         # Create instance
-        export_data_top = tk.Toplevel(self.master)
-        export_data_top.title("Export data")
-        export_data_top.geometry("500x400")
-        export_data_top.configure(bg="#4C8404")
-        export_data_top.resizable(False, False)
+        self.export_data_top = tk.Toplevel(self.master)
+        self.export_data_top.title("Export data")
+        # export_data_top.geometry("500x400")
+        self.export_data_top.configure(bg="#4C8404")
+        self.export_data_top.resizable(False, False)
 
         # ================================================ Checkbox for available tables ===============================
         # Export data container
-        export_data_lf = tk.LabelFrame(export_data_top, padx=20, pady=20, bg="#FFFFFF", relief="flat")
+        export_data_lf = tk.LabelFrame(self.export_data_top, padx=20, pady=20, bg="#FFFFFF", relief="flat")
         export_data_lf.pack(side="top", padx=15, pady=15, fill="both", expand=True)
 
         ttk.Label(export_data_lf, text="Available tables", style="body_content.TLabel").grid(column=0, row=0,
@@ -1175,9 +1178,9 @@ class Window:
         export_excel_b.grid(column=2, row=4, padx=5, sticky="w")
 
         # Disables underlying window
-        export_data_top.grab_set()
+        self.export_data_top.grab_set()
 
-        export_data_top.mainloop()
+        self.export_data_top.mainloop()
 
     def export_as_csv(self):
         pandasdb = mysql.connect(host=host,
@@ -1185,38 +1188,32 @@ class Window:
                                  password=password,
                                  database="lmsdatabase",
                                  use_pure=True)
-        """
-        query = "Select * from;"
-        df = pd.read_sql(query, pandasdb)
-        pandasdb.close()
-
-        print("Loan's dataframe")
-        print(df)
-        print(df.sum())"""
 
         if self.borrower_value.get() == 1:
             query1 = "Select * from lmsdatabase.borrower where userid = '" + self.key_str + "';"
             df1 = pd.read_sql(query1, pandasdb)
             print(df1)
+            save_file = filedialog.asksaveasfile(filetypes=[('CSV file', '*.csv')], defaultextension='CSV file',
+                                                 title="Save data")
+            df1.to_csv(save_file, index=False)
+
+            save_file.close()
+
+            print("Borrower CSV is exported successfully")
+        if self.loan_value.get() == 1:
+            query1 = "Select * from lmsdatabase.loan where userid = '" + self.key_str + "';"
+            df2 = pd.read_sql(query1, pandasdb)
+            print(df2)
+            save_file1 = filedialog.asksaveasfile(filetypes=[('CSV file', '*.csv')], defaultextension='CSV file',
+                                                  title="Save data")
+            df2.to_csv(save_file1, index=False)
+            save_file1.close()
+            print("Loan CSV is exported successfully")
         else:
             print("Borrower table is not checked")
 
-        if self.loan_value.get() == 1:
-            query2 = "Select * FROM loan INNER JOIN borrower ON loan.borrowerid=borrower.borrowerid where " \
-                     "borrower.userid = '" + self.key_str + "';"
-            df2 = pd.read_sql(query2, pandasdb)
-            print(df2)
-        else:
-            print("Loan table is not checked")
-
-        if self.payment_value.get() == 1:
-            query3 = "Select * from lmsdatabase.payment;"
-            df3 = pd.read_sql(query3, pandasdb)
-            print(df3)
-        else:
-            print("Payment table is not checked")
-
         pandasdb.close()
+        self.export_data_top.destroy()
 
     def database_view_account(self):
         # Method for viewing accounts database
