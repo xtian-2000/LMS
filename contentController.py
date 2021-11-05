@@ -28,6 +28,7 @@ class Content(tk.Tk, ttk.LabelFrame, ttk.Entry, ttk.Label, tk.Button, tk.Topleve
         style.configure('body_content.TLabel', font=("OpenSans", 10), foreground='green', background="#FFFFFF")
 
         style.configure('featured_h1.TLabel', font=("OpenSans", 18), foreground='#4C8404', background="#FFFFFF")
+        style.configure('featured_h1_big.TLabel', font=("OpenSans", 24), foreground='#585456', background="#FFFFFF")
         style.configure('featured_h2.TLabel', font=("OpenSans", 15), foreground='#585456', background="#FFFFFF")
 
         style.configure('featured_h1_2.TLabel', font=("OpenSans", 15), foreground='#585456', background="#FFFFFF")

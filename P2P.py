@@ -177,6 +177,7 @@ class Window:
         self.loan_count_l = None
         self.payment_amount_l = None
         self.payment_count_l = None
+        self.filter_account_cb = None
 
         # Instantiate Database class
         Database()
@@ -260,15 +261,17 @@ class Window:
         self.login_b.grid(column=0, row=4, columnspan=2, pady=5)
 
         # ================================================ Features Description section ================================
-        features_lf = tk.LabelFrame(self.master, bg="#D4DEC9", relief="flat")
-        features_lf.pack(side="top", expand=True, anchor="center")
+        features_lf = tk.LabelFrame(self.master, bg="#FFFFFF", relief="flat")
+        features_lf.pack(side="top", expand=True, anchor="center", ipadx=20, ipady=20)
 
         # ================================================ Features Description section ================================
         system_features_lf = tk.LabelFrame(features_lf, background="#FFFFFF", relief="flat")
-        system_features_lf.pack(side="left", padx=10, pady=10, ipadx=20, ipady=5)
+        system_features_lf.pack(side="left", padx=40, pady=40)
 
         ttk.Label(system_features_lf, text="P2P Lending Management System",
                   style="featured_h1.TLabel").pack(side="top", pady=10, anchor="w")
+        ttk.Label(system_features_lf, text="_____",
+                  style="featured_h1_big.TLabel").pack(side="top", anchor="w")
         ttk.Label(system_features_lf, text="Lending Management System comes \n"
                                            "with a slew of capabilities, from \n"
                                            "a user-friendly interface to extensive \n"
@@ -280,8 +283,8 @@ class Window:
                   style="featured_h2.TLabel").pack(side="top", anchor="w")
 
         # ================================================ Features Description section ================================
-        system_features_2_lf = tk.LabelFrame(features_lf, bg="#FFFFFF", relief="flat")
-        system_features_2_lf.pack(side="left", pady=10, padx=10, fill="y")
+        system_features_2_lf = tk.LabelFrame(features_lf, bg="#FFFFFF")
+        system_features_2_lf.pack(side="left", pady=10, padx=10)
 
         ttk.Label(system_features_2_lf, text="Developer's Information",
                   style="featured_h1_2.TLabel").pack(side="top", pady=10, anchor="w")
@@ -787,6 +790,15 @@ class Window:
         # Content for payment analytics
         ttk.Label(filter_lf, text="Accounts Datasheet", style="h1_body.TLabel").grid(column=0, row=0, columnspan=3,
                                                                                      sticky="w")
+
+        ttk.Label(filter_lf, text="Filter", style="heading.TLabel").grid(column=0, row=1, columnspan=2, sticky="w")
+
+        filter_account_value = ['Alphabetical', 'Date']
+        self.filter_account_cb = ttk.Combobox(filter_lf, width=15, state="readonly", font="8",
+                                              values=filter_account_value)
+        self.filter_account_cb.current(1)
+        self.filter_account_cb.bind("<<ComboboxSelected>>", self.filter_account_cb_clicked)
+        self.filter_account_cb.grid(column=2, row=1, columnspan=2, sticky="e")
 
         # ================================================ Datasheet section ===========================================
         self.account_database_view_f = tk.Frame(self.account_database_view_lf, relief="flat")
@@ -1295,8 +1307,39 @@ class Window:
         try:
             self.database_connect()
             self.mycursor.execute("SELECT name, address, age, gender, borrowerid FROM borrower where userid = '"
-                                  + self.key_str +
-                                  "';")
+                                  + self.key_str + "' ORDER BY borrower.created;")
+            borrowers = self.mycursor.fetchall()
+            print(borrowers)
+
+            # Create configure for striped rows
+            self.account_borrower_lb.tag_configure("oddrow", background="#FFFFFF")
+            self.account_borrower_lb.tag_configure("evenrow", background="#FAFAFA")
+            count = 0
+            for record in borrowers:
+                if count % 2 == 0:
+                    self.account_borrower_lb.insert(parent="", index="end", iid=count, text="",
+                                                    values=(record[0], record[1], record[2], record[3]),
+                                                    tags=("oddrow",))
+                else:
+                    self.account_borrower_lb.insert(parent="", index="end", iid=count, text="",
+                                                    values=(record[0], record[1], record[2], record[3]),
+                                                    tags=("evenrow",))
+                count += 1
+
+            self.db1.commit()
+            self.mycursor.close()
+            self.db1.close()
+
+        except Exception as e:
+            print("Could not connect to lmsdatabase")
+            print(e)
+
+    def filter_account_alpha(self):
+        # Method for viewing accounts database
+        try:
+            self.database_connect()
+            self.mycursor.execute("SELECT name, address, age, gender, borrowerid FROM borrower where userid = '"
+                                  + self.key_str + "' ORDER BY borrower.name;")
             borrowers = self.mycursor.fetchall()
             print(borrowers)
 
@@ -1347,7 +1390,7 @@ class Window:
                 else:
                     self.payment_borrower_lb.insert(parent="", index="end", iid=count, text="",
                                                     values=(record[0], record[1], record[2], record[3], record[4],
-                                                            record[5], record[6]), tags=("oddrow",))
+                                                            record[5], record[6]), tags=("evenrow",))
 
                 count += 1
 
@@ -1916,6 +1959,13 @@ class Window:
             self.database_view_loan()
         else:
             self.filter_loan_status()
+        print(event)
+
+    def filter_account_cb_clicked(self, event):
+        if self.filter_account_cb.get() == "Alphabetical":
+            self.filter_account_alpha()
+        else:
+            self.database_view_account()
         print(event)
 
     def filter_analytics(self):
