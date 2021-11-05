@@ -18,7 +18,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkinter import PhotoImage
 import webbrowser
 from tkinter import filedialog
-
+from browser_link import Browser
 # from tkinter.filedialog import asksaveasfile
 
 # from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
@@ -531,7 +531,8 @@ class Window:
         add_people_b.pack(side="left", padx=5, pady=5)
 
         generate_contract_b = tk.Button(toolbar_lf, text="Generate Contract", font="OpenSans, 10", fg="#FFFFFF",
-                                        bg="#4C8404", relief="flat", command=self.generate_contract)
+                                        bg="#4C8404", relief="flat",
+                                        command=Browser("https://www.wonder.legal/ph/creation-modele/loan-agreement-ph", "jj"))
         generate_contract_b.pack(side="left", padx=5, pady=5)
 
         export_data_b = tk.Button(toolbar_lf, text="Export Data", font="OpenSans, 10", fg="#FFFFFF",
@@ -1258,10 +1259,6 @@ class Window:
                                  bg="#4C8404", relief="flat", command=self.export_as_csv)
         export_csv_b.grid(column=0, row=4, padx=5, pady=5, sticky="w")
 
-        export_excel_b = tk.Button(export_data_lf, text="Export as excel", font="OpenSans, 10", fg="#FFFFFF",
-                                   bg="#4C8404", relief="flat")
-        export_excel_b.grid(column=2, row=4, padx=5, sticky="w")
-
         # Disables underlying window
         self.export_data_top.grab_set()
 
@@ -1982,12 +1979,15 @@ class Window:
         self.mysql_pandas_loans()
         self.mysql_pandas_payment()
 
+    """
     @staticmethod
     def generate_contract():
+        link = "https://www.wonder.legal/ph/creation-modele/loan-agreement-ph"
         tkinter.messagebox.showinfo("Note!", "We are in no way affiliated with the website or its developers.\n"
                                              "Here is the link for our recommended website:\n"
                                              "(https://www.wonder.legal/ph/creation-modele/loan-agreement-ph)\n")
-        webbrowser.open_new(r"https://www.wonder.legal/ph/creation-modele/loan-agreement-ph")
+        webbrowser.open_new(link)
+        """
 
     @staticmethod
     def clear_treeview(treeview=ttk.Treeview):
