@@ -37,6 +37,7 @@ fday_month = fday_month.strftime("%x")
 currentday_month = datetime.today()
 currentday_month = currentday_month.strftime("%x")
 peso = u"\u20B1"
+lms_version = "LMSv.1.28"
 
 
 class Window:
@@ -193,7 +194,7 @@ class Window:
         Content.destroy_content(self.master)
 
         # Create window attribute
-        self.master.title("P2P Lending Management System")
+        self.master.title("P2P " + lms_version)
         self.master.iconbitmap(r"C:\Users\SSD\IdeaProjects\LMS\images\p2p_icon.ico")
         width = self.master.winfo_screenwidth()
         height = self.master.winfo_screenheight()
@@ -518,7 +519,12 @@ class Window:
 
         # ================================================ Toolbar Section =============================================
         toolbar_lf = tk.LabelFrame(self.body_lf, bg="#FFFFFF", relief="flat")
-        toolbar_lf.pack(side="top", fill="x")
+        toolbar_lf.pack(side="top", fill="x", ipadx=100)
+
+        ttk.Label(toolbar_lf, text="P2P Lending Management System",
+                  style="heading.TLabel").pack(side="left", padx=5, pady=5)
+
+        ttk.Label(toolbar_lf, text="|", style="heading.TLabel").pack(side="left")
 
         add_people_b = tk.Button(toolbar_lf, text="Add borrower", font="OpenSans, 10", fg="#FFFFFF",
                                  bg="#4C8404", relief="flat", command=self.add_people)
@@ -534,7 +540,10 @@ class Window:
 
         logout_b = tk.Button(toolbar_lf, text="Logout", font="OpenSans, 10", relief="flat", bg="#FFFFFF",
                              fg="green", highlightcolor="#2C441D", command=self.login_win)
-        logout_b.pack(side="right", padx=100, pady=5)
+        logout_b.pack(side="right", pady=5)
+
+        ttk.Label(toolbar_lf, text=(lms_version, "|"),
+                  style="h1_footnote.TLabel").pack(side="right", anchor="w", pady=5)
 
         # Contents container
         self.content_lf = tk.LabelFrame(self.body_lf, relief="flat")
