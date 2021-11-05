@@ -7,6 +7,7 @@ from databaseController import Database
 from ScrollableFrame import ScrollableFrame
 import mysql.connector as mysql
 from contentController import Content
+import toolTip as tt
 import functools
 # from PIL import ImageTk, Image
 from tkcalendar import DateEntry
@@ -17,7 +18,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkinter import PhotoImage
 import webbrowser
 from tkinter import filedialog
-from tkinter.filedialog import asksaveasfile
+
+# from tkinter.filedialog import asksaveasfile
 
 # from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 # import numpy as np
@@ -154,8 +156,6 @@ class Window:
         self.day = datetime.today().day
         self.remaining_days = None
         self.interest = None
-        self.total_loan_amount = None
-        self.total_payment_amount = None
         self.borrower_value = tk.IntVar()
         self.loan_value = tk.IntVar()
         self.payment_value = tk.IntVar()
@@ -168,10 +168,15 @@ class Window:
         self.loans_icon_active_resized = tkinter.PhotoImage
         self.accounts_icon_active_resized = tkinter.PhotoImage
         self.payments_icon_active_resized = tkinter.PhotoImage
+        self.exit_inactive_resized = tkinter.PhotoImage
         self.export_data_top = None
-        self.pandas_loan_date_from = None
-        self.pandas_loan_date_to = None
+        self.dashboard_main_filter_from = None
+        self.dashboard_main_filter_to = None
         self.filter_loan_cb = None
+        self.loan_amount_l = None
+        self.loan_count_l = None
+        self.payment_amount_l = None
+        self.payment_count_l = None
 
         # Instantiate Database class
         Database()
@@ -385,20 +390,19 @@ class Window:
                                  password=password,
                                  database="lmsdatabase",
                                  use_pure=True)
-        print(currentday_month)
         query = "Select loan.amount from loan INNER JOIN borrower ON " \
-                "loan.borrowerid=borrower.borrowerid where dateissued >= '" + self.pandas_loan_date_from.get() + \
-                "' AND dateissued <= '" + self.pandas_loan_date_to.get() + "' AND borrower.userid = '" \
+                "loan.borrowerid=borrower.borrowerid where dateissued >= '" + self.dashboard_main_filter_from.get() + \
+                "' AND dateissued <= '" + self.dashboard_main_filter_to.get() + "' AND borrower.userid = '" \
                 + self.key_str + "'; "
 
-        print(fday_month)
         df = pd.read_sql(query, pandasdb)
         pandasdb.close()
 
         print("Loan's dataframe")
         print(df)
-        self.total_loan_amount = df['amount'].sum()
-        print(self.total_loan_amount)
+        total_loan_amount = df['amount'].sum()
+        self.loan_amount_l.configure(text=total_loan_amount)
+        self.loan_count_l.configure(text=len(df.index))
 
         width = self.master.winfo_screenmmwidth()
 
@@ -415,6 +419,7 @@ class Window:
         canvas.get_tk_widget().pack(side="left", padx=10, pady=10, fill="both", expand=True)
 
     def mysql_pandas_payment(self):
+        Content.destroy_content(self.payment_analytics_content)
         pandasdb = mysql.connect(host=host,
                                  user=user,
                                  password=password,
@@ -423,14 +428,16 @@ class Window:
         print(currentday_month)
         query = "Select payment.amount from payment INNER JOIN loan ON payment.loanid=loan.loanid INNER " \
                 "JOIN borrower ON loan.borrowerid=borrower.borrowerid where payment.dateissued >= '" \
-                + fday_month + "' AND payment.dateissued <= '" + currentday_month + \
-                "' AND borrower.userid = '" + self.key_str + "'; "
+                + self.dashboard_main_filter_from.get() + "' AND payment.dateissued <= '" \
+                + self.dashboard_main_filter_to.get() + "' AND borrower.userid = '" + self.key_str + "'; "
         df = pd.read_sql(query, pandasdb)
         pandasdb.close()
         print("Payment's dataframe")
         print(df)
-        self.total_payment_amount = df['amount'].sum()
-        print(self.total_payment_amount)
+        total_payment_amount = df['amount'].sum()
+        print(total_payment_amount)
+        self.payment_amount_l.configure(text=total_payment_amount)
+        self.payment_count_l.configure(text=len(df.index))
 
         fig = Figure(figsize=(5, 5), dpi=75)
         ax1 = fig.add_subplot(111)
@@ -465,6 +472,9 @@ class Window:
         payments_icon_inactive = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\payments_icon_inactive.png")
         self.payments_icon_inactive_resized = payments_icon_inactive.subsample(8, 8)
 
+        exit_icon_inactive = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\exit_inactive.png")
+        self.exit_inactive_resized = exit_icon_inactive.subsample(8, 8)
+
         # Create variables for active images
         home_icon_active = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\home_icon_active.png")
         self.home_icon_active_resized = home_icon_active.subsample(8, 8)
@@ -494,6 +504,10 @@ class Window:
         self.payment_b = tk.Button(self.menu_lf, image=self.payments_icon_inactive_resized, relief="flat", bg="#4C8404",
                                    command=self.switch_payment)
         self.payment_b.pack(side="top", fill="both")
+
+        exit_b = tk.Button(self.menu_lf, image=self.exit_inactive_resized, relief="flat", bg="#4C8404",
+                           command=self.switch_exit)
+        exit_b.pack(side="top", fill="both")
 
         # Content Container
         self.body_lf = tk.LabelFrame(self.master, relief="flat")
@@ -526,6 +540,17 @@ class Window:
         # Initialize switch_home method for the default content
         self.switch_home()
 
+        # Create tooltip
+        tt.create_ToolTip(add_people_b, "Click to add borrower account")
+        tt.create_ToolTip(generate_contract_b, "Click to generate contract")
+        tt.create_ToolTip(export_data_b, "Click to export data")
+
+        tt.create_ToolTip(self.home_b, "Click to switch to home section")
+        tt.create_ToolTip(self.account_b, "Click to switch to accounts section")
+        tt.create_ToolTip(self.loan_b, "Click to switch to loans section")
+        tt.create_ToolTip(self.payment_b, "Click to switch to payment section")
+        tt.create_ToolTip(exit_b, "Click to exit ")
+
     def switch_home(self):
         # Destroy content_lf
         Content.destroy_content(self.content_lf)
@@ -535,51 +560,74 @@ class Window:
 
         # ================================================ Loan Analytics ==============================================
         # Containers for loan analytics
-        loans_analytics_f = tk.Frame(self.home_f.scrollable_frame, relief="flat")
+        loans_analytics_f = tk.Frame(self.home_f.scrollable_frame, relief="flat", bg="#FFFFFF")
         loans_analytics_f.pack(side="top", fill="both", padx=10, pady=5, expand=True)
 
+        # ================================================ Filter section ==============================================
+        loan_analytics_filter_lf = tk.LabelFrame(loans_analytics_f, bg="#FFFFFF")
+        loan_analytics_filter_lf.pack(side="top", fill="both", padx=10, pady=10, ipady=10, expand=True)
+
+        # Content for payment analytics
+        ttk.Label(loan_analytics_filter_lf, text="Filter",
+                  style="h1_title.TLabel").grid(column=0, row=0, rowspan=2, columnspan=2, pady=5, sticky="w")
+
+        filter_analytics_b = tk.Button(loan_analytics_filter_lf, text="Filter Analytics",
+                                       font="OpenSans, 10", fg="#FFFFFF",
+                                       bg="#4C8404", relief="flat", command=self.filter_analytics)
+        filter_analytics_b.grid(column=2, row=0, rowspan=2)
+
+        filter_default_b = tk.Button(loan_analytics_filter_lf, text="Default filters",
+                                     font="OpenSans, 10", fg="#4C8404",
+                                     bg="#D4DEC9", relief="flat", command=self.switch_home)
+        filter_default_b.grid(column=3, columnspan=2, row=0, rowspan=2)
+
+        ttk.Label(loan_analytics_filter_lf, text="Date from",
+                  style="body.TLabel").grid(column=0, row=2, padx=2.5, sticky="w")
+
+        self.dashboard_main_filter_from = DateEntry(loan_analytics_filter_lf, width=15,
+                                                    date_pattern="MM/dd/yy", borderwidth=2)
+        self.dashboard_main_filter_from.grid(column=1, columnspan=2, row=2, padx=2.5, sticky="w")
+
+        ttk.Label(loan_analytics_filter_lf, text="to", style="body.TLabel").grid(column=3, row=2, padx=2.5, sticky="w")
+
+        self.dashboard_main_filter_to = DateEntry(loan_analytics_filter_lf, width=15,
+                                                  date_pattern="MM/dd/yy", borderwidth=2)
+        self.dashboard_main_filter_to.grid(column=4, columnspan=2, row=2, padx=2.5, sticky="w")
+
+        # Insert values to Date Entry
+        self.dashboard_main_filter_from.delete(0, "end")
+        self.dashboard_main_filter_from.insert(0, fday_month)
+
+        self.dashboard_main_filter_to.delete(0, "end")
+        self.dashboard_main_filter_to.insert(0, currentday_month)
+
+        # ================================================ Menu section ================================================
         loan_analytics_menu = tk.LabelFrame(loans_analytics_f, bg="#FFFFFF", relief="flat")
         loan_analytics_menu.pack(side="top", fill="both", expand=True)
 
+        # Content for payment analytics
+        ttk.Label(loan_analytics_menu, text="Loan Analytics",
+                  style="heading.TLabel").grid(column=0, row=1, columnspan=2, pady=5, sticky="w")
+
+        # Dashboard information
+        ttk.Label(loan_analytics_menu, text="Total loan amount:",
+                  style="body.TLabel").grid(column=0, row=2, columnspan=2, pady=5, sticky="w")
+
+        self.loan_amount_l = ttk.Label(loan_analytics_menu, style="body_content.TLabel")
+        self.loan_amount_l.grid(column=2, row=2, pady=5, sticky="w")
+
+        ttk.Label(loan_analytics_menu, text="Number of loans:",
+                  style="body.TLabel").grid(column=0, row=3, columnspan=2, pady=5, sticky="w")
+
+        self.loan_count_l = ttk.Label(loan_analytics_menu, style="body_content.TLabel")
+        self.loan_count_l.grid(column=2, row=3, pady=5, sticky="w")
+
+        # ================================================ Content section =============================================
         self.loan_analytics_content = tk.LabelFrame(loans_analytics_f, bg="#FFFFFF", relief="flat")
         self.loan_analytics_content.pack(side="top", fill="both", expand=True)
 
-        # Content for payment analytics
-        ttk.Label(loan_analytics_menu, text="Loan Analytics",
-                  style="heading.TLabel").grid(column=0, row=0, columnspan=2, pady=5, sticky="w")
-
-        ttk.Label(loan_analytics_menu, text="Date from",
-                  style="body.TLabel").grid(column=0, row=1, padx=2.5, sticky="w")
-
-        self.pandas_loan_date_from = DateEntry(loan_analytics_menu, width=15,
-                                               date_pattern="MM/dd/yy", borderwidth=2)
-        self.pandas_loan_date_from.grid(column=1, columnspan=2, row=1, padx=2.5, sticky="w")
-
-        ttk.Label(loan_analytics_menu, text="to", style="body.TLabel").grid(column=3, row=1, padx=2.5, sticky="w")
-
-        self.pandas_loan_date_to = DateEntry(loan_analytics_menu, width=15,
-                                             date_pattern="MM/dd/yy", borderwidth=2)
-        self.pandas_loan_date_to.grid(column=4, columnspan=2, row=1, padx=2.5, sticky="w")
-
-        filter_analytics_b = tk.Button(loan_analytics_menu, text="Filter Analytics", font="OpenSans, 10", fg="#FFFFFF",
-                                       bg="#4C8404", relief="flat", command=self.mysql_pandas_loans)
-        filter_analytics_b.grid(column=6, columnspan=2, row=1, padx=5)
-
-        # Insert values to Date Entry
-        self.pandas_loan_date_from.delete(0, "end")
-        self.pandas_loan_date_from.insert(0, fday_month)
-
-        self.pandas_loan_date_to.delete(0, "end")
-        self.pandas_loan_date_to.insert(0, currentday_month)
-
         # Initialize method for loans analytics
         self.mysql_pandas_loans()
-
-        # Dashboard information
-        ttk.Label(loan_analytics_menu, text="Total loan amount",
-                  style="body.TLabel").grid(column=0, row=4, columnspan=2, pady=5, sticky="w")
-        ttk.Label(loan_analytics_menu, text=self.total_loan_amount,
-                  style="body_content.TLabel").grid(column=2, row=4, pady=5, sticky="w")
 
         # Wrap contents to allow scrollable frame function
         self.home_f.pack(side="top", fill="both", expand=True)
@@ -589,6 +637,10 @@ class Window:
                                                font="OpenSans, 10", fg="#FFFFFF", bg="#4C8404", relief="flat",
                                                command=self.show_more_analytics)
         self.show_more_dashboard_b.pack(side="bottom", fill="both", expand=True, padx=10, pady=10)
+
+        # Create tooltip
+        tt.create_ToolTip(filter_analytics_b, "Click to implement custom filters ")
+        tt.create_ToolTip(filter_default_b, "Click to implement default filters")
 
         # Configure button state
         self.state_button()
@@ -610,35 +662,21 @@ class Window:
         ttk.Label(payment_analytics_menu, text="Payment Analytics",
                   style="heading.TLabel").grid(column=0, row=0, columnspan=2, pady=5, sticky="w")
 
-        ttk.Label(payment_analytics_menu, text="Date from",
-                  style="body.TLabel").grid(column=0, row=1, padx=2.5, sticky="w")
-
-        pandas_payment_date_from = DateEntry(payment_analytics_menu, width=15,
-                                             date_pattern="MM/dd/yy", borderwidth=2)
-        pandas_payment_date_from.grid(column=1, row=1, columnspan=2, padx=2.5, sticky="w")
-
-        ttk.Label(payment_analytics_menu, text="to",
-                  style="body.TLabel").grid(column=3, row=1, padx=2.5, sticky="w")
-
-        pandas_payment_date_to = DateEntry(payment_analytics_menu, width=15,
-                                           date_pattern="MM/dd/yy", borderwidth=2)
-        pandas_payment_date_to.grid(column=5, row=1, columnspan=2, padx=2.5, sticky="w")
-
-        # Initialize method for payment analytics
-        self.mysql_pandas_payment()
-
         # Dashboard information
         ttk.Label(payment_analytics_menu, text="Total payment amount",
                   style="body.TLabel").grid(column=0, row=2, columnspan=2, pady=5, sticky="w")
-        ttk.Label(payment_analytics_menu, text=self.total_payment_amount,
-                  style="body_content.TLabel").grid(column=2, row=2, pady=5, sticky="w")
 
-        # Insert values to Date Entry
-        pandas_payment_date_from.delete(0, "end")
-        pandas_payment_date_from.insert(0, fday_month)
+        self.payment_amount_l = ttk.Label(payment_analytics_menu, style="body_content.TLabel")
+        self.payment_amount_l.grid(column=2, row=2, pady=5, sticky="w")
 
-        pandas_payment_date_to.delete(0, "end")
-        pandas_payment_date_to.insert(0, currentday_month)
+        ttk.Label(payment_analytics_menu, text="Number of payments",
+                  style="body.TLabel").grid(column=0, row=3, columnspan=2, pady=5, sticky="w")
+
+        self.payment_count_l = ttk.Label(payment_analytics_menu, style="body_content.TLabel")
+        self.payment_count_l.grid(column=2, row=3, pady=5, sticky="w")
+
+        # Initialize method for payment analytics
+        self.mysql_pandas_payment()
 
         self.show_more_dashboard_b.configure(text="Show less analytics", command=self.switch_home)
 
@@ -655,16 +693,19 @@ class Window:
         self.loan_database_view_lf.pack(side="top", pady=10, fill="both")
 
         # ================================================ Filter section ==============================================
-        filter_lf = tk.LabelFrame(self.loan_database_view_lf, bg="#FFFFFF", relief="flat")
-        filter_lf.pack(side="top", pady=10, fill="both")
+        filter_lf = tk.LabelFrame(self.loan_database_view_lf, bg="#FFFFFF")
+        filter_lf.pack(side="top", fill="both", padx=10, pady=10, ipady=5, expand=True)
 
-        ttk.Label(filter_lf, text="Filter", style="featured_h2_2.TLabel").pack(side="left", anchor="w")
+        # Content for payment analytics
+        ttk.Label(filter_lf, text="Loan Datasheet", style="h1_body.TLabel").grid(column=0, row=0, columnspan=3,
+                                                                                 sticky="w")
+        ttk.Label(filter_lf, text="Filter", style="heading.TLabel").grid(column=0, row=1, columnspan=2, sticky="w")
 
         filter_loan_value = ['Loan ID', 'Status']
-        self.filter_loan_cb = ttk.Combobox(filter_lf, width=15, state="readonly", values=filter_loan_value)
+        self.filter_loan_cb = ttk.Combobox(filter_lf, width=15, state="readonly", font="8", values=filter_loan_value)
         self.filter_loan_cb.current(1)
         self.filter_loan_cb.bind("<<ComboboxSelected>>", self.filter_loan_cb_clicked)
-        self.filter_loan_cb.pack(side="left", padx=5)
+        self.filter_loan_cb.grid(column=2, row=1, columnspan=2, sticky="e")
 
         # ================================================ Loan view section ===========================================
         self.loan_database_view_f = tk.Frame(self.loan_database_view_lf, relief="flat")
@@ -739,7 +780,15 @@ class Window:
         self.account_database_view_lf = tk.LabelFrame(self.account_lf, bg="#FFFFFF", relief="flat")
         self.account_database_view_lf.pack(side="top", pady=10, fill="both")
 
-        # Profile view database frame
+        # ================================================ Filter section ==============================================
+        filter_lf = tk.LabelFrame(self.account_database_view_lf, bg="#FFFFFF")
+        filter_lf.pack(side="top", fill="both", padx=10, pady=10, ipady=5, expand=True)
+
+        # Content for payment analytics
+        ttk.Label(filter_lf, text="Accounts Datasheet", style="h1_body.TLabel").grid(column=0, row=0, columnspan=3,
+                                                                                     sticky="w")
+
+        # ================================================ Datasheet section ===========================================
         self.account_database_view_f = tk.Frame(self.account_database_view_lf, relief="flat")
         self.account_database_view_f.pack(side="top", fill="both")
 
@@ -803,7 +852,15 @@ class Window:
         self.payment_database_view_lf = tk.LabelFrame(self.payment_lf, bg="#FFFFFF", relief="flat")
         self.payment_database_view_lf.pack(side="top", pady=10, fill="both")
 
-        # Profile view database frame
+        # ================================================ Filter section ==============================================
+        filter_lf = tk.LabelFrame(self.payment_database_view_lf, bg="#FFFFFF")
+        filter_lf.pack(side="top", fill="both", padx=10, pady=10, ipady=5, expand=True)
+
+        # Content for payment analytics
+        ttk.Label(filter_lf, text="Payments Datasheet", style="h1_body.TLabel").grid(column=0, row=0, columnspan=3,
+                                                                                     sticky="w")
+
+        # ================================================ Datasheet section ===========================================
         self.payment_database_view_f = tk.Frame(self.payment_database_view_lf, relief="flat")
         self.payment_database_view_f.pack(side="top", fill="both")
 
@@ -861,6 +918,13 @@ class Window:
         # Configure button state
         self.state_button()
         self.payment_b.configure(image=self.payments_icon_active_resized)
+
+    def switch_exit(self):
+        exit_yes_no = messagebox.askyesno(title="Exit", message="Are you sure you want to exit?")
+        if exit_yes_no:
+            self.master.destroy()
+        else:
+            pass
 
     def login_validation(self):
         try:
@@ -1202,6 +1266,17 @@ class Window:
             print("Borrower CSV is exported successfully")
         if self.loan_value.get() == 1:
             query1 = "Select * from lmsdatabase.loan where userid = '" + self.key_str + "';"
+            df2 = pd.read_sql(query1, pandasdb)
+            print(df2)
+            save_file1 = filedialog.asksaveasfile(filetypes=[('CSV file', '*.csv')], defaultextension='CSV file',
+                                                  title="Save data")
+            df2.to_csv(save_file1, index=False)
+            save_file1.close()
+            print("Loan CSV is exported successfully")
+        if self.payment_value.get() == 1:
+            query1 = "SELECT payment.paymentid, payment.amount, payment.balance, payment.dateissued," \
+                     " loan.loanid FROM lmsdatabase.payment  INNER JOIN loan ON payment.loanid =" \
+                     " loan.loanid where loan.userid = '" + self.key_str + "'; "
             df2 = pd.read_sql(query1, pandasdb)
             print(df2)
             save_file1 = filedialog.asksaveasfile(filetypes=[('CSV file', '*.csv')], defaultextension='CSV file',
@@ -1842,6 +1917,11 @@ class Window:
         else:
             self.filter_loan_status()
         print(event)
+
+    def filter_analytics(self):
+        # Initialize methods for displaying analytics
+        self.mysql_pandas_loans()
+        self.mysql_pandas_payment()
 
     @staticmethod
     def generate_contract():

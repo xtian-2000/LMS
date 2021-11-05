@@ -1,6 +1,4 @@
 import tkinter as tk
-# Create class that handles destroying, and disabling contents of main window
-
 from tkinter import ttk
 
 
@@ -60,6 +58,5 @@ class Content(tk.Tk, ttk.LabelFrame, ttk.Entry, ttk.Label, tk.Button, tk.Topleve
         for widget in self.winfo_children():
             if isinstance(widget, ttk.Entry):
                 widget.config(state="disabled")
-
 
 
