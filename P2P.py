@@ -2,6 +2,7 @@ import tkinter
 import tkinter as tk
 from datetime import datetime
 from datetime import timedelta
+from tkinter import Menu
 from tkinter import ttk, messagebox
 from databaseController import Database
 from ScrollableFrame import ScrollableFrame
@@ -18,6 +19,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkinter import PhotoImage
 import webbrowser
 from tkinter import filedialog
+import os
 
 # from tkinter.filedialog import asksaveasfile
 
@@ -38,6 +40,8 @@ currentday_month = datetime.today()
 currentday_month = currentday_month.strftime("%x")
 peso = u"\u20B1"
 lms_version = "LMSv.1.28"
+url_small_claims = "https://www.philippine-embassy.org.sg/pages/small-claims-in-the-philippines/"
+url_fair_debt = "http://legacy.senate.gov.ph/lisdata/26632027!.pdf"
 
 
 class Window:
@@ -459,7 +463,26 @@ class Window:
         # Destroy window contents
         Content.destroy_content(self.master)
 
-        # Menu container
+        # ================================================ Menu Bar Section ============================================
+        menu_bar = Menu(self.master)
+        self.master.config(menu=menu_bar)
+
+        # Creating help menu
+        file_menu = Menu(menu_bar, tearoff=0)
+        file_menu.add_command(label="Import", command=self.import_database)
+        file_menu.add_command(label="Export", command=self.export_database_widget)
+        file_menu.add_separator()
+        file_menu.add_command(label="Exit", command=self.switch_exit)
+        menu_bar.add_cascade(label="File", menu=file_menu)
+
+        # Creating help menu
+        help_menu = Menu(menu_bar, tearoff=0)
+        help_menu.add_command(label="User Manual")
+        help_menu.add_separator()
+        help_menu.add_command(label="Check for updates")
+        menu_bar.add_cascade(label="Help", menu=help_menu)
+
+        # ================================================ Menu Section ================================================
         self.menu_lf = tk.LabelFrame(self.master, bg="#4C8404", relief="flat")
         self.menu_lf.pack(side="left", fill="both")
 
@@ -538,6 +561,18 @@ class Window:
                                   bg="#4C8404", relief="flat", command=self.export_database_widget)
         export_data_b.pack(side="left", padx=5, pady=5)
 
+        ttk.Label(toolbar_lf, text="|", style="heading.TLabel").pack(side="left")
+
+        link_small_claims_l = ttk.Label(toolbar_lf, text="Delinquent borrowers? Click here.",
+                                        cursor="hand2", style="link.TLabel")
+        link_small_claims_l.pack(side="left")
+
+        ttk.Label(toolbar_lf, text="|", style="h1_footnote.TLabel").pack(side="left")
+
+        link_fair_debt_l = ttk.Label(toolbar_lf, text="Read: Fair Debt Collection Practices Act",
+                                     cursor="hand2", style="link.TLabel")
+        link_fair_debt_l.pack(side="left")
+
         logout_b = tk.Button(toolbar_lf, text="Logout", font="OpenSans, 10", relief="flat", bg="#FFFFFF",
                              fg="green", highlightcolor="#2C441D", command=self.login_win)
         logout_b.pack(side="right", pady=5)
@@ -562,6 +597,9 @@ class Window:
         tt.create_ToolTip(self.loan_b, "Click to switch to loans section")
         tt.create_ToolTip(self.payment_b, "Click to switch to payment section")
         tt.create_ToolTip(exit_b, "Click to exit ")
+
+        link_small_claims_l.bind("<Button-1>", lambda e: webbrowser.open_new_tab(url_small_claims))
+        link_fair_debt_l.bind("<Button-1>", lambda e: webbrowser.open_new_tab(url_fair_debt))
 
     def switch_home(self):
         # Destroy content_lf
@@ -1266,6 +1304,23 @@ class Window:
         self.export_data_top.grab_set()
 
         self.export_data_top.mainloop()
+
+    def import_database(self):
+        read_guide = tkinter.messagebox.askquestion("Import file", "Do you want to read importing guide before"
+                                                                   " proceeding to file dialog?")
+        if read_guide == "yes":
+            os.startfile(r"Guide for importing database.pdf")
+        else:
+            import_filename = filedialog.askopenfilename(title="Open a file", initialdir="/")
+            col_list = ["NAME"]
+            import_df = pd.read_excel(import_filename, usecols=col_list)
+            pd.set_option("display.max_rows", None)
+            # Create new dataframe with UPPERCASE values
+            upper_df = import_df.apply(lambda x: x.astype(str).str.upper())
+            # Drop values duplicate values
+            upper_df.drop_duplicates(subset="NAME", keep="first", inplace=True)
+            print(upper_df)
+            print(import_df.isnull().sum())
 
     def export_as_csv(self):
         pandasdb = mysql.connect(host=host,

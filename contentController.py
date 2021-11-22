@@ -20,6 +20,8 @@ class Content(tk.Tk, ttk.LabelFrame, ttk.Entry, ttk.Label, tk.Button, tk.Topleve
                         background="#FFFFFF")
         style.configure('h1_body.TLabel', font=("Times New Roman", 15), foreground='#585456',
                         background="#FFFFFF")
+        style.configure('link.TLabel', font=("Times New Roman", 10, "underline"), foreground='blue',
+                        background="#FFFFFF")
         style.configure('h1_footnote.TLabel', font=("Times New Roman", 12), foreground='#585456',
                         background="#FFFFFF")
         style.configure('h3.TLabel', font=("OpenSans", 10), foreground='#000000', background="#EBEBEB")
