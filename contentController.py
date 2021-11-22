@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 
 
-class Content(tk.Tk, ttk.LabelFrame, ttk.Entry, ttk.Label, tk.Button, tk.Toplevel):
+class Content(tk.Tk, ttk.LabelFrame, ttk.Entry, ttk.Label, tk.Button, tk.Toplevel, ttk.Treeview):
 
     def widget_styles(self):
         # Configure styles for widgets
@@ -35,6 +35,8 @@ class Content(tk.Tk, ttk.LabelFrame, ttk.Entry, ttk.Label, tk.Button, tk.Topleve
 
         style.configure('featured_h1_2.TLabel', font=("OpenSans", 15), foreground='#585456', background="#FFFFFF")
         style.configure('featured_h2_2.TLabel', font=("OpenSans", 12), foreground='#585456', background="#FFFFFF")
+
+        style.configure('filter.TLabel', font=("OpenSans", 12), foreground='#4C8404', background="#D4DEC9")
         # ================================================ Style for LabelFrame ========================================
         style.configure('forms.TLabelframe', background="#FFFFFF", bordercolor="green", borderwidth=1)
 
@@ -61,5 +63,10 @@ class Content(tk.Tk, ttk.LabelFrame, ttk.Entry, ttk.Label, tk.Button, tk.Topleve
         for widget in self.winfo_children():
             if isinstance(widget, ttk.Entry):
                 widget.config(state="disabled")
+
+    @staticmethod
+    def clear_treeview(treeview=ttk.Treeview):
+        for widget in treeview.get_children():
+            treeview.delete(widget)
 
 

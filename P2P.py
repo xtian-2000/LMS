@@ -39,7 +39,7 @@ fday_month = fday_month.strftime("%x")
 currentday_month = datetime.today()
 currentday_month = currentday_month.strftime("%x")
 peso = u"\u20B1"
-lms_version = "LMSv.1.28"
+lms_version = "LMSv.1.30"
 url_small_claims = "https://www.philippine-embassy.org.sg/pages/small-claims-in-the-philippines/"
 url_fair_debt = "http://legacy.senate.gov.ph/lisdata/26632027!.pdf"
 
@@ -183,6 +183,7 @@ class Window:
         self.payment_amount_l = None
         self.payment_count_l = None
         self.filter_account_cb = None
+        self.filter_payment_cb = None
 
         # Instantiate Database class
         Database()
@@ -746,16 +747,19 @@ class Window:
         filter_lf = tk.LabelFrame(self.loan_database_view_lf, bg="#FFFFFF")
         filter_lf.pack(side="top", fill="both", padx=10, pady=10, ipady=5, expand=True)
 
-        # Content for payment analytics
-        ttk.Label(filter_lf, text="Loan Datasheet", style="h1_body.TLabel").grid(column=0, row=0, columnspan=3,
-                                                                                 sticky="w")
-        ttk.Label(filter_lf, text="Filter", style="heading.TLabel").grid(column=0, row=1, columnspan=2, sticky="w")
+        # Content for loans analytics
+        ttk.Label(filter_lf, text="Loan Datasheet", style="h1_title.TLabel").pack(side="top", anchor="nw", padx=10)
 
-        filter_loan_value = ['Loan ID', 'Status']
-        self.filter_loan_cb = ttk.Combobox(filter_lf, width=15, state="readonly", font="8", values=filter_loan_value)
+        filter_cb_lf = tk.LabelFrame(filter_lf, bg="#D4DEC9", relief="flat")
+        filter_cb_lf.pack(side="top", anchor="sw", ipadx=5, padx=10)
+
+        ttk.Label(filter_cb_lf, text="Filter", style="filter.TLabel").grid(column=0, row=0, sticky="w")
+
+        filter_loan_value = ['Loan ID', 'Status', 'Alphabetical']
+        self.filter_loan_cb = ttk.Combobox(filter_cb_lf, width=15, state="readonly", font="8", values=filter_loan_value)
         self.filter_loan_cb.current(1)
         self.filter_loan_cb.bind("<<ComboboxSelected>>", self.filter_loan_cb_clicked)
-        self.filter_loan_cb.grid(column=2, row=1, columnspan=2, sticky="e")
+        self.filter_loan_cb.grid(column=1, row=0, columnspan=2, sticky="e")
 
         # ================================================ Loan view section ===========================================
         self.loan_database_view_f = tk.Frame(self.loan_database_view_lf, relief="flat")
@@ -802,7 +806,7 @@ class Window:
         self.loan_borrower_lb.bind("<ButtonRelease-1>", self.database_view_loan_info)
 
         # Initialize method for viewing accounts database
-        self.filter_loan_status()
+        self.database_view_loan("Status")
 
         # ================================================ Loan info section ===========================================
         self.loan_content_view_lf = tk.LabelFrame(self.loan_lf, bg="#FFFFFF", relief="flat")
@@ -817,6 +821,66 @@ class Window:
         # Configure button state
         self.state_button()
         self.loan_b.configure(image=self.loans_icon_active_resized)
+
+    def database_view_loan(self, filter_value):
+        if filter_value == "Loan ID":
+            self.database_connect()
+            self.mycursor.execute("SELECT loan.loanid, borrower.name, loan.amount, loan.interest, loan.days,"
+                                  " loan.dateissued, loan.status, borrower.userid, loan.balance"
+                                  " FROM loan INNER JOIN borrower ON"
+                                  " loan.borrowerid=borrower.borrowerid "
+                                  "where borrower.userid = '" + self.key_str + "' ORDER BY loan.loanid;")
+        elif filter_value == "Alphabetical":
+            self.database_connect()
+            self.mycursor.execute("SELECT loan.loanid, borrower.name, loan.amount, loan.interest, loan.days,"
+                                  " loan.dateissued, loan.status, borrower.userid, loan.balance"
+                                  " FROM loan INNER JOIN borrower ON"
+                                  " loan.borrowerid=borrower.borrowerid "
+                                  "where borrower.userid = '" + self.key_str + "' ORDER BY borrower.name;")
+        else:
+            self.database_connect()
+            self.mycursor.execute("SELECT loan.loanid, borrower.name, loan.amount, loan.interest, loan.days,"
+                                  " loan.dateissued, loan.status, borrower.userid, loan.balance"
+                                  " FROM loan INNER JOIN borrower ON"
+                                  " loan.borrowerid=borrower.borrowerid "
+                                  "where borrower.userid = '" + self.key_str + "' ORDER BY loan.status;")
+
+        loans = self.mycursor.fetchall()
+
+        print(loans)
+
+        # Clear treeview
+        Content.clear_treeview(self.loan_borrower_lb)
+
+        # Create configure for striped rows
+        self.loan_borrower_lb.tag_configure("oddrow", background="#FFFFFF")
+        self.loan_borrower_lb.tag_configure("evenrow", background="#FAFAFA")
+        count = 0
+        for record in loans:
+            if count % 2 == 0:
+                self.loan_borrower_lb.insert(parent="", index="end", iid=count, text="",
+                                             values=(record[0], record[1], record[2], record[3], record[4],
+                                                     record[5], record[6], record[8]),
+                                             tags=("oddrow",))
+            else:
+                self.loan_borrower_lb.insert(parent="", index="end", iid=count, text="",
+                                             values=(record[0], record[1], record[2], record[3], record[4],
+                                                     record[5], record[6], record[8]),
+                                             tags=("evenrow",))
+            count += 1
+
+        self.db1.commit()
+        self.mycursor.close()
+        self.db1.close()
+
+    def filter_loan_cb_clicked(self, event):
+        if self.filter_loan_cb.get() == "Loan ID":
+            self.database_view_loan("Loan ID")
+        elif self.filter_loan_cb.get() == "Alphabetical":
+            self.database_view_loan("Alphabetical")
+        else:
+            self.database_view_loan("Status")
+        print(event)
 
     def switch_account(self):
         # Destroy content_lf
@@ -835,17 +899,19 @@ class Window:
         filter_lf.pack(side="top", fill="both", padx=10, pady=10, ipady=5, expand=True)
 
         # Content for payment analytics
-        ttk.Label(filter_lf, text="Accounts Datasheet", style="h1_body.TLabel").grid(column=0, row=0, columnspan=3,
-                                                                                     sticky="w")
+        ttk.Label(filter_lf, text="Accounts Datasheet", style="h1_title.TLabel").pack(side="top", anchor="nw", padx=10)
 
-        ttk.Label(filter_lf, text="Filter", style="heading.TLabel").grid(column=0, row=1, columnspan=2, sticky="w")
+        filter_cb_lf = tk.LabelFrame(filter_lf, bg="#D4DEC9", relief="flat")
+        filter_cb_lf.pack(side="top", anchor="sw", ipadx=5, padx=10)
+
+        ttk.Label(filter_cb_lf, text="Filter", style="filter.TLabel").grid(column=0, row=0, sticky="w")
 
         filter_account_value = ['Alphabetical', 'Date']
-        self.filter_account_cb = ttk.Combobox(filter_lf, width=15, state="readonly", font="8",
+        self.filter_account_cb = ttk.Combobox(filter_cb_lf, width=15, state="readonly", font="8",
                                               values=filter_account_value)
-        self.filter_account_cb.current(1)
+        self.filter_account_cb.current(0)
         self.filter_account_cb.bind("<<ComboboxSelected>>", self.filter_account_cb_clicked)
-        self.filter_account_cb.grid(column=2, row=1, columnspan=2, sticky="e")
+        self.filter_account_cb.grid(column=1, row=0, columnspan=2, sticky="e")
 
         # ================================================ Datasheet section ===========================================
         self.account_database_view_f = tk.Frame(self.account_database_view_lf, relief="flat")
@@ -883,7 +949,7 @@ class Window:
         self.account_borrower_lb.bind("<ButtonRelease-1>", self.database_view_account_info)
 
         # Initialize method for viewing accounts database
-        self.database_view_account()
+        self.database_view_account("Alphabetical")
 
         # Profile view database container
         self.account_content_view_lf = tk.LabelFrame(self.account_lf, bg="#FFFFFF", relief="flat")
@@ -898,6 +964,47 @@ class Window:
         # Configure button state
         self.state_button()
         self.account_b.configure(image=self.accounts_icon_active_resized)
+
+    def database_view_account(self, filter_value):
+        if filter_value == "Date":
+            pass
+        else:
+            self.database_connect()
+            self.mycursor.execute("SELECT borrower.name, borrower.address, borrower.age, borrower.gender, borrowerid "
+                                  "FROM borrower where userid = ' "
+                                  + self.key_str + "' ORDER BY borrower.name;")
+
+        borrowers = self.mycursor.fetchall()
+        print(borrowers)
+
+        # Clear treeview
+        Content.clear_treeview(self.account_borrower_lb)
+
+        # Create configure for striped rows
+        self.account_borrower_lb.tag_configure("oddrow", background="#FFFFFF")
+        self.account_borrower_lb.tag_configure("evenrow", background="#FAFAFA")
+        count = 0
+        for record in borrowers:
+            if count % 2 == 0:
+                self.account_borrower_lb.insert(parent="", index="end", iid=count, text="",
+                                                values=(record[0], record[1], record[2], record[3]),
+                                                tags=("oddrow",))
+            else:
+                self.account_borrower_lb.insert(parent="", index="end", iid=count, text="",
+                                                values=(record[0], record[1], record[2], record[3]),
+                                                tags=("evenrow",))
+            count += 1
+
+        self.db1.commit()
+        self.mycursor.close()
+        self.db1.close()
+
+    def filter_account_cb_clicked(self, event):
+        if self.filter_account_cb.get() == "Date":
+            self.database_view_account("Date")
+        else:
+            self.database_view_account("Alphabetical")
+        print(event)
 
     def switch_payment(self):
         # Destroy content_lf
@@ -916,8 +1023,19 @@ class Window:
         filter_lf.pack(side="top", fill="both", padx=10, pady=10, ipady=5, expand=True)
 
         # Content for payment analytics
-        ttk.Label(filter_lf, text="Payments Datasheet", style="h1_body.TLabel").grid(column=0, row=0, columnspan=3,
-                                                                                     sticky="w")
+        ttk.Label(filter_lf, text="Payment Datasheet", style="h1_title.TLabel").pack(side="top", anchor="nw", padx=10)
+
+        filter_cb_lf = tk.LabelFrame(filter_lf, bg="#D4DEC9", relief="flat")
+        filter_cb_lf.pack(side="top", anchor="sw", ipadx=5, padx=10)
+
+        ttk.Label(filter_cb_lf, text="Filter", style="filter.TLabel").grid(column=0, row=0, sticky="w")
+
+        filter_payment_value = ['Loan ID', 'Alphabetical', 'Date']
+        self.filter_payment_cb = ttk.Combobox(filter_cb_lf, width=15, state="readonly", font="8",
+                                              values=filter_payment_value)
+        self.filter_payment_cb.current(2)
+        self.filter_payment_cb.bind("<<ComboboxSelected>>", self.filter_payment_cb_clicked)
+        self.filter_payment_cb.grid(column=1, row=0, columnspan=2, sticky="e")
 
         # ================================================ Datasheet section ===========================================
         self.payment_database_view_f = tk.Frame(self.payment_database_view_lf, relief="flat")
@@ -962,7 +1080,7 @@ class Window:
         # self.payment_borrower_lb.bind("<ButtonRelease-1>", self.database_view_account_info)
 
         # Initialize method for viewing accounts database
-        self.database_view_payment()
+        self.database_view_payment("Date")
 
         # Profile view database container
         self.payment_content_view_lf = tk.LabelFrame(self.payment_lf, bg="#FFFFFF", relief="flat")
@@ -977,6 +1095,64 @@ class Window:
         # Configure button state
         self.state_button()
         self.payment_b.configure(image=self.payments_icon_active_resized)
+
+    def database_view_payment(self, filter_value):
+        if filter_value == "Alphabetical":
+            self.database_connect()
+            self.mycursor.execute("SELECT payment.paymentid, payment.loanid, borrower.name, loan.amount, "
+                                  "payment.amount, loan.balance, payment.dateissued"
+                                  " FROM payment INNER JOIN loan ON payment.loanid=loan.loanid "
+                                  "INNER JOIN borrower ON loan.borrowerid=borrower.borrowerid where borrower.userid = "
+                                  "'" + self.key_str + "' ORDER BY borrower.name;")
+        elif filter_value == "Loan ID":
+            self.database_connect()
+            self.mycursor.execute("SELECT payment.paymentid, payment.loanid, borrower.name, loan.amount, "
+                                  "payment.amount, loan.balance, payment.dateissued"
+                                  " FROM payment INNER JOIN loan ON payment.loanid=loan.loanid "
+                                  "INNER JOIN borrower ON loan.borrowerid=borrower.borrowerid where borrower.userid = "
+                                  "'" + self.key_str + "' ORDER BY payment.loanid;")
+        else:
+            self.database_connect()
+            self.mycursor.execute("SELECT payment.paymentid, payment.loanid, borrower.name, loan.amount, "
+                                  "payment.amount, loan.balance, payment.dateissued"
+                                  " FROM payment INNER JOIN loan ON payment.loanid=loan.loanid "
+                                  "INNER JOIN borrower ON loan.borrowerid=borrower.borrowerid where borrower.userid = "
+                                  "'" + self.key_str + "' ORDER BY payment.dateissued;")
+
+        payments = self.mycursor.fetchall()
+        print(payments)
+
+        # Clear treeview
+        Content.clear_treeview(self.payment_borrower_lb)
+
+        # Create configure for striped rows
+        self.payment_borrower_lb.tag_configure("oddrow", background="#FFFFFF")
+        self.payment_borrower_lb.tag_configure("evenrow", background="#FAFAFA")
+        count = 0
+        for record in payments:
+            if count % 2 == 0:
+                self.payment_borrower_lb.insert(parent="", index="end", iid=count, text="",
+                                                values=(record[0], record[1], record[2], record[3], record[4],
+                                                        record[5], record[6]), tags=("oddrow",))
+            else:
+                self.payment_borrower_lb.insert(parent="", index="end", iid=count, text="",
+                                                values=(record[0], record[1], record[2], record[3], record[4],
+                                                        record[5], record[6]), tags=("evenrow",))
+
+            count += 1
+
+        self.db1.commit()
+        self.mycursor.close()
+        self.db1.close()
+
+    def filter_payment_cb_clicked(self, event):
+        if self.filter_payment_cb.get() == "Alphabetical":
+            self.database_view_payment("Alphabetical")
+        elif self.filter_payment_cb.get() == "Date":
+            self.database_view_payment("Date")
+        else:
+            self.database_view_payment("Loan ID")
+        print(event)
 
     def switch_exit(self):
         exit_yes_no = messagebox.askyesno(title="Exit", message="Are you sure you want to exit?")
@@ -1366,106 +1542,6 @@ class Window:
         pandasdb.close()
         self.export_data_top.destroy()
 
-    def database_view_account(self):
-        # Method for viewing accounts database
-        try:
-            self.database_connect()
-            self.mycursor.execute("SELECT name, address, age, gender, borrowerid FROM borrower where userid = '"
-                                  + self.key_str + "' ORDER BY borrower.created;")
-            borrowers = self.mycursor.fetchall()
-            print(borrowers)
-
-            # Create configure for striped rows
-            self.account_borrower_lb.tag_configure("oddrow", background="#FFFFFF")
-            self.account_borrower_lb.tag_configure("evenrow", background="#FAFAFA")
-            count = 0
-            for record in borrowers:
-                if count % 2 == 0:
-                    self.account_borrower_lb.insert(parent="", index="end", iid=count, text="",
-                                                    values=(record[0], record[1], record[2], record[3]),
-                                                    tags=("oddrow",))
-                else:
-                    self.account_borrower_lb.insert(parent="", index="end", iid=count, text="",
-                                                    values=(record[0], record[1], record[2], record[3]),
-                                                    tags=("evenrow",))
-                count += 1
-
-            self.db1.commit()
-            self.mycursor.close()
-            self.db1.close()
-
-        except Exception as e:
-            print("Could not connect to lmsdatabase")
-            print(e)
-
-    def filter_account_alpha(self):
-        # Method for viewing accounts database
-        try:
-            self.database_connect()
-            self.mycursor.execute("SELECT name, address, age, gender, borrowerid FROM borrower where userid = '"
-                                  + self.key_str + "' ORDER BY borrower.name;")
-            borrowers = self.mycursor.fetchall()
-            print(borrowers)
-
-            # Create configure for striped rows
-            self.account_borrower_lb.tag_configure("oddrow", background="#FFFFFF")
-            self.account_borrower_lb.tag_configure("evenrow", background="#FAFAFA")
-            count = 0
-            for record in borrowers:
-                if count % 2 == 0:
-                    self.account_borrower_lb.insert(parent="", index="end", iid=count, text="",
-                                                    values=(record[0], record[1], record[2], record[3]),
-                                                    tags=("oddrow",))
-                else:
-                    self.account_borrower_lb.insert(parent="", index="end", iid=count, text="",
-                                                    values=(record[0], record[1], record[2], record[3]),
-                                                    tags=("evenrow",))
-                count += 1
-
-            self.db1.commit()
-            self.mycursor.close()
-            self.db1.close()
-
-        except Exception as e:
-            print("Could not connect to lmsdatabase")
-            print(e)
-
-    def database_view_payment(self):
-        # Method for viewing payments database
-        try:
-            self.database_connect()
-            self.mycursor.execute("SELECT payment.paymentid, payment.loanid, borrower.name, loan.amount, "
-                                  "payment.amount, loan.balance, payment.dateissued"
-                                  " FROM payment INNER JOIN loan ON payment.loanid=loan.loanid "
-                                  "INNER JOIN borrower ON loan.borrowerid=borrower.borrowerid where borrower.userid = "
-                                  "'" + self.key_str + "';")
-            payments = self.mycursor.fetchall()
-            print(payments)
-
-            # Create configure for striped rows
-            self.payment_borrower_lb.tag_configure("oddrow", background="#FFFFFF")
-            self.payment_borrower_lb.tag_configure("evenrow", background="#FAFAFA")
-            count = 0
-            for record in payments:
-                if count % 2 == 0:
-                    self.payment_borrower_lb.insert(parent="", index="end", iid=count, text="",
-                                                    values=(record[0], record[1], record[2], record[3], record[4],
-                                                            record[5], record[6]), tags=("oddrow",))
-                else:
-                    self.payment_borrower_lb.insert(parent="", index="end", iid=count, text="",
-                                                    values=(record[0], record[1], record[2], record[3], record[4],
-                                                            record[5], record[6]), tags=("evenrow",))
-
-                count += 1
-
-            self.db1.commit()
-            self.mycursor.close()
-            self.db1.close()
-
-        except Exception as e:
-            print("Could not connect to lmsdatabase")
-            print(e)
-
     def register_payment(self):
         # Create instance
         self.add_people_top = tk.Toplevel(self.master)
@@ -1629,76 +1705,6 @@ class Window:
             messagebox.showerror("Register payment", "Did not succeed in registering payment")
             print("Could not connect to lmsdatabase")
             print(e)
-
-    def database_view_loan(self):
-        # Method for viewing accounts database
-        self.database_connect()
-        self.mycursor.execute("SELECT loan.loanid, borrower.name, loan.amount, loan.interest, loan.days,"
-                              " loan.dateissued, loan.status, borrower.userid, loan.balance"
-                              " FROM loan INNER JOIN borrower ON"
-                              " loan.borrowerid=borrower.borrowerid "
-                              "where borrower.userid = '" + self.key_str + "' ORDER BY loan.loanid;")
-        loans = self.mycursor.fetchall()
-
-        print(loans)
-
-        # Clear treeview
-        self.clear_treeview(self.loan_borrower_lb)
-
-        # Create configure for striped rows
-        self.loan_borrower_lb.tag_configure("oddrow", background="#FFFFFF")
-        self.loan_borrower_lb.tag_configure("evenrow", background="#FAFAFA")
-        count = 0
-        for record in loans:
-            if count % 2 == 0:
-                self.loan_borrower_lb.insert(parent="", index="end", iid=count, text="",
-                                             values=(record[0], record[1], record[2], record[3], record[4],
-                                                     record[5], record[6], record[8]),
-                                             tags=("oddrow",))
-            else:
-                self.loan_borrower_lb.insert(parent="", index="end", iid=count, text="",
-                                             values=(record[0], record[1], record[2], record[3], record[4],
-                                                     record[5], record[6], record[8]),
-                                             tags=("evenrow",))
-            count += 1
-
-        self.db1.commit()
-        self.mycursor.close()
-        self.db1.close()
-
-    def filter_loan_status(self):
-        # Method for viewing accounts database
-        self.database_connect()
-        self.mycursor.execute("SELECT loan.loanid, borrower.name, loan.amount, loan.interest, loan.days,"
-                              " loan.dateissued, loan.status, borrower.userid, loan.balance"
-                              " FROM loan INNER JOIN borrower ON"
-                              " loan.borrowerid=borrower.borrowerid "
-                              "where borrower.userid = '" + self.key_str + "' ORDER BY loan.status;")
-        loans = self.mycursor.fetchall()
-
-        # Clear treeview
-        self.clear_treeview(self.loan_borrower_lb)
-
-        # Create configure for striped rows
-        self.loan_borrower_lb.tag_configure("oddrow", background="#FFFFFF")
-        self.loan_borrower_lb.tag_configure("evenrow", background="#FAFAFA")
-        count = 0
-        for record in loans:
-            if count % 2 == 0:
-                self.loan_borrower_lb.insert(parent="", index="end", iid=count, text="",
-                                             values=(record[0], record[1], record[2], record[3], record[4],
-                                                     record[5], record[6], record[8]),
-                                             tags=("oddrow",))
-            else:
-                self.loan_borrower_lb.insert(parent="", index="end", iid=count, text="",
-                                             values=(record[0], record[1], record[2], record[3], record[4],
-                                                     record[5], record[6], record[8]),
-                                             tags=("evenrow",))
-            count += 1
-
-        self.db1.commit()
-        self.mycursor.close()
-        self.db1.close()
 
     def database_view_loan_info(self, event):
         # Destroy content of account_content_view_lf
@@ -2018,20 +2024,6 @@ class Window:
         self.account_b.configure(image=self.accounts_icon_inactive_resized)
         self.payment_b.configure(image=self.payments_icon_inactive_resized)
 
-    def filter_loan_cb_clicked(self, event):
-        if self.filter_loan_cb.get() == "Loan ID":
-            self.database_view_loan()
-        else:
-            self.filter_loan_status()
-        print(event)
-
-    def filter_account_cb_clicked(self, event):
-        if self.filter_account_cb.get() == "Alphabetical":
-            self.filter_account_alpha()
-        else:
-            self.database_view_account()
-        print(event)
-
     def filter_analytics(self):
         # Initialize methods for displaying analytics
         self.mysql_pandas_loans()
@@ -2043,11 +2035,6 @@ class Window:
                                              "Here is the link for our recommended website:\n"
                                              "(https://www.wonder.legal/ph/creation-modele/loan-agreement-ph)\n")
         webbrowser.open_new(r"https://www.wonder.legal/ph/creation-modele/loan-agreement-ph")
-
-    @staticmethod
-    def clear_treeview(treeview=ttk.Treeview):
-        for item in treeview.get_children():
-            treeview.delete(item)
 
 
 if __name__ == '__main__':
