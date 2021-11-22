@@ -305,6 +305,7 @@ class Window:
     def register_win(self):
         # Destroy login content
         self.login_lf.destroy()
+
         # ================================================ Register section ============================================
         # Register container
         self.register_lf = tk.LabelFrame(self.main_lf, bg="#FFFFFF")
@@ -731,6 +732,145 @@ class Window:
 
         self.show_more_dashboard_b.configure(text="Show less analytics", command=self.switch_home)
 
+    def switch_account(self):
+        # Destroy content_lf
+        Content.destroy_content(self.content_lf)
+
+        # Profile container
+        self.account_lf = tk.LabelFrame(self.content_lf, relief="flat")
+        self.account_lf.pack(fill="both", expand=True)
+
+        # Profile view database container
+        self.account_database_view_lf = tk.LabelFrame(self.account_lf, bg="#FFFFFF", relief="flat")
+        self.account_database_view_lf.pack(side="top", pady=10, fill="both")
+
+        # ================================================ Filter section ==============================================
+        filter_lf = tk.LabelFrame(self.account_database_view_lf, bg="#FFFFFF")
+        filter_lf.pack(side="top", fill="both", padx=10, pady=10, ipady=5, expand=True)
+
+        # Content for payment analytics
+        ttk.Label(filter_lf, text="Accounts Datasheet", style="h1_title.TLabel").pack(side="top", anchor="nw", padx=10)
+
+        filter_cb_lf = tk.LabelFrame(filter_lf, bg="#D4DEC9", relief="flat")
+        filter_cb_lf.pack(side="top", anchor="sw", ipadx=5, padx=10)
+
+        ttk.Label(filter_cb_lf, text="Filter", style="filter.TLabel").grid(column=0, row=0, sticky="w")
+
+        filter_account_value = ['Borrower ID', 'Alphabetical', 'Date']
+        self.filter_account_cb = ttk.Combobox(filter_cb_lf, width=15, state="readonly", font="8",
+                                              values=filter_account_value)
+        self.filter_account_cb.current(0)
+        self.filter_account_cb.bind("<<ComboboxSelected>>", self.filter_account_cb_clicked)
+        self.filter_account_cb.grid(column=1, row=0, columnspan=2, sticky="e")
+
+        # ================================================ Datasheet section ===========================================
+        self.account_database_view_f = tk.Frame(self.account_database_view_lf, relief="flat")
+        self.account_database_view_f.pack(side="top", fill="both")
+
+        self.account_database_view_scr = tk.Scrollbar(self.account_database_view_f)
+        self.account_database_view_scr.pack(side="right", fill="y")
+
+        # Create tree
+        self.account_borrower_lb = ttk.Treeview(self.account_database_view_f, style="default.Treeview",
+                                                yscrollcommand=self.account_database_view_scr.set)
+
+        self.account_database_view_scr.configure(command=self.account_borrower_lb.yview)
+
+        # Define column
+        self.account_borrower_lb["columns"] = ("Borrower ID", "Name", "Address", "Age", "Gender", "Date created")
+
+        # Format column
+        self.account_borrower_lb.column("#0", width=0, stretch="no")
+        self.account_borrower_lb.column("Borrower ID", anchor="center", width=50)
+        self.account_borrower_lb.column("Name", anchor="w", width=80)
+        self.account_borrower_lb.column("Address", anchor="w", width=120)
+        self.account_borrower_lb.column("Age", anchor="center", width=50)
+        self.account_borrower_lb.column("Gender", anchor="center", width=50)
+        self.account_borrower_lb.column("Date created", anchor="center", width=50)
+
+        # Create headings
+        self.account_borrower_lb.heading("#0", text="", anchor="w")
+        self.account_borrower_lb.heading("Borrower ID", text="Borrower ID", anchor="center")
+        self.account_borrower_lb.heading("Name", text="Name", anchor="w")
+        self.account_borrower_lb.heading("Address", text="Address", anchor="w")
+        self.account_borrower_lb.heading("Age", text="Age", anchor="center")
+        self.account_borrower_lb.heading("Gender", text="Gender", anchor="center")
+        self.account_borrower_lb.heading("Date created", text="Date created", anchor="center")
+
+        self.account_borrower_lb.pack(side="left", fill="both", expand=True)
+
+        # Bind the treeview to database_view_info method
+        self.account_borrower_lb.bind("<ButtonRelease-1>", self.database_view_account_info)
+
+        # Initialize method for viewing accounts database
+        self.database_view_account("Borrower ID")
+
+        # Profile view database container
+        self.account_content_view_lf = tk.LabelFrame(self.account_lf, bg="#FFFFFF", relief="flat")
+        self.account_content_view_lf.pack(side="top", pady=10, fill="both")
+
+        ttk.Label(self.account_content_view_lf, text="Account Information",
+                  style="heading.TLabel").grid(column=0, row=0, columnspan=2, pady=5, sticky="w")
+
+        ttk.Label(self.account_content_view_lf, text="No information available",
+                  style="body.TLabel").grid(column=0, row=1, padx=5, pady=5, sticky="w")
+
+        # Configure button state
+        self.state_button()
+        self.account_b.configure(image=self.accounts_icon_active_resized)
+
+    def database_view_account(self, filter_value):
+        if filter_value == "Alphabetical":
+            self.database_connect()
+            self.mycursor.execute("SELECT borrower.borrowerid, borrower.name, borrower.address, borrower.age,"
+                                  "borrower.gender, borrower.created "
+                                  "FROM borrower where userid = ' "
+                                  + self.key_str + "' ORDER BY borrower.name;")
+        elif filter_value == "Date":
+            self.database_connect()
+            self.mycursor.execute("SELECT borrower.borrowerid, borrower.name, borrower.address, borrower.age,"
+                                  "borrower.gender, borrower.created "
+                                  "FROM borrower where userid = ' "
+                                  + self.key_str + "' ORDER BY borrower.created;")
+        else:
+            self.database_connect()
+            self.mycursor.execute("SELECT borrower.borrowerid, borrower.name, borrower.address, borrower.age,"
+                                  "borrower.gender, borrower.created "
+                                  "FROM borrower where userid = ' "
+                                  + self.key_str + "' ORDER BY borrower.borrowerid;")
+
+        borrowers = self.mycursor.fetchall()
+        print(borrowers)
+
+        # Clear treeview
+        Content.clear_treeview(self.account_borrower_lb)
+
+        # Create configure for striped rows
+        self.account_borrower_lb.tag_configure("oddrow", background="#FFFFFF")
+        self.account_borrower_lb.tag_configure("evenrow", background="#FAFAFA")
+        count = 0
+        for record in borrowers:
+            if count % 2 == 0:
+                self.account_borrower_lb.insert(parent="", index="end", iid=count, text="",
+                                                values=(record[0], record[1], record[2], record[3], record[4],
+                                                        record[5]), tags=("oddrow",))
+            else:
+                self.account_borrower_lb.insert(parent="", index="end", iid=count, text="",
+                                                values=(record[0], record[1], record[2], record[3], record[4],
+                                                        record[5]), tags=("evenrow",))
+            count += 1
+
+        self.db1.commit()
+        self.mycursor.close()
+        self.db1.close()
+
+    def filter_account_cb_clicked(self, event):
+        if self.filter_account_cb.get() == "Date":
+            self.database_view_account("Date")
+        else:
+            self.database_view_account("Alphabetical")
+        print(event)
+
     def switch_loan(self):
         # Destroy content_lf
         Content.destroy_content(self.content_lf)
@@ -755,9 +895,9 @@ class Window:
 
         ttk.Label(filter_cb_lf, text="Filter", style="filter.TLabel").grid(column=0, row=0, sticky="w")
 
-        filter_loan_value = ['Loan ID', 'Status', 'Alphabetical']
+        filter_loan_value = ['Loan ID', 'Alphabetical', 'Status', 'Date']
         self.filter_loan_cb = ttk.Combobox(filter_cb_lf, width=15, state="readonly", font="8", values=filter_loan_value)
-        self.filter_loan_cb.current(1)
+        self.filter_loan_cb.current(2)
         self.filter_loan_cb.bind("<<ComboboxSelected>>", self.filter_loan_cb_clicked)
         self.filter_loan_cb.grid(column=1, row=0, columnspan=2, sticky="e")
 
@@ -837,6 +977,13 @@ class Window:
                                   " FROM loan INNER JOIN borrower ON"
                                   " loan.borrowerid=borrower.borrowerid "
                                   "where borrower.userid = '" + self.key_str + "' ORDER BY borrower.name;")
+        elif filter_value == "Date":
+            self.database_connect()
+            self.mycursor.execute("SELECT loan.loanid, borrower.name, loan.amount, loan.interest, loan.days,"
+                                  " loan.dateissued, loan.status, borrower.userid, loan.balance"
+                                  " FROM loan INNER JOIN borrower ON"
+                                  " loan.borrowerid=borrower.borrowerid "
+                                  "where borrower.userid = '" + self.key_str + "' ORDER BY loan.dateissued;")
         else:
             self.database_connect()
             self.mycursor.execute("SELECT loan.loanid, borrower.name, loan.amount, loan.interest, loan.days,"
@@ -880,130 +1027,6 @@ class Window:
             self.database_view_loan("Alphabetical")
         else:
             self.database_view_loan("Status")
-        print(event)
-
-    def switch_account(self):
-        # Destroy content_lf
-        Content.destroy_content(self.content_lf)
-
-        # Profile container
-        self.account_lf = tk.LabelFrame(self.content_lf, relief="flat")
-        self.account_lf.pack(fill="both", expand=True)
-
-        # Profile view database container
-        self.account_database_view_lf = tk.LabelFrame(self.account_lf, bg="#FFFFFF", relief="flat")
-        self.account_database_view_lf.pack(side="top", pady=10, fill="both")
-
-        # ================================================ Filter section ==============================================
-        filter_lf = tk.LabelFrame(self.account_database_view_lf, bg="#FFFFFF")
-        filter_lf.pack(side="top", fill="both", padx=10, pady=10, ipady=5, expand=True)
-
-        # Content for payment analytics
-        ttk.Label(filter_lf, text="Accounts Datasheet", style="h1_title.TLabel").pack(side="top", anchor="nw", padx=10)
-
-        filter_cb_lf = tk.LabelFrame(filter_lf, bg="#D4DEC9", relief="flat")
-        filter_cb_lf.pack(side="top", anchor="sw", ipadx=5, padx=10)
-
-        ttk.Label(filter_cb_lf, text="Filter", style="filter.TLabel").grid(column=0, row=0, sticky="w")
-
-        filter_account_value = ['Alphabetical', 'Date']
-        self.filter_account_cb = ttk.Combobox(filter_cb_lf, width=15, state="readonly", font="8",
-                                              values=filter_account_value)
-        self.filter_account_cb.current(0)
-        self.filter_account_cb.bind("<<ComboboxSelected>>", self.filter_account_cb_clicked)
-        self.filter_account_cb.grid(column=1, row=0, columnspan=2, sticky="e")
-
-        # ================================================ Datasheet section ===========================================
-        self.account_database_view_f = tk.Frame(self.account_database_view_lf, relief="flat")
-        self.account_database_view_f.pack(side="top", fill="both")
-
-        self.account_database_view_scr = tk.Scrollbar(self.account_database_view_f)
-        self.account_database_view_scr.pack(side="right", fill="y")
-
-        # Create tree
-        self.account_borrower_lb = ttk.Treeview(self.account_database_view_f, style="default.Treeview",
-                                                yscrollcommand=self.account_database_view_scr.set)
-
-        self.account_database_view_scr.configure(command=self.account_borrower_lb.yview)
-
-        # Define column
-        self.account_borrower_lb["columns"] = ("Name", "Address", "Age", "Gender")
-
-        # Format column
-        self.account_borrower_lb.column("#0", width=0, stretch="no")
-        self.account_borrower_lb.column("Name", anchor="w", width=120)
-        self.account_borrower_lb.column("Address", anchor="w", width=120)
-        self.account_borrower_lb.column("Age", anchor="center", width=80)
-        self.account_borrower_lb.column("Gender", anchor="center", width=80)
-
-        # Create headings
-        self.account_borrower_lb.heading("#0", text="", anchor="w")
-        self.account_borrower_lb.heading("Name", text="Name", anchor="w")
-        self.account_borrower_lb.heading("Address", text="Address", anchor="w")
-        self.account_borrower_lb.heading("Age", text="Age", anchor="center")
-        self.account_borrower_lb.heading("Gender", text="Gender", anchor="center")
-
-        self.account_borrower_lb.pack(side="left", fill="both", expand=True)
-
-        # Bind the treeview to database_view_info method
-        self.account_borrower_lb.bind("<ButtonRelease-1>", self.database_view_account_info)
-
-        # Initialize method for viewing accounts database
-        self.database_view_account("Alphabetical")
-
-        # Profile view database container
-        self.account_content_view_lf = tk.LabelFrame(self.account_lf, bg="#FFFFFF", relief="flat")
-        self.account_content_view_lf.pack(side="top", pady=10, fill="both")
-
-        ttk.Label(self.account_content_view_lf, text="Account Information",
-                  style="heading.TLabel").grid(column=0, row=0, columnspan=2, pady=5, sticky="w")
-
-        ttk.Label(self.account_content_view_lf, text="No information available",
-                  style="body.TLabel").grid(column=0, row=1, padx=5, pady=5, sticky="w")
-
-        # Configure button state
-        self.state_button()
-        self.account_b.configure(image=self.accounts_icon_active_resized)
-
-    def database_view_account(self, filter_value):
-        if filter_value == "Date":
-            pass
-        else:
-            self.database_connect()
-            self.mycursor.execute("SELECT borrower.name, borrower.address, borrower.age, borrower.gender, borrowerid "
-                                  "FROM borrower where userid = ' "
-                                  + self.key_str + "' ORDER BY borrower.name;")
-
-        borrowers = self.mycursor.fetchall()
-        print(borrowers)
-
-        # Clear treeview
-        Content.clear_treeview(self.account_borrower_lb)
-
-        # Create configure for striped rows
-        self.account_borrower_lb.tag_configure("oddrow", background="#FFFFFF")
-        self.account_borrower_lb.tag_configure("evenrow", background="#FAFAFA")
-        count = 0
-        for record in borrowers:
-            if count % 2 == 0:
-                self.account_borrower_lb.insert(parent="", index="end", iid=count, text="",
-                                                values=(record[0], record[1], record[2], record[3]),
-                                                tags=("oddrow",))
-            else:
-                self.account_borrower_lb.insert(parent="", index="end", iid=count, text="",
-                                                values=(record[0], record[1], record[2], record[3]),
-                                                tags=("evenrow",))
-            count += 1
-
-        self.db1.commit()
-        self.mycursor.close()
-        self.db1.close()
-
-    def filter_account_cb_clicked(self, event):
-        if self.filter_account_cb.get() == "Date":
-            self.database_view_account("Date")
-        else:
-            self.database_view_account("Alphabetical")
         print(event)
 
     def switch_payment(self):
@@ -1162,7 +1185,9 @@ class Window:
             pass
 
     def login_validation(self):
-        try:
+        if not self.login_username_entry.get():
+            self.invalid_input()
+        else:
             self.database_connect()
             self.mycursor.execute(
                 "SELECT * FROM user where username = '" + self.login_username_entry.get() + "' and password = '" +
@@ -1184,12 +1209,15 @@ class Window:
 
             self.db1.close()
             self.mycursor.close()
-        except Exception as e:
-            print("Could not connect to lmsdatabase")
-            print(e)
 
     def register_validation(self):
-        try:
+        if not self.register_user_name_entry.get():
+            self.invalid_input()
+        if not self.register_password_entry.get():
+            self.invalid_input()
+        if not self.register_email_entry.get():
+            self.invalid_input()
+        else:
             self.database_connect()
             self.mycursor.execute("INSERT INTO user (username, password, email) VALUES (%s,%s,%s)",
                                   (self.register_user_name_entry.get(), self.register_password_entry.get(),
@@ -1204,11 +1232,12 @@ class Window:
             # Initializes login_win
             self.login_win()
 
-        except Exception as e:
-            print("Could not connect to lmsdatabase")
-            print(e)
-            # Deletes all entries from ttk.Entry
-            Content.delete_entry(self.master)
+    def invalid_input(self):
+        messagebox.showerror("Error", "Invalid input")
+        # Destroy window contents
+        Content.destroy_content(self.master)
+        # Initializes login_win
+        self.login_win()
 
     def add_people(self):
         # Create instance
@@ -1357,13 +1386,15 @@ class Window:
         finish_issue_loan_b.grid(column=1, row=5, padx=5, pady=5, sticky="w")
 
     def finish_add_people(self):
+        date_now = datetime.now()
+        date_now.strftime("%m/%d/%Y")
         try:
             self.database_connect()
             self.mycursor.execute(
                 "INSERT INTO borrower (userid, name, address, age, created, gender) VALUES (%s, %s,%s,"
                 "%s,%s,%s)",
                 (self.key, self.add_people_name_entry.get(), self.add_people_address_entry.get(),
-                 self.age_spinbox.get(), datetime.now(), self.gender_combobox.get()))
+                 self.age_spinbox.get(), date_now, self.gender_combobox.get()))
             self.db1.commit()
             self.db1.close()
             self.mycursor.close()
@@ -1878,10 +1909,10 @@ class Window:
         values = self.account_borrower_lb.item(selected, "values")
 
         # Insert values to entry widgets
-        self.account_content_name_e.insert(0, values[0])
-        self.account_content_address_e.insert(0, values[1])
-        self.account_content_age_e.insert(0, values[2])
-        self.account_content_gender_e.insert(0, values[3])
+        self.account_content_name_e.insert(0, values[1])
+        self.account_content_address_e.insert(0, values[2])
+        self.account_content_age_e.insert(0, values[3])
+        self.account_content_gender_e.insert(0, values[4])
 
         # Button for deleting a record
         self.delete_account_b = tk.Button(self.account_content_view_lf, text="Delete Account", font="OpenSans, 10",
@@ -1919,9 +1950,7 @@ class Window:
         self.total_loan_l.configure(text=0)
         # Method for viewing accounts database
         self.database_connect()
-        self.mycursor.execute("SELECT loanid FROM loan where borrowerid = '"
-                              + self.borrower_key_str +
-                              "';")
+        self.mycursor.execute("SELECT loanid FROM loan where borrowerid = '" + self.borrower_key_str + "';")
         loan = self.mycursor.fetchall()
         print(loan)
 
