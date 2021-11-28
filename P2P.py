@@ -10,10 +10,8 @@ import mysql.connector as mysql
 from contentController import Content
 import toolTip as tt
 import functools
-# from PIL import ImageTk, Image
 from tkcalendar import DateEntry
 import pandas as pd
-# import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkinter import PhotoImage
@@ -21,10 +19,6 @@ import webbrowser
 from tkinter import filedialog
 import os
 
-# from tkinter.filedialog import asksaveasfile
-
-# from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-# import numpy as np
 
 # Global variables for database
 host = "localhost"
