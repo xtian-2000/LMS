@@ -1,8 +1,8 @@
 import mysql.connector as mysql
 
-host = "localhost"
-user = "PongoDev"
-password = "PongoDev44966874"
+host = "lms.cm10enqi961k.us-east-2.rds.amazonaws.com"
+user = "admin"
+password = "44966874"
 
 
 class Database:

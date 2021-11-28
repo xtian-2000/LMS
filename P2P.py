@@ -1,4 +1,3 @@
-import tkinter
 import tkinter as tk
 from datetime import datetime
 from datetime import timedelta
@@ -19,11 +18,10 @@ import webbrowser
 from tkinter import filedialog
 import os
 
-
 # Global variables for database
-host = "localhost"
-user = "PongoDev"
-password = "PongoDev44966874"
+host = "lms.cm10enqi961k.us-east-2.rds.amazonaws.com"
+user = "admin"
+password = "44966874"
 
 # Global variables
 # Create variable for first day of the month
@@ -33,7 +31,7 @@ fday_month = fday_month.strftime("%x")
 currentday_month = datetime.today()
 currentday_month = currentday_month.strftime("%x")
 peso = u"\u20B1"
-lms_version = "LMSv.1.30"
+lms_version = "LMSv.1.32"
 url_small_claims = "https://www.philippine-embassy.org.sg/pages/small-claims-in-the-philippines/"
 url_fair_debt = "http://legacy.senate.gov.ph/lisdata/26632027!.pdf"
 
@@ -158,16 +156,16 @@ class Window:
         self.borrower_value = tk.IntVar()
         self.loan_value = tk.IntVar()
         self.payment_value = tk.IntVar()
-        self.home_icon_inactive_resized = tkinter.PhotoImage
-        self.loans_icon_inactive_resized = tkinter.PhotoImage
-        self.accounts_icon_inactive_resized = tkinter.PhotoImage
-        self.payments_icon_inactive_resized = tkinter.PhotoImage
-        self.p2p_logo_resized = tkinter.PhotoImage
-        self.home_icon_active_resized = tkinter.PhotoImage
-        self.loans_icon_active_resized = tkinter.PhotoImage
-        self.accounts_icon_active_resized = tkinter.PhotoImage
-        self.payments_icon_active_resized = tkinter.PhotoImage
-        self.exit_inactive_resized = tkinter.PhotoImage
+        self.home_icon_inactive_resized = tk.PhotoImage
+        self.loans_icon_inactive_resized = tk.PhotoImage
+        self.accounts_icon_inactive_resized = tk.PhotoImage
+        self.payments_icon_inactive_resized = tk.PhotoImage
+        self.p2p_logo_resized = tk.PhotoImage
+        self.home_icon_active_resized = tk.PhotoImage
+        self.loans_icon_active_resized = tk.PhotoImage
+        self.accounts_icon_active_resized = tk.PhotoImage
+        self.payments_icon_active_resized = tk.PhotoImage
+        self.exit_inactive_resized = tk.PhotoImage
         self.export_data_top = None
         self.dashboard_main_filter_from = None
         self.dashboard_main_filter_to = None
@@ -473,7 +471,7 @@ class Window:
 
         # Creating help menu
         help_menu = Menu(menu_bar, tearoff=0)
-        help_menu.add_command(label="User Manual")
+        help_menu.add_command(label="User Manual", command=self.generate_user_manual)
         help_menu.add_separator()
         help_menu.add_command(label="Check for updates")
         menu_bar.add_cascade(label="Help", menu=help_menu)
@@ -569,6 +567,12 @@ class Window:
                                      cursor="hand2", style="link.TLabel")
         link_fair_debt_l.pack(side="left")
 
+        ttk.Label(toolbar_lf, text="|", style="h1_footnote.TLabel").pack(side="left")
+
+        lms_slow_l = ttk.Label(toolbar_lf, text="Is Lending Management System too slow?",
+                               cursor="hand2", style="link.TLabel")
+        lms_slow_l.pack(side="left")
+
         logout_b = tk.Button(toolbar_lf, text="Logout", font="OpenSans, 10", relief="flat", bg="#FFFFFF",
                              fg="green", highlightcolor="#2C441D", command=self.login_win)
         logout_b.pack(side="right", pady=5)
@@ -596,6 +600,7 @@ class Window:
 
         link_small_claims_l.bind("<Button-1>", lambda e: webbrowser.open_new_tab(url_small_claims))
         link_fair_debt_l.bind("<Button-1>", lambda e: webbrowser.open_new_tab(url_fair_debt))
+        lms_slow_l.bind("<Button-1>", self.lms_slow_link)
 
     def switch_home(self):
         # Destroy content_lf
@@ -1507,7 +1512,7 @@ class Window:
         self.export_data_top.mainloop()
 
     def import_database(self):
-        read_guide = tkinter.messagebox.askquestion("Import file", "Do you want to read importing guide before"
+        read_guide = tk.messagebox.askquestion("Import file", "Do you want to read importing guide before"
                                                                    " proceeding to file dialog?")
         if read_guide == "yes":
             os.startfile(r"Guide for importing database.pdf")
@@ -2054,10 +2059,22 @@ class Window:
 
     @staticmethod
     def generate_contract():
-        tkinter.messagebox.showinfo("Note!", "We are in no way affiliated with the website or its developers.\n"
+        tk.messagebox.showinfo("Note!", "We are in no way affiliated with the website or its developers.\n"
                                              "Here is the link for our recommended website:\n"
                                              "(https://www.wonder.legal/ph/creation-modele/loan-agreement-ph)\n")
         webbrowser.open_new(r"https://www.wonder.legal/ph/creation-modele/loan-agreement-ph")
+
+    @staticmethod
+    def generate_user_manual():
+        webbrowser.open_new(r"https://docs.google.com/document/d/1-Lu_ylkAwIwfqLLILirN1u-PNu8BKJDmlGCITykNLTE/edit"
+                            r"?usp=sharing")
+
+    @staticmethod
+    def lms_slow_link(event):
+        tk.messagebox.showinfo("Note!", "Is Lending Management System too slow?\n\nThe Lending Management System "
+                                             "stores data on cloud database.\n\nPlease fix your internet connection or "
+                                             "internet speed for greater user experience.")
+        print(event)
 
 
 if __name__ == '__main__':
