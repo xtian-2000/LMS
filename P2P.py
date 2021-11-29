@@ -1,4 +1,3 @@
-import tkinter
 import tkinter as tk
 from datetime import datetime
 from datetime import timedelta
@@ -18,12 +17,15 @@ from tkinter import PhotoImage
 import webbrowser
 from tkinter import filedialog
 import os
-
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from random import randint
 
 # Global variables for database
-host = "localhost"
-user = "PongoDev"
-password = "PongoDev44966874"
+host = "lms.cm10enqi961k.us-east-2.rds.amazonaws.com"
+user = "admin"
+password = "44966874"
 
 # Global variables
 # Create variable for first day of the month
@@ -33,7 +35,7 @@ fday_month = fday_month.strftime("%x")
 currentday_month = datetime.today()
 currentday_month = currentday_month.strftime("%x")
 peso = u"\u20B1"
-lms_version = "LMSv.1.30"
+lms_version = "LMSv.1.34"
 url_small_claims = "https://www.philippine-embassy.org.sg/pages/small-claims-in-the-philippines/"
 url_fair_debt = "http://legacy.senate.gov.ph/lisdata/26632027!.pdf"
 
@@ -158,16 +160,16 @@ class Window:
         self.borrower_value = tk.IntVar()
         self.loan_value = tk.IntVar()
         self.payment_value = tk.IntVar()
-        self.home_icon_inactive_resized = tkinter.PhotoImage
-        self.loans_icon_inactive_resized = tkinter.PhotoImage
-        self.accounts_icon_inactive_resized = tkinter.PhotoImage
-        self.payments_icon_inactive_resized = tkinter.PhotoImage
-        self.p2p_logo_resized = tkinter.PhotoImage
-        self.home_icon_active_resized = tkinter.PhotoImage
-        self.loans_icon_active_resized = tkinter.PhotoImage
-        self.accounts_icon_active_resized = tkinter.PhotoImage
-        self.payments_icon_active_resized = tkinter.PhotoImage
-        self.exit_inactive_resized = tkinter.PhotoImage
+        self.home_icon_inactive_resized = tk.PhotoImage
+        self.loans_icon_inactive_resized = tk.PhotoImage
+        self.accounts_icon_inactive_resized = tk.PhotoImage
+        self.payments_icon_inactive_resized = tk.PhotoImage
+        self.p2p_logo_resized = tk.PhotoImage
+        self.home_icon_active_resized = tk.PhotoImage
+        self.loans_icon_active_resized = tk.PhotoImage
+        self.accounts_icon_active_resized = tk.PhotoImage
+        self.payments_icon_active_resized = tk.PhotoImage
+        self.exit_inactive_resized = tk.PhotoImage
         self.export_data_top = None
         self.dashboard_main_filter_from = None
         self.dashboard_main_filter_to = None
@@ -178,6 +180,7 @@ class Window:
         self.payment_count_l = None
         self.filter_account_cb = None
         self.filter_payment_cb = None
+        self.email_entry = tk.Entry
 
         # Instantiate Database class
         Database()
@@ -194,7 +197,7 @@ class Window:
 
         # Create window attribute
         self.master.title("P2P " + lms_version)
-        self.master.iconbitmap(r"C:\Users\SSD\IdeaProjects\LMS\images\p2p_icon.ico")
+        self.master.iconbitmap(r"p2p_icon.ico")
         width = self.master.winfo_screenwidth()
         height = self.master.winfo_screenheight()
         self.master.geometry("%dx%d" % (width, height))
@@ -209,7 +212,7 @@ class Window:
         description_lf = tk.LabelFrame(self.main_lf, bg="#FFFFFF", relief="flat")
         description_lf.pack(side="top", fill="x")
 
-        p2p_logo = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\p2p_logo.png")
+        p2p_logo = PhotoImage(file=r"p2p_logo.png")
         self.p2p_logo_resized = p2p_logo.subsample(1, 1)
 
         ttk.Label(self.main_lf, image=self.p2p_logo_resized).pack(side="left", padx=10, pady=10)
@@ -259,6 +262,11 @@ class Window:
                                                      "      ", font="OpenSans, 12", fg="#FFFFFF", bg="#4C8404",
                                  relief="flat", command=self.login_validation)
         self.login_b.grid(column=0, row=4, columnspan=2, pady=5)
+
+        forgot_password_l = ttk.Label(self.login_lf, text="Forgot password?", cursor="hand2", style="link.TLabel")
+        forgot_password_l.grid(column=1, row=5, pady=5, sticky="e")
+
+        forgot_password_l.bind("<Button-1>", self.reset_password_UI)
 
         # ================================================ Features Description section ================================
         features_lf = tk.LabelFrame(self.master, bg="#FFFFFF", relief="flat")
@@ -465,15 +473,15 @@ class Window:
 
         # Creating help menu
         file_menu = Menu(menu_bar, tearoff=0)
-        file_menu.add_command(label="Import", command=self.import_database)
-        file_menu.add_command(label="Export", command=self.export_database_widget)
+        file_menu.add_command(label="Import borrower data", command=self.import_database)
+        file_menu.add_command(label="Export data as csv", command=self.export_database_widget)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.switch_exit)
         menu_bar.add_cascade(label="File", menu=file_menu)
 
         # Creating help menu
         help_menu = Menu(menu_bar, tearoff=0)
-        help_menu.add_command(label="User Manual")
+        help_menu.add_command(label="User Manual", command=self.generate_user_manual)
         help_menu.add_separator()
         help_menu.add_command(label="Check for updates")
         menu_bar.add_cascade(label="Help", menu=help_menu)
@@ -483,32 +491,32 @@ class Window:
         self.menu_lf.pack(side="left", fill="both")
 
         # Create variables for inactive images
-        home_icon_inactive = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\home_icon_inactive.png")
+        home_icon_inactive = PhotoImage(file=r"home_icon_inactive.png")
         self.home_icon_inactive_resized = home_icon_inactive.subsample(8, 8)
 
-        loans_icon_inactive = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\loan_icon_inactive.png")
+        loans_icon_inactive = PhotoImage(file=r"loan_icon_inactive.png")
         self.loans_icon_inactive_resized = loans_icon_inactive.subsample(8, 8)
 
-        accounts_icon_inactive = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\accounts_icon_inactive.png")
+        accounts_icon_inactive = PhotoImage(file=r"accounts_icon_inactive.png")
         self.accounts_icon_inactive_resized = accounts_icon_inactive.subsample(8, 8)
 
-        payments_icon_inactive = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\payments_icon_inactive.png")
+        payments_icon_inactive = PhotoImage(file=r"payments_icon_inactive.png")
         self.payments_icon_inactive_resized = payments_icon_inactive.subsample(8, 8)
 
-        exit_icon_inactive = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\exit_inactive.png")
+        exit_icon_inactive = PhotoImage(file=r"exit_inactive.png")
         self.exit_inactive_resized = exit_icon_inactive.subsample(8, 8)
 
         # Create variables for active images
-        home_icon_active = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\home_icon_active.png")
+        home_icon_active = PhotoImage(file=r"home_icon_active.png")
         self.home_icon_active_resized = home_icon_active.subsample(8, 8)
 
-        loans_icon_active = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\loans_icon_active.png")
+        loans_icon_active = PhotoImage(file=r"loans_icon_active.png")
         self.loans_icon_active_resized = loans_icon_active.subsample(8, 8)
 
-        accounts_icon_active = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\accounts_icon_active.png")
+        accounts_icon_active = PhotoImage(file=r"accounts_icon_active.png")
         self.accounts_icon_active_resized = accounts_icon_active.subsample(8, 8)
 
-        payments_icon_active = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\payments_icon_active.png")
+        payments_icon_active = PhotoImage(file=r"payments_icon_active.png")
         self.payments_icon_active_resized = payments_icon_active.subsample(8, 8)
 
         # Menu buttons
@@ -569,6 +577,12 @@ class Window:
                                      cursor="hand2", style="link.TLabel")
         link_fair_debt_l.pack(side="left")
 
+        ttk.Label(toolbar_lf, text="|", style="h1_footnote.TLabel").pack(side="left")
+
+        lms_slow_l = ttk.Label(toolbar_lf, text="Is Lending Management System too slow?",
+                               cursor="hand2", style="link.TLabel")
+        lms_slow_l.pack(side="left")
+
         logout_b = tk.Button(toolbar_lf, text="Logout", font="OpenSans, 10", relief="flat", bg="#FFFFFF",
                              fg="green", highlightcolor="#2C441D", command=self.login_win)
         logout_b.pack(side="right", pady=5)
@@ -596,6 +610,7 @@ class Window:
 
         link_small_claims_l.bind("<Button-1>", lambda e: webbrowser.open_new_tab(url_small_claims))
         link_fair_debt_l.bind("<Button-1>", lambda e: webbrowser.open_new_tab(url_fair_debt))
+        lms_slow_l.bind("<Button-1>", self.lms_slow_link)
 
     def switch_home(self):
         # Destroy content_lf
@@ -1468,13 +1483,16 @@ class Window:
         # Create instance
         self.export_data_top = tk.Toplevel(self.master)
         self.export_data_top.title("Export data")
-        # export_data_top.geometry("500x400")
         self.export_data_top.configure(bg="#4C8404")
         self.export_data_top.resizable(False, False)
 
         # ================================================ Checkbox for available tables ===============================
         # Export data container
-        export_data_lf = tk.LabelFrame(self.export_data_top, padx=20, pady=20, bg="#FFFFFF", relief="flat")
+        export_data_main_lf = tk.LabelFrame(self.export_data_top, bg="#FFFFFF", relief="flat")
+        export_data_main_lf.pack(side="top", padx=15, pady=15, fill="both", expand=True)
+
+        # Export data container
+        export_data_lf = tk.LabelFrame(export_data_main_lf, padx=20, pady=20, bg="#FFFFFF")
         export_data_lf.pack(side="top", padx=15, pady=15, fill="both", expand=True)
 
         ttk.Label(export_data_lf, text="Available tables", style="body_content.TLabel").grid(column=0, row=0,
@@ -1486,20 +1504,16 @@ class Window:
 
         loan_cb = tk.Checkbutton(export_data_lf, text="Loans", variable=self.loan_value, onvalue=1, offvalue=0,
                                  bg="#FFFFFF")
-        loan_cb.grid(column=0, row=2, padx=5, sticky="w")
+        loan_cb.grid(column=1, row=1, padx=5, sticky="w")
 
         payment_cb = tk.Checkbutton(export_data_lf, text="Payments", variable=self.payment_value, onvalue=1, offvalue=0,
                                     bg="#FFFFFF")
-        payment_cb.grid(column=0, row=3, padx=5, sticky="w")
+        payment_cb.grid(column=2, row=1, padx=5, sticky="w")
 
         # Buttons for export
-        export_csv_b = tk.Button(export_data_lf, text="Export as csv", font="OpenSans, 10", fg="#FFFFFF",
+        export_csv_b = tk.Button(export_data_lf, text="Export data", font="OpenSans, 10", fg="#FFFFFF",
                                  bg="#4C8404", relief="flat", command=self.export_as_csv)
-        export_csv_b.grid(column=0, row=4, padx=5, pady=5, sticky="w")
-
-        export_excel_b = tk.Button(export_data_lf, text="Export as excel", font="OpenSans, 10", fg="#FFFFFF",
-                                   bg="#4C8404", relief="flat")
-        export_excel_b.grid(column=2, row=4, padx=5, sticky="w")
+        export_csv_b.grid(column=2, row=2, padx=5, pady=5, sticky="w")
 
         # Disables underlying window
         self.export_data_top.grab_set()
@@ -1507,8 +1521,8 @@ class Window:
         self.export_data_top.mainloop()
 
     def import_database(self):
-        read_guide = tkinter.messagebox.askquestion("Import file", "Do you want to read importing guide before"
-                                                                   " proceeding to file dialog?")
+        read_guide = tk.messagebox.askquestion("Import file", "Do you want to read importing guide before"
+                                                              " proceeding to file dialog?")
         if read_guide == "yes":
             os.startfile(r"Guide for importing database.pdf")
         else:
@@ -1961,23 +1975,18 @@ class Window:
         self.db1.close()
 
     def show_borrower_id(self):
-        try:
-            self.database_connect()
+        self.database_connect()
 
-            self.mycursor.execute("SELECT DISTINCT borrowerid FROM borrower WHERE NAME = '"
-                                  + self.account_content_name_e.get() + "' AND userid = '" + self.key_str + "';")
+        self.mycursor.execute("SELECT DISTINCT borrowerid FROM borrower WHERE NAME = '"
+                              + self.account_content_name_e.get() + "' AND userid = '" + self.key_str + "';")
 
-            # Converts the tuple into integer
-            self.borrower_key = functools.reduce(lambda sub, ele: sub * 10 + ele, self.mycursor.fetchone())
-            self.borrower_key_str = str(self.borrower_key)
-            print(self.borrower_key_str)
+        # Converts the tuple into integer
+        self.borrower_key = functools.reduce(lambda sub, ele: sub * 10 + ele, self.mycursor.fetchone())
+        self.borrower_key_str = str(self.borrower_key)
+        print(self.borrower_key_str)
 
-            self.mycursor.close()
-            self.db1.close()
-
-        except Exception as e:
-            print("Could not connect to lmsdatabase")
-            print(e)
+        self.mycursor.close()
+        self.db1.close()
 
     def update_account_record(self):
         self.database_connect()
@@ -2052,12 +2061,94 @@ class Window:
         self.mysql_pandas_loans()
         self.mysql_pandas_payment()
 
+    def reset_password_UI(self, event):
+        # Create instance
+        reset_password_top = tk.Toplevel(self.master)
+        reset_password_top.title("Reset password")
+        reset_password_top.configure(bg="#4C8404")
+        reset_password_top.resizable(False, False)
+
+        # ================================================ Widgets for resetting password ==============================
+        reset_password_main_lf = tk.LabelFrame(reset_password_top, bg="#FFFFFF", relief="flat")
+        reset_password_main_lf.pack(side="top", padx=15, pady=15, fill="both", expand=True)
+
+        # Export data container
+        reset_password_lf = tk.LabelFrame(reset_password_main_lf, padx=20, pady=20, bg="#FFFFFF")
+        reset_password_lf.pack(side="top", padx=15, pady=15, fill="both", expand=True)
+
+        ttk.Label(reset_password_lf, text="Enter an email address that is linked to your account",
+                  style="featured_h2_2.TLabel").pack(side="top")
+
+        self.email_entry = ttk.Entry(reset_password_lf, width=60)
+        self.email_entry.pack(side="top")
+        self.email_entry.focus()
+
+        # Buttons for export
+        reset_password_b = tk.Button(reset_password_lf, text="Reset password", font="OpenSans, 10", fg="#FFFFFF",
+                                     bg="#4C8404", relief="flat", command=self.reset_password)
+        reset_password_b.pack(side="bottom", pady=10, anchor="e")
+
+        # Disables underlying window
+        reset_password_top.grab_set()
+
+        reset_password_top.mainloop()
+
+        print(event)
+
+    def reset_password(self):
+        otp = randint(10000, 99999)
+
+        self.database_connect()
+        self.mycursor.execute("UPDATE user SET password='" + str(otp) + "' WHERE email='"
+                              + self.email_entry.get() + "';")
+        print(str(otp), self.email_entry.get())
+        """
+        self.mycursor.execute("SELECT username,  FROM borrower WHERE NAME = '"
+                              + self.account_content_name_e.get() + "' AND userid = '" + self.key_str + "';")"""
+
+        self.db1.commit()
+        self.db1.close()
+        self.mycursor.close()
+
+        email = 'pongodev0914@gmail.com'
+        email_password = 'Bin@1110010010'
+        send_to_email = self.email_entry.get()
+        subject = 'Password reset for Lending Management System'
+        message = ("Your new password is\n\n" + str(otp))
+
+        msg = MIMEMultipart()
+        msg['From'] = email
+        msg['To'] = send_to_email
+        msg['Subject'] = subject
+
+        # Attach the message to the MIMEMultipart object
+        msg.attach(MIMEText(message, 'plain'))
+
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(email, email_password)
+        text = msg.as_string()
+        server.sendmail(email, send_to_email, text)
+        server.quit()
+
     @staticmethod
     def generate_contract():
-        tkinter.messagebox.showinfo("Note!", "We are in no way affiliated with the website or its developers.\n"
-                                             "Here is the link for our recommended website:\n"
-                                             "(https://www.wonder.legal/ph/creation-modele/loan-agreement-ph)\n")
+        tk.messagebox.showinfo("Note!", "We are in no way affiliated with the website or its developers.\n"
+                                        "Here is the link for our recommended website:\n"
+                                        "(https://www.wonder.legal/ph/creation-modele/loan-agreement-ph)\n")
         webbrowser.open_new(r"https://www.wonder.legal/ph/creation-modele/loan-agreement-ph")
+
+    @staticmethod
+    def generate_user_manual():
+        webbrowser.open_new(r"https://docs.google.com/document/d/1-Lu_ylkAwIwfqLLILirN1u-PNu8BKJDmlGCITykNLTE/edit"
+                            r"?usp=sharing")
+
+    @staticmethod
+    def lms_slow_link(event):
+        tk.messagebox.showinfo("Note!", "Is Lending Management System too slow?\n\nThe Lending Management System "
+                                        "stores data on cloud database.\n\nPlease fix your internet connection or "
+                                        "internet speed for greater user experience.")
+        print(event)
 
 
 if __name__ == '__main__':
