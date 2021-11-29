@@ -17,6 +17,10 @@ from tkinter import PhotoImage
 import webbrowser
 from tkinter import filedialog
 import os
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from random import randint
 
 # Global variables for database
 host = "lms.cm10enqi961k.us-east-2.rds.amazonaws.com"
@@ -31,7 +35,7 @@ fday_month = fday_month.strftime("%x")
 currentday_month = datetime.today()
 currentday_month = currentday_month.strftime("%x")
 peso = u"\u20B1"
-lms_version = "LMSv.1.32"
+lms_version = "LMSv.1.33"
 url_small_claims = "https://www.philippine-embassy.org.sg/pages/small-claims-in-the-philippines/"
 url_fair_debt = "http://legacy.senate.gov.ph/lisdata/26632027!.pdf"
 
@@ -176,6 +180,7 @@ class Window:
         self.payment_count_l = None
         self.filter_account_cb = None
         self.filter_payment_cb = None
+        self.email_entry = tk.Entry
 
         # Instantiate Database class
         Database()
@@ -257,6 +262,11 @@ class Window:
                                                      "      ", font="OpenSans, 12", fg="#FFFFFF", bg="#4C8404",
                                  relief="flat", command=self.login_validation)
         self.login_b.grid(column=0, row=4, columnspan=2, pady=5)
+
+        forgot_password_l = ttk.Label(self.login_lf, text="Forgot password?", cursor="hand2", style="link.TLabel")
+        forgot_password_l.grid(column=1, row=5, pady=5, sticky="e")
+
+        forgot_password_l.bind("<Button-1>", self.reset_password_UI)
 
         # ================================================ Features Description section ================================
         features_lf = tk.LabelFrame(self.master, bg="#FFFFFF", relief="flat")
@@ -463,8 +473,8 @@ class Window:
 
         # Creating help menu
         file_menu = Menu(menu_bar, tearoff=0)
-        file_menu.add_command(label="Import", command=self.import_database)
-        file_menu.add_command(label="Export", command=self.export_database_widget)
+        file_menu.add_command(label="Import borrower data", command=self.import_database)
+        file_menu.add_command(label="Export data as csv", command=self.export_database_widget)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.switch_exit)
         menu_bar.add_cascade(label="File", menu=file_menu)
@@ -1473,13 +1483,16 @@ class Window:
         # Create instance
         self.export_data_top = tk.Toplevel(self.master)
         self.export_data_top.title("Export data")
-        # export_data_top.geometry("500x400")
         self.export_data_top.configure(bg="#4C8404")
         self.export_data_top.resizable(False, False)
 
         # ================================================ Checkbox for available tables ===============================
         # Export data container
-        export_data_lf = tk.LabelFrame(self.export_data_top, padx=20, pady=20, bg="#FFFFFF", relief="flat")
+        export_data_main_lf = tk.LabelFrame(self.export_data_top, bg="#FFFFFF", relief="flat")
+        export_data_main_lf.pack(side="top", padx=15, pady=15, fill="both", expand=True)
+
+        # Export data container
+        export_data_lf = tk.LabelFrame(export_data_main_lf, padx=20, pady=20, bg="#FFFFFF")
         export_data_lf.pack(side="top", padx=15, pady=15, fill="both", expand=True)
 
         ttk.Label(export_data_lf, text="Available tables", style="body_content.TLabel").grid(column=0, row=0,
@@ -1491,20 +1504,16 @@ class Window:
 
         loan_cb = tk.Checkbutton(export_data_lf, text="Loans", variable=self.loan_value, onvalue=1, offvalue=0,
                                  bg="#FFFFFF")
-        loan_cb.grid(column=0, row=2, padx=5, sticky="w")
+        loan_cb.grid(column=1, row=1, padx=5, sticky="w")
 
         payment_cb = tk.Checkbutton(export_data_lf, text="Payments", variable=self.payment_value, onvalue=1, offvalue=0,
                                     bg="#FFFFFF")
-        payment_cb.grid(column=0, row=3, padx=5, sticky="w")
+        payment_cb.grid(column=2, row=1, padx=5, sticky="w")
 
         # Buttons for export
-        export_csv_b = tk.Button(export_data_lf, text="Export as csv", font="OpenSans, 10", fg="#FFFFFF",
+        export_csv_b = tk.Button(export_data_lf, text="Export data", font="OpenSans, 10", fg="#FFFFFF",
                                  bg="#4C8404", relief="flat", command=self.export_as_csv)
-        export_csv_b.grid(column=0, row=4, padx=5, pady=5, sticky="w")
-
-        export_excel_b = tk.Button(export_data_lf, text="Export as excel", font="OpenSans, 10", fg="#FFFFFF",
-                                   bg="#4C8404", relief="flat")
-        export_excel_b.grid(column=2, row=4, padx=5, sticky="w")
+        export_csv_b.grid(column=2, row=2, padx=5, pady=5, sticky="w")
 
         # Disables underlying window
         self.export_data_top.grab_set()
@@ -1513,7 +1522,7 @@ class Window:
 
     def import_database(self):
         read_guide = tk.messagebox.askquestion("Import file", "Do you want to read importing guide before"
-                                                                   " proceeding to file dialog?")
+                                                              " proceeding to file dialog?")
         if read_guide == "yes":
             os.startfile(r"Guide for importing database.pdf")
         else:
@@ -1966,23 +1975,18 @@ class Window:
         self.db1.close()
 
     def show_borrower_id(self):
-        try:
-            self.database_connect()
+        self.database_connect()
 
-            self.mycursor.execute("SELECT DISTINCT borrowerid FROM borrower WHERE NAME = '"
-                                  + self.account_content_name_e.get() + "' AND userid = '" + self.key_str + "';")
+        self.mycursor.execute("SELECT DISTINCT borrowerid FROM borrower WHERE NAME = '"
+                              + self.account_content_name_e.get() + "' AND userid = '" + self.key_str + "';")
 
-            # Converts the tuple into integer
-            self.borrower_key = functools.reduce(lambda sub, ele: sub * 10 + ele, self.mycursor.fetchone())
-            self.borrower_key_str = str(self.borrower_key)
-            print(self.borrower_key_str)
+        # Converts the tuple into integer
+        self.borrower_key = functools.reduce(lambda sub, ele: sub * 10 + ele, self.mycursor.fetchone())
+        self.borrower_key_str = str(self.borrower_key)
+        print(self.borrower_key_str)
 
-            self.mycursor.close()
-            self.db1.close()
-
-        except Exception as e:
-            print("Could not connect to lmsdatabase")
-            print(e)
+        self.mycursor.close()
+        self.db1.close()
 
     def update_account_record(self):
         self.database_connect()
@@ -2057,11 +2061,81 @@ class Window:
         self.mysql_pandas_loans()
         self.mysql_pandas_payment()
 
+    def reset_password_UI(self, event):
+        # Create instance
+        reset_password_top = tk.Toplevel(self.master)
+        reset_password_top.title("Reset password")
+        reset_password_top.configure(bg="#4C8404")
+        reset_password_top.resizable(False, False)
+
+        # ================================================ Widgets for resetting password ==============================
+        reset_password_main_lf = tk.LabelFrame(reset_password_top, bg="#FFFFFF", relief="flat")
+        reset_password_main_lf.pack(side="top", padx=15, pady=15, fill="both", expand=True)
+
+        # Export data container
+        reset_password_lf = tk.LabelFrame(reset_password_main_lf, padx=20, pady=20, bg="#FFFFFF")
+        reset_password_lf.pack(side="top", padx=15, pady=15, fill="both", expand=True)
+
+        ttk.Label(reset_password_lf, text="Enter an email address that is linked to your account",
+                  style="featured_h2_2.TLabel").pack(side="top")
+
+        self.email_entry = ttk.Entry(reset_password_lf, width=60)
+        self.email_entry.pack(side="top")
+        self.email_entry.focus()
+
+        # Buttons for export
+        reset_password_b = tk.Button(reset_password_lf, text="Reset password", font="OpenSans, 10", fg="#FFFFFF",
+                                     bg="#4C8404", relief="flat", command=self.reset_password)
+        reset_password_b.pack(side="bottom", pady=10, anchor="e")
+
+        # Disables underlying window
+        reset_password_top.grab_set()
+
+        reset_password_top.mainloop()
+
+        print(event)
+
+    def reset_password(self):
+        otp = randint(10000, 99999)
+
+        self.database_connect()
+        self.mycursor.execute("UPDATE user SET password='" + str(otp) + "' WHERE email='"
+                              + self.email_entry.get() + "';")
+        print(str(otp), self.email_entry.get())
+        """
+        self.mycursor.execute("SELECT username,  FROM borrower WHERE NAME = '"
+                              + self.account_content_name_e.get() + "' AND userid = '" + self.key_str + "';")"""
+
+        self.db1.commit()
+        self.db1.close()
+        self.mycursor.close()
+
+        email = 'pongodev0914@gmail.com'
+        email_password = 'Bin@1110010010'
+        send_to_email = self.email_entry.get()
+        subject = 'Password reset for Lending Management System'
+        message = ("Your new password is\n\n" + str(otp))
+
+        msg = MIMEMultipart()
+        msg['From'] = email
+        msg['To'] = send_to_email
+        msg['Subject'] = subject
+
+        # Attach the message to the MIMEMultipart object
+        msg.attach(MIMEText(message, 'plain'))
+
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(email, email_password)
+        text = msg.as_string()
+        server.sendmail(email, send_to_email, text)
+        server.quit()
+
     @staticmethod
     def generate_contract():
         tk.messagebox.showinfo("Note!", "We are in no way affiliated with the website or its developers.\n"
-                                             "Here is the link for our recommended website:\n"
-                                             "(https://www.wonder.legal/ph/creation-modele/loan-agreement-ph)\n")
+                                        "Here is the link for our recommended website:\n"
+                                        "(https://www.wonder.legal/ph/creation-modele/loan-agreement-ph)\n")
         webbrowser.open_new(r"https://www.wonder.legal/ph/creation-modele/loan-agreement-ph")
 
     @staticmethod
@@ -2072,8 +2146,8 @@ class Window:
     @staticmethod
     def lms_slow_link(event):
         tk.messagebox.showinfo("Note!", "Is Lending Management System too slow?\n\nThe Lending Management System "
-                                             "stores data on cloud database.\n\nPlease fix your internet connection or "
-                                             "internet speed for greater user experience.")
+                                        "stores data on cloud database.\n\nPlease fix your internet connection or "
+                                        "internet speed for greater user experience.")
         print(event)
 
 
