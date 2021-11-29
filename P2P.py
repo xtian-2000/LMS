@@ -35,7 +35,7 @@ fday_month = fday_month.strftime("%x")
 currentday_month = datetime.today()
 currentday_month = currentday_month.strftime("%x")
 peso = u"\u20B1"
-lms_version = "LMSv.1.33"
+lms_version = "LMSv.1.34"
 url_small_claims = "https://www.philippine-embassy.org.sg/pages/small-claims-in-the-philippines/"
 url_fair_debt = "http://legacy.senate.gov.ph/lisdata/26632027!.pdf"
 
@@ -197,7 +197,7 @@ class Window:
 
         # Create window attribute
         self.master.title("P2P " + lms_version)
-        self.master.iconbitmap(r"C:\Users\SSD\IdeaProjects\LMS\images\p2p_icon.ico")
+        self.master.iconbitmap(r"p2p_icon.ico")
         width = self.master.winfo_screenwidth()
         height = self.master.winfo_screenheight()
         self.master.geometry("%dx%d" % (width, height))
@@ -212,7 +212,7 @@ class Window:
         description_lf = tk.LabelFrame(self.main_lf, bg="#FFFFFF", relief="flat")
         description_lf.pack(side="top", fill="x")
 
-        p2p_logo = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\p2p_logo.png")
+        p2p_logo = PhotoImage(file=r"p2p_logo.png")
         self.p2p_logo_resized = p2p_logo.subsample(1, 1)
 
         ttk.Label(self.main_lf, image=self.p2p_logo_resized).pack(side="left", padx=10, pady=10)
@@ -491,32 +491,32 @@ class Window:
         self.menu_lf.pack(side="left", fill="both")
 
         # Create variables for inactive images
-        home_icon_inactive = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\home_icon_inactive.png")
+        home_icon_inactive = PhotoImage(file=r"home_icon_inactive.png")
         self.home_icon_inactive_resized = home_icon_inactive.subsample(8, 8)
 
-        loans_icon_inactive = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\loan_icon_inactive.png")
+        loans_icon_inactive = PhotoImage(file=r"loan_icon_inactive.png")
         self.loans_icon_inactive_resized = loans_icon_inactive.subsample(8, 8)
 
-        accounts_icon_inactive = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\accounts_icon_inactive.png")
+        accounts_icon_inactive = PhotoImage(file=r"accounts_icon_inactive.png")
         self.accounts_icon_inactive_resized = accounts_icon_inactive.subsample(8, 8)
 
-        payments_icon_inactive = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\payments_icon_inactive.png")
+        payments_icon_inactive = PhotoImage(file=r"payments_icon_inactive.png")
         self.payments_icon_inactive_resized = payments_icon_inactive.subsample(8, 8)
 
-        exit_icon_inactive = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\exit_inactive.png")
+        exit_icon_inactive = PhotoImage(file=r"exit_inactive.png")
         self.exit_inactive_resized = exit_icon_inactive.subsample(8, 8)
 
         # Create variables for active images
-        home_icon_active = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\home_icon_active.png")
+        home_icon_active = PhotoImage(file=r"home_icon_active.png")
         self.home_icon_active_resized = home_icon_active.subsample(8, 8)
 
-        loans_icon_active = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\loans_icon_active.png")
+        loans_icon_active = PhotoImage(file=r"loans_icon_active.png")
         self.loans_icon_active_resized = loans_icon_active.subsample(8, 8)
 
-        accounts_icon_active = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\accounts_icon_active.png")
+        accounts_icon_active = PhotoImage(file=r"accounts_icon_active.png")
         self.accounts_icon_active_resized = accounts_icon_active.subsample(8, 8)
 
-        payments_icon_active = PhotoImage(file=r"C:\Users\SSD\IdeaProjects\LMS\images\payments_icon_active.png")
+        payments_icon_active = PhotoImage(file=r"payments_icon_active.png")
         self.payments_icon_active_resized = payments_icon_active.subsample(8, 8)
 
         # Menu buttons
