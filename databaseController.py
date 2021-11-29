@@ -26,16 +26,6 @@ class Database:
             print("Could not create database")
             print(e)
 
-        # Viewing all databases
-        try:
-            self.mycursor.execute("SHOW DATABASES")
-            print("These are the available databases")
-            for database in self.mycursor:
-                print(database)
-        except Exception as e:
-            print("Could not show all the databases")
-            print(e)
-
         # Connecting to lmsdatabase
         try:
             self.db1 = mysql.connect(host=host,
@@ -91,6 +81,8 @@ class Database:
                                   "`dateissued`;")
             self.mycursor.execute("ALTER TABLE `lmsdatabase`.`loan` ADD COLUMN `balance` INT NOT NULL AFTER "
                                   "`borrowerid`;")
+            self.mycursor.execute("ALTER TABLE `lmsdatabase`.`loan` ADD COLUMN `duedate` VARCHAR(45) NOT NULL"
+                                  " AFTER `status`;")
 
             print("loan table is created successfully")
         except Exception as e:
@@ -107,6 +99,8 @@ class Database:
                                   " ACTION ON UPDATE NO ACTION);")
             self.mycursor.execute("ALTER TABLE `lmsdatabase`.`payment` CHANGE COLUMN `paymentid` `paymentid` INT NOT"
                                   " NULL AUTO_INCREMENT ;")
+            self.mycursor.execute("ALTER TABLE `lmsdatabase`.`payment` ADD COLUMN `balance` INT NOT NULL AFTER"
+                                  " `amount`;")
 
             print("payment table is created successfully")
         except Exception as e:
