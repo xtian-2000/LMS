@@ -16,7 +16,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkinter import PhotoImage
 import webbrowser
 from tkinter import filedialog
-import os
+# import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -189,8 +189,9 @@ class Window:
         self.confirm_new_password_entry = tk.Entry
         self.show_password_b = None
         self.show_hide_toggle = None
+        self.message_l = None
 
-        # Instantiate Database class
+        # Instantiate Database class, use to create ables in database
         Database()
 
         # Instantiate login window
@@ -374,6 +375,7 @@ class Window:
             self.show_password_b.config(text="Show")
             self.show_hide_toggle = True
 
+    """
     def mysql_pandas_user(self):
         try:
             self.pandasdb = mysql.connect(host=host,
@@ -418,7 +420,7 @@ class Window:
             canvas.get_tk_widget().pack(side="left", anchor="w", padx=10, pady=10)
         except Exception as e:
             self.pandasdb.close()
-            print(e)
+            print(e)"""
 
     def mysql_pandas_loans(self):
         Content.destroy_content(self.loan_analytics_content)
@@ -427,17 +429,29 @@ class Window:
                                  password=password,
                                  database="lmsdatabase",
                                  use_pure=True)
-        query = "Select loan.amount from loan INNER JOIN borrower ON " \
-                "loan.borrowerid=borrower.borrowerid where dateissued >= '" + self.dashboard_main_filter_from.get() + \
-                "' AND dateissued <= '" + self.dashboard_main_filter_to.get() + "' AND borrower.userid = '" \
-                + self.key_str + "'; "
+        """
+        query = "Select loan.amount from loan INNER JOIN borrower ON loan.borrowerid=borrower.borrowerid where " \
+                "dateissued >= '" + self.dashboard_main_filter_from.get() + "' AND dateissued <= '" + \
+                self.dashboard_main_filter_to.get() + "' AND borrower.userid = '" + self.key_str + "'; """
+        """
+        query = "Select loan.amount, loan.dateissued from loan INNER JOIN borrower ON loan.borrowerid=borrower.borrowerid where " \
+                "borrower.userid = '" + self.key_str + "'; """
 
+        query = "Select loan.amount from loan INNER JOIN borrower ON loan.borrowerid=borrower.borrowerid where " \
+                "dateissued >= '" + self.dashboard_main_filter_from.get() + "';"
+
+        print(self.dashboard_main_filter_from.get())
+        print(self.dashboard_main_filter_to.get())
         df = pd.read_sql(query, pandasdb)
         pandasdb.close()
+        """
+        filtered_df = df[(df.dateissued >= self.dashboard_main_filter_from.get()) & (df.dateissued <= self.dashboard_main_filter_to.get())]
+        print(filtered_df)"""
 
         print("Loan's dataframe")
         print(df)
         total_loan_amount = df['amount'].sum()
+
         self.loan_amount_l.configure(text=total_loan_amount)
         self.loan_count_l.configure(text=len(df.index))
 
@@ -498,11 +512,16 @@ class Window:
 
         # Creating file menu
         file_menu = Menu(menu_bar, tearoff=0)
-        file_menu.add_command(label="Import borrower data", command=self.import_database)
+        # file_menu.add_command(label="Import borrower data", command=self.import_database)
         file_menu.add_command(label="Export data as csv", command=self.export_database_widget)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.switch_exit)
         menu_bar.add_cascade(label="File", menu=file_menu)
+
+        # Creating account menu
+        account_menu = Menu(menu_bar, tearoff=0)
+        account_menu.add_command(label="Change account password", command=self.change_password_UI)
+        menu_bar.add_cascade(label="Account", menu=account_menu)
 
         # Creating help menu
         help_menu = Menu(menu_bar, tearoff=0)
@@ -510,11 +529,6 @@ class Window:
         help_menu.add_separator()
         help_menu.add_command(label="Check for updates")
         menu_bar.add_cascade(label="Help", menu=help_menu)
-
-        # Creating account menu
-        account_menu = Menu(menu_bar, tearoff=0)
-        account_menu.add_command(label="Change account password", command=self.change_password_UI)
-        menu_bar.add_cascade(label="Account", menu=account_menu)
 
         # ================================================ Menu Section ================================================
         self.menu_lf = tk.LabelFrame(self.master, bg="#4C8404", relief="flat")
@@ -1341,6 +1355,9 @@ class Window:
                                         bg="#D4DEC9", relief="flat", command=self.add_people_top.destroy)
         finish_add_people_b.grid(column=1, row=5, padx=5, pady=5, sticky="w")
 
+        self.message_l = ttk.Label(self.add_people_lf, text="", style="h1_footnote.TLabel")
+        self.message_l.grid(column=0, row=6, pady=5, sticky="w")
+
     def issue_loan(self):
         # Create instance
         self.add_people_top = tk.Toplevel(self.master)
@@ -1357,11 +1374,11 @@ class Window:
         values = self.account_borrower_lb.item(selected, "values")
 
         # Insert values to entry widgets
-        self.add_people_name_entry.insert(0, values[0])
-        self.add_people_address_entry.insert(0, values[1])
-        self.age_spinbox.insert(0, values[2])
+        self.add_people_name_entry.insert(0, values[1])
+        self.add_people_address_entry.insert(0, values[2])
+        self.age_spinbox.insert(0, values[3])
         self.gender_combobox.delete(0, "end")
-        self.gender_combobox.insert(0, values[3])
+        self.gender_combobox.insert(0, values[4])
 
         Content.destroy_button(self.add_people_lf)
         Content.disable_entry(self.add_people_lf)
@@ -1429,6 +1446,9 @@ class Window:
         date_now.strftime("%m/%d/%Y")
         try:
             self.database_connect()
+
+            self.message_l.config(text="Connecting to Cloud Database...")
+
             self.mycursor.execute(
                 "INSERT INTO borrower (userid, name, address, age, created, gender) VALUES (%s, %s,%s,"
                 "%s,%s,%s)",
@@ -1550,6 +1570,7 @@ class Window:
 
         self.export_data_top.mainloop()
 
+    """
     def import_database(self):
         read_guide = tk.messagebox.askquestion("Import file", "Do you want to read importing guide before"
                                                               " proceeding to file dialog?")
@@ -1566,6 +1587,7 @@ class Window:
             upper_df.drop_duplicates(subset="NAME", keep="first", inplace=True)
             print(upper_df)
             print(import_df.isnull().sum())
+    """
 
     def export_as_csv(self):
         pandasdb = mysql.connect(host=host,
