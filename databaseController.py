@@ -7,6 +7,7 @@ password = "44966874"
 
 class Database:
     def __init__(self):
+        """
         # Connecting to mysql database
         try:
             self.db = mysql.connect(host=host,
@@ -24,7 +25,7 @@ class Database:
             print("lmsdatabase has been created")
         except Exception as e:
             print("Could not create database")
-            print(e)
+            print(e)"""
 
         # Connecting to lmsdatabase
         try:
@@ -36,7 +37,7 @@ class Database:
         except Exception as e:
             print("Could not connect to lmsdatabase")
             print(e)
-
+        """
         # Creating user table in database
         try:
             self.mycursor = self.db1.cursor()
@@ -106,3 +107,4 @@ class Database:
         except Exception as e:
             print("payment table could not be created")
             print(e)
+        """

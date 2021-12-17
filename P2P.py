@@ -16,7 +16,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkinter import PhotoImage
 import webbrowser
 from tkinter import filedialog
-import os
+# import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -181,8 +181,17 @@ class Window:
         self.filter_account_cb = None
         self.filter_payment_cb = None
         self.email_entry = tk.Entry
+        self.reset_password_top = None
+        self.change_password_top = None
+        self.new_password_entry = tk.Entry
+        self.cred_username_entry = tk.Entry
+        self.cred_password_entry = tk.Entry
+        self.confirm_new_password_entry = tk.Entry
+        self.show_password_b = None
+        self.show_hide_toggle = None
+        self.message_l = None
 
-        # Instantiate Database class
+        # Instantiate Database class, use to create ables in database
         Database()
 
         # Instantiate login window
@@ -239,35 +248,42 @@ class Window:
         # Login widgets
         ttk.Label(self.login_lf, text="Login", style="h1.TLabel").grid(column=0, row=0, pady=10)
 
-        ttk.Label(self.login_lf, text="User Name", style="h1_footnote.TLabel").grid(column=0,
-                                                                                    row=1, pady=10, sticky="w")
+        ttk.Label(self.login_lf, text="User Name",
+                  style="h1_footnote.TLabel").grid(column=0, row=1, padx=5, pady=10, sticky="w")
 
         self.login_username_entry = ttk.Entry(self.login_lf, width=40)
-        self.login_username_entry.grid(column=1, row=1, padx=5)
+        self.login_username_entry.grid(column=1, row=1, columnspan=2, sticky="w")
 
         # Focuses cursor on username entry
         self.login_username_entry.focus()
 
-        ttk.Label(self.login_lf, text="Password", style="h1_footnote.TLabel").grid(column=0, row=2, pady=10, sticky="w")
+        ttk.Label(self.login_lf, text="Password",
+                  style="h1_footnote.TLabel").grid(column=0, row=2, padx=5, pady=10, sticky="w")
 
-        self.login_password_entry = ttk.Entry(self.login_lf, show="*", width=40)
-        self.login_password_entry.grid(column=1, row=2, padx=5)
+        self.login_password_entry = ttk.Entry(self.login_lf, show="*", width=33)
+        self.login_password_entry.grid(column=1, row=2, sticky="w")
+
+        self.show_password_b = tk.Button(self.login_lf, text="Show", font="OpenSans, 8",
+                                         fg="#4C8404", bg="#D4DEC9", relief="flat", command=self.show_password_config)
+        self.show_password_b.grid(column=2, row=2, sticky="w")
 
         self.register_b = tk.Button(self.login_lf, text="                              Register                        "
                                                         "       ", font="OpenSans, 12", fg="#4C8404", bg="#D4DEC9",
                                     relief="flat", command=self.register_win)
-        self.register_b.grid(column=0, row=3, columnspan=2, pady=5)
+        self.register_b.grid(column=0, row=3, columnspan=3, padx=9, pady=5, sticky="w")
 
         self.login_b = tk.Button(self.login_lf, text="                                Log in                           "
                                                      "      ", font="OpenSans, 12", fg="#FFFFFF", bg="#4C8404",
                                  relief="flat", command=self.login_validation)
-        self.login_b.grid(column=0, row=4, columnspan=2, pady=5)
+        self.login_b.grid(column=0, row=4, columnspan=3, padx=9, pady=5, sticky="e")
 
-        forgot_password_l = ttk.Label(self.login_lf, text="Forgot password?", cursor="hand2", style="link.TLabel")
+        forgot_password_l = ttk.Label(self.login_lf, text="       Forgot password?",
+                                      cursor="hand2", style="link2.TLabel")
         forgot_password_l.grid(column=1, row=5, pady=5, sticky="e")
 
         forgot_password_l.bind("<Button-1>", self.reset_password_UI)
 
+        self.show_hide_toggle = True
         # ================================================ Features Description section ================================
         features_lf = tk.LabelFrame(self.master, bg="#FFFFFF", relief="flat")
         features_lf.pack(side="top", expand=True, anchor="center", ipadx=20, ipady=20)
@@ -349,6 +365,17 @@ class Window:
                                          fg="#FFFFFF", bg="#4C8404", command=self.register_validation)
         self.register_done_b.grid(column=0, row=5, columnspan=2, pady=10)
 
+    def show_password_config(self):
+        if self.show_hide_toggle:
+            self.login_password_entry.config(show="")
+            self.show_password_b.config(text="Hide ")
+            self.show_hide_toggle = False
+        else:
+            self.login_password_entry.config(show="*")
+            self.show_password_b.config(text="Show")
+            self.show_hide_toggle = True
+
+    """
     def mysql_pandas_user(self):
         try:
             self.pandasdb = mysql.connect(host=host,
@@ -393,7 +420,7 @@ class Window:
             canvas.get_tk_widget().pack(side="left", anchor="w", padx=10, pady=10)
         except Exception as e:
             self.pandasdb.close()
-            print(e)
+            print(e)"""
 
     def mysql_pandas_loans(self):
         Content.destroy_content(self.loan_analytics_content)
@@ -402,17 +429,29 @@ class Window:
                                  password=password,
                                  database="lmsdatabase",
                                  use_pure=True)
-        query = "Select loan.amount from loan INNER JOIN borrower ON " \
-                "loan.borrowerid=borrower.borrowerid where dateissued >= '" + self.dashboard_main_filter_from.get() + \
-                "' AND dateissued <= '" + self.dashboard_main_filter_to.get() + "' AND borrower.userid = '" \
-                + self.key_str + "'; "
+        """
+        query = "Select loan.amount from loan INNER JOIN borrower ON loan.borrowerid=borrower.borrowerid where " \
+                "dateissued >= '" + self.dashboard_main_filter_from.get() + "' AND dateissued <= '" + \
+                self.dashboard_main_filter_to.get() + "' AND borrower.userid = '" + self.key_str + "'; """
+        """
+        query = "Select loan.amount, loan.dateissued from loan INNER JOIN borrower ON loan.borrowerid=borrower.borrowerid where " \
+                "borrower.userid = '" + self.key_str + "'; """
 
+        query = "Select loan.amount from loan INNER JOIN borrower ON loan.borrowerid=borrower.borrowerid where " \
+                "dateissued >= '" + self.dashboard_main_filter_from.get() + "';"
+
+        print(self.dashboard_main_filter_from.get())
+        print(self.dashboard_main_filter_to.get())
         df = pd.read_sql(query, pandasdb)
         pandasdb.close()
+        """
+        filtered_df = df[(df.dateissued >= self.dashboard_main_filter_from.get()) & (df.dateissued <= self.dashboard_main_filter_to.get())]
+        print(filtered_df)"""
 
         print("Loan's dataframe")
         print(df)
         total_loan_amount = df['amount'].sum()
+
         self.loan_amount_l.configure(text=total_loan_amount)
         self.loan_count_l.configure(text=len(df.index))
 
@@ -471,13 +510,18 @@ class Window:
         menu_bar = Menu(self.master)
         self.master.config(menu=menu_bar)
 
-        # Creating help menu
+        # Creating file menu
         file_menu = Menu(menu_bar, tearoff=0)
-        file_menu.add_command(label="Import borrower data", command=self.import_database)
+        # file_menu.add_command(label="Import borrower data", command=self.import_database)
         file_menu.add_command(label="Export data as csv", command=self.export_database_widget)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.switch_exit)
         menu_bar.add_cascade(label="File", menu=file_menu)
+
+        # Creating account menu
+        account_menu = Menu(menu_bar, tearoff=0)
+        account_menu.add_command(label="Change account password", command=self.change_password_UI)
+        menu_bar.add_cascade(label="Account", menu=account_menu)
 
         # Creating help menu
         help_menu = Menu(menu_bar, tearoff=0)
@@ -1311,6 +1355,9 @@ class Window:
                                         bg="#D4DEC9", relief="flat", command=self.add_people_top.destroy)
         finish_add_people_b.grid(column=1, row=5, padx=5, pady=5, sticky="w")
 
+        self.message_l = ttk.Label(self.add_people_lf, text="", style="h1_footnote.TLabel")
+        self.message_l.grid(column=0, row=6, pady=5, sticky="w")
+
     def issue_loan(self):
         # Create instance
         self.add_people_top = tk.Toplevel(self.master)
@@ -1327,11 +1374,11 @@ class Window:
         values = self.account_borrower_lb.item(selected, "values")
 
         # Insert values to entry widgets
-        self.add_people_name_entry.insert(0, values[0])
-        self.add_people_address_entry.insert(0, values[1])
-        self.age_spinbox.insert(0, values[2])
+        self.add_people_name_entry.insert(0, values[1])
+        self.add_people_address_entry.insert(0, values[2])
+        self.age_spinbox.insert(0, values[3])
         self.gender_combobox.delete(0, "end")
-        self.gender_combobox.insert(0, values[3])
+        self.gender_combobox.insert(0, values[4])
 
         Content.destroy_button(self.add_people_lf)
         Content.disable_entry(self.add_people_lf)
@@ -1399,6 +1446,9 @@ class Window:
         date_now.strftime("%m/%d/%Y")
         try:
             self.database_connect()
+
+            self.message_l.config(text="Connecting to Cloud Database...")
+
             self.mycursor.execute(
                 "INSERT INTO borrower (userid, name, address, age, created, gender) VALUES (%s, %s,%s,"
                 "%s,%s,%s)",
@@ -1520,6 +1570,7 @@ class Window:
 
         self.export_data_top.mainloop()
 
+    """
     def import_database(self):
         read_guide = tk.messagebox.askquestion("Import file", "Do you want to read importing guide before"
                                                               " proceeding to file dialog?")
@@ -1536,6 +1587,7 @@ class Window:
             upper_df.drop_duplicates(subset="NAME", keep="first", inplace=True)
             print(upper_df)
             print(import_df.isnull().sum())
+    """
 
     def export_as_csv(self):
         pandasdb = mysql.connect(host=host,
@@ -2063,13 +2115,13 @@ class Window:
 
     def reset_password_UI(self, event):
         # Create instance
-        reset_password_top = tk.Toplevel(self.master)
-        reset_password_top.title("Reset password")
-        reset_password_top.configure(bg="#4C8404")
-        reset_password_top.resizable(False, False)
+        self.reset_password_top = tk.Toplevel(self.master)
+        self.reset_password_top.title("Reset password")
+        self.reset_password_top.configure(bg="#4C8404")
+        self.reset_password_top.resizable(False, False)
 
         # ================================================ Widgets for resetting password ==============================
-        reset_password_main_lf = tk.LabelFrame(reset_password_top, bg="#FFFFFF", relief="flat")
+        reset_password_main_lf = tk.LabelFrame(self.reset_password_top, bg="#FFFFFF", relief="flat")
         reset_password_main_lf.pack(side="top", padx=15, pady=15, fill="both", expand=True)
 
         # Export data container
@@ -2089,9 +2141,9 @@ class Window:
         reset_password_b.pack(side="bottom", pady=10, anchor="e")
 
         # Disables underlying window
-        reset_password_top.grab_set()
+        self.reset_password_top.grab_set()
 
-        reset_password_top.mainloop()
+        self.reset_password_top.mainloop()
 
         print(event)
 
@@ -2130,6 +2182,121 @@ class Window:
         text = msg.as_string()
         server.sendmail(email, send_to_email, text)
         server.quit()
+
+        tk.messagebox.showinfo("Forgot password", "Please check your email at " + self.email_entry.get() + ".")
+
+        self.reset_password_top.destroy()
+
+    # ================================================ Functions for changing password =================================
+    def change_password_UI(self):
+        # Create instance
+        self.change_password_top = tk.Toplevel(self.master)
+        self.change_password_top.title("Change password")
+        self.change_password_top.configure(bg="#4C8404")
+        self.change_password_top.resizable(False, False)
+
+        # ================================================ Widgets for resetting password ==============================
+        change_password_main_lf = tk.LabelFrame(self.change_password_top, bg="#FFFFFF", relief="flat")
+        change_password_main_lf.pack(side="top", padx=15, pady=15, fill="both", expand=True)
+
+        # Export data container
+        change_password_lf = tk.LabelFrame(change_password_main_lf, padx=20, pady=20, bg="#FFFFFF")
+        change_password_lf.pack(side="top", padx=15, pady=15, fill="both", expand=True)
+
+        ttk.Label(change_password_lf, text="User name ",
+                  style="h1_footnote.TLabel").grid(column=0, row=0, sticky="w")
+
+        self.cred_username_entry = ttk.Entry(change_password_lf, width=40)
+        self.cred_username_entry.grid(column=1, row=0, pady=5)
+        self.cred_username_entry.focus()
+
+        ttk.Label(change_password_lf, text="Password ",
+                  style="h1_footnote.TLabel").grid(column=0, row=1, sticky="w")
+
+        self.cred_password_entry = ttk.Entry(change_password_lf, width=40)
+        self.cred_password_entry.grid(column=1, row=1, pady=5)
+
+        ttk.Label(change_password_lf, text="New password ",
+                  style="h1_footnote.TLabel").grid(column=0, row=2, sticky="w")
+
+        self.new_password_entry = ttk.Entry(change_password_lf, width=40)
+        self.new_password_entry.grid(column=1, row=2, pady=5)
+
+        ttk.Label(change_password_lf, text="Confirm new password ",
+                  style="h1_footnote.TLabel").grid(column=0, row=3, sticky="w")
+
+        self.confirm_new_password_entry = ttk.Entry(change_password_lf, width=40)
+        self.confirm_new_password_entry.grid(column=1, row=3, pady=5)
+
+        # Buttons for export
+        change_password_b = tk.Button(change_password_lf, text="Change password", font="OpenSans, 10", fg="#FFFFFF",
+                                      bg="#4C8404", relief="flat", command=self.change_password_cred)
+        change_password_b.grid(column=1, row=4, pady=5, sticky="e")
+
+        # Disables underlying window
+        self.change_password_top.grab_set()
+
+        self.change_password_top.mainloop()
+
+    def change_password_cred(self):
+        if not self.cred_username_entry.get():
+            self.invalid_input()
+        else:
+            self.database_connect()
+            self.mycursor.execute(
+                "SELECT * FROM user where username = '" + self.cred_username_entry.get() + "' and password = '" +
+                self.cred_password_entry.get() + "';")
+            myresult = self.mycursor.fetchone()
+            if myresult is None or self.new_password_entry.get() != self.confirm_new_password_entry.get():
+                messagebox.showerror("Error", "Invalid Credentials")
+            else:
+                # Instantiate create_widgets method
+                self.change_password()
+
+            self.db1.close()
+            self.mycursor.close()
+
+    def change_password(self):
+        # Connect to Database
+        self.database_connect()
+        self.mycursor.execute("UPDATE user SET password='" + self.new_password_entry.get() + "' WHERE userid='"
+                              + self.key_str + "';")
+
+        self.db1.commit()
+        self.db1.close()
+        self.mycursor.close()
+        """
+        self.database_connect()
+        send_to_email = self.mycursor.execute("SELECT email FROM user WHERE userid = '" + self.key_str + "';")
+
+        self.db1.commit()
+        self.db1.close()
+        self.mycursor.close()
+
+        email = 'pongodev0914@gmail.com'
+        email_password = 'Bin@1110010010'
+        subject = 'Password change alert'
+        message = "Your password had changed"
+
+        msg = MIMEMultipart()
+        msg['From'] = email
+        msg['To'] = send_to_email
+        msg['Subject'] = subject
+
+        # Attach the message to the MIMEMultipart object
+        msg.attach(MIMEText(message, 'plain'))
+
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(email, email_password)
+        text = msg.as_string()
+        server.sendmail(email, send_to_email, text)
+        server.quit()
+        """
+
+        tk.messagebox.showinfo("Changed your password", "An alert has been sent to your email")
+
+        self.change_password_top.destroy()
 
     @staticmethod
     def generate_contract():
