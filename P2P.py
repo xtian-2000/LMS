@@ -35,7 +35,7 @@ fday_month = fday_month.strftime("%x")
 currentday_month = datetime.today()
 currentday_month = currentday_month.strftime("%x")
 peso = u"\u20B1"
-lms_version = "LMSv.1.34"
+lms_version = "LMSv.1.36"
 url_small_claims = "https://www.philippine-embassy.org.sg/pages/small-claims-in-the-philippines/"
 url_fair_debt = "http://legacy.senate.gov.ph/lisdata/26632027!.pdf"
 
@@ -438,15 +438,10 @@ class Window:
                 "borrower.userid = '" + self.key_str + "'; """
 
         query = "Select loan.amount from loan INNER JOIN borrower ON loan.borrowerid=borrower.borrowerid where " \
-                "dateissued >= '" + self.dashboard_main_filter_from.get() + "';"
+                "dateissued >= '" + self.dashboard_main_filter_from.get() + "' AND borrower.userid = '" + self.key_str + "';"
 
-        print(self.dashboard_main_filter_from.get())
-        print(self.dashboard_main_filter_to.get())
         df = pd.read_sql(query, pandasdb)
         pandasdb.close()
-        """
-        filtered_df = df[(df.dateissued >= self.dashboard_main_filter_from.get()) & (df.dateissued <= self.dashboard_main_filter_to.get())]
-        print(filtered_df)"""
 
         print("Loan's dataframe")
         print(df)
@@ -527,7 +522,7 @@ class Window:
         help_menu = Menu(menu_bar, tearoff=0)
         help_menu.add_command(label="User Manual", command=self.generate_user_manual)
         help_menu.add_separator()
-        help_menu.add_command(label="Check for updates")
+        help_menu.add_command(label="Check for updates", command=self.check_for_updates)
         menu_bar.add_cascade(label="Help", menu=help_menu)
 
         # ================================================ Menu Section ================================================
@@ -2316,6 +2311,11 @@ class Window:
                                         "stores data on cloud database.\n\nPlease fix your internet connection or "
                                         "internet speed for greater user experience.")
         print(event)
+
+    @staticmethod
+    def check_for_updates():
+        tk.messagebox.showinfo("Check for updates", "You are currently running the latest version " + lms_version +
+                               "\nYou will be notified via email once an update is available.")
 
 
 if __name__ == '__main__':
